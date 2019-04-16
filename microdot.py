@@ -1,5 +1,11 @@
-import json
-import re
+try:
+    import ujson as json
+except ImportError:
+    import json
+try:
+    import ure as re
+except ImportError:
+    import re
 try:
     import usocket as socket
 except ImportError:
@@ -49,7 +55,6 @@ class Request():
             if line == '':
                 break
             header, value = line.split(':', 1)
-            header = header.title()
             value = value.strip()
             self.headers[header] = value
             if header == 'Content-Length':
@@ -146,7 +151,6 @@ class Response():
         content_length_found = False
         content_type_found = False
         for header, value in self.headers.items():
-            header = header.title()
             values = value if isinstance(value, list) else [value]
             for value in values:
                 client_stream.write('{header}: {value}\r\n'.format(

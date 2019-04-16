@@ -15,7 +15,7 @@ setup(
     author_email='miguel.grinberg@gmail.com',
     description='Impossibly small web framework for MicroPython',
     long_description=__doc__,
-    packages=['microdot'],
+    py_modules=['microdot'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
