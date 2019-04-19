@@ -15,9 +15,12 @@
             }
             function onLoad() {
                 showMessage();
-                var form = getCookie('form').split(',')
-                document.getElementById('pin').selectedIndex = parseInt(form[0]);
-                document.getElementById(form[1]).checked = true;
+                var form = getCookie('form');
+                if (form) {
+                    form = form.split(',')
+                    document.getElementById('pin').selectedIndex = parseInt(form[0]);
+                    document.getElementById(form[1]).checked = true;
+                }
             }
         </script>
     </head>

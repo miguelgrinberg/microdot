@@ -243,11 +243,18 @@ class URLPattern():
 class Microdot():
     def __init__(self) :
         self.url_map = []
+        self.error_handlers = {}
 
     def route(self, url_pattern, methods=None):
         def decorated(f):
             self.url_map.append(
                 (methods or ['GET'], URLPattern(url_pattern), f))
+            return f
+        return decorated
+
+    def errorhandler(self, status_code_or_exception_class):
+        def decorated(f):
+            self.error_handlers[status_code_or_exception_class] = f
             return f
         return decorated
 
@@ -271,14 +278,28 @@ class Microdot():
                     if args is not None:
                         f = route_handler
                         break
-            if f:
-                resp = f(req, **args)
-                if isinstance(resp, tuple):
-                    resp = Response(*resp)
-                elif not isinstance(resp, Response):
-                    resp = Response(resp)
-                resp.write(req.client_stream)
-                req.close()
+            try:
+                if f:
+                    resp = f(req, **args)
+                elif 404 in self.error_handlers:
+                    resp = self.error_handlers[404](req)
+                else:
+                    resp = 'Not found', 404
+            except Exception as exc:
+                resp = None
+                if exc.__class__ in self.error_handlers:
+                    try:
+                        resp = self.error_handlers[exc.__class__](req, exc)
+                    except:
+                        pass
+                if resp is None:
+                    resp = 'Internal server error', 500
+            if isinstance(resp, tuple):
+                resp = Response(*resp)
+            elif not isinstance(resp, Response):
+                resp = Response(resp)
+            resp.write(req.client_stream)
+            req.close()
 
 
 redirect = Response.redirect
