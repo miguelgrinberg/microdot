@@ -63,7 +63,7 @@ class Request():
                 self.content_type = value
             elif header == 'Cookie':
                 for cookie in self.headers['Cookie'].split(';'):
-                    name, value = cookie.split('=', 1)
+                    name, value = cookie.strip().split('=', 1)
                     self.cookies[name] = value
 
         # body
