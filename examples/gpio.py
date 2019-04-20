@@ -40,4 +40,4 @@ def index(request):
     return response
 
 
-app.run()
+app.run(debug=True)

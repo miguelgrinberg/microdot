@@ -270,12 +270,13 @@ class Microdot():
             return f
         return decorated
 
-    def run(self, host='0.0.0.0', port=5000):
+    def run(self, host='0.0.0.0', port=5000, debug=False):
         s = socket.socket()
         ai = socket.getaddrinfo(host, port)
         addr = ai[0][-1]
 
-        print('Listening on {host}:{port}...'.format(host=host, port=port))
+        if debug:
+            print('Listening on {host}:{port}...'.format(host=host, port=port))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(addr)
         s.listen(5)
@@ -311,6 +312,10 @@ class Microdot():
                 resp = Response(*resp)
             elif not isinstance(resp, Response):
                 resp = Response(resp)
+            if debug:
+                print('{method} {path} {status_code}'.format(
+                    method=req.method, path=req.path,
+                    status_code=resp.status_code))
             resp.write(req.client_stream)
             req.close()
 
