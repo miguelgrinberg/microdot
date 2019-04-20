@@ -2,10 +2,20 @@ try:
     import ujson as json
 except ImportError:
     import json
+
 try:
     import ure as re
 except ImportError:
     import re
+
+try:
+    from sys import print_exception
+except ImportError:
+    import traceback
+
+    def print_exception(exc):
+        traceback.print_exc()
+
 try:
     import usocket as socket
 except ImportError:
@@ -84,8 +94,10 @@ class Request():
         if self.content_type != 'application/x-www-form-urlencoded':
             return None
         if self._form is None:
-            self._form = {urldecode(key): urldecode(value) for key, value in
-                          [pair.split('=', 1) for pair in self.body.decode().split('&')]}
+            self._form = {
+                urldecode(key): urldecode(value) for key, value in [
+                    pair.split('=', 1) for pair in
+                    self.body.decode().split('&')]}
         return self._form
 
     def close(self):
@@ -286,12 +298,13 @@ class Microdot():
                 else:
                     resp = 'Not found', 404
             except Exception as exc:
+                print_exception(exc)
                 resp = None
                 if exc.__class__ in self.error_handlers:
                     try:
                         resp = self.error_handlers[exc.__class__](req, exc)
-                    except:
-                        pass
+                    except Exception as exc2:
+                        print_exception(exc2)
                 if resp is None:
                     resp = 'Internal server error', 500
             if isinstance(resp, tuple):
