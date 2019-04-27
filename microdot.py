@@ -10,7 +10,7 @@ except ImportError:
 
 try:
     from sys import print_exception
-except ImportError:
+except ImportError:  # pragma: no cover
     import traceback
 
     def print_exception(exc):
@@ -43,25 +43,29 @@ class Request():
         self.client_sock = client_sock
         self.client_addr = client_addr
 
-        if not hasattr(client_sock, 'readline'):
+        if not hasattr(client_sock, 'readline'):  # pragma: no cover
             self.client_stream = client_sock.makefile("rwb")
         else:
             self.client_stream = client_sock
 
         # request line
-        line = self.client_stream.readline().strip().decode('utf-8')
+        line = self.client_stream.readline().strip().decode()
         self.method, self.path, self.http_version = line.split()
+        self.http_version = self.http_version.split('/', 1)[1]
         if '?' in self.path:
             self.path, self.query_string = self.path.split('?', 1)
+            self.args = self._parse_urlencoded(self.query_string)
         else:
             self.query_string = None
+            self.args = {}
 
         # headers
         self.headers = {}
         self.cookies = {}
         self.content_length = 0
+        self.content_type = None
         while True:
-            line = self.client_stream.readline().strip().decode('utf-8')
+            line = self.client_stream.readline().strip().decode()
             if line == '':
                 break
             header, value = line.split(':', 1)
@@ -81,12 +85,18 @@ class Request():
         self._json = None
         self._form = None
 
+    def _parse_urlencoded(self, urlencoded):
+        return {
+            urldecode(key): urldecode(value) for key, value in [
+                pair.split('=', 1) for pair in
+                urlencoded.split('&')]}
+
     @property
     def json(self):
         if self.content_type != 'application/json':
             return None
         if self._json is None:
-            self._json = json.loads(self.body)
+            self._json = json.loads(self.body.decode())
         return self._json
 
     @property
@@ -94,15 +104,12 @@ class Request():
         if self.content_type != 'application/x-www-form-urlencoded':
             return None
         if self._form is None:
-            self._form = {
-                urldecode(key): urldecode(value) for key, value in [
-                    pair.split('=', 1) for pair in
-                    self.body.decode().split('&')]}
+            self._form = self._parse_urlencoded(self.body.decode())
         return self._form
 
     def close(self):
         self.client_stream.close()
-        if self.client_stream != self.client_sock:
+        if self.client_stream != self.client_sock:  # pragma: no cover
             self.client_sock.close()
 
 
