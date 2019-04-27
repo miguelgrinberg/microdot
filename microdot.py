@@ -128,7 +128,6 @@ class Response():
     def __init__(self, body='', status_code=200, headers=None):
         self.status_code = status_code
         self.headers = headers or {}
-        self.cookies = []
         if isinstance(body, (dict, list)):
             self.body = json.dumps(body).encode()
             self.headers['Content-Type'] = 'application/json'
@@ -154,7 +153,7 @@ class Response():
         if secure:
             http_cookie += '; Secure'
         if http_only:
-            http_cookie += '; httpOnly'
+            http_cookie += '; HttpOnly'
         if 'Set-Cookie' in self.headers:
             self.headers['Set-Cookie'].append(http_cookie)
         else:
@@ -203,8 +202,10 @@ class Response():
             else:
                 content_type = 'application/octet-stream'
         with open(filename) as f:
-            return Response(body=f.read(), status_code=status_code,
-                            headers={'Content-Type': content_type})
+            body = f.read()
+            return Response(body=body, status_code=status_code,
+                            headers={'Content-Type': content_type,
+                                     'Content-Length': str(len(body))})
 
 
 class URLPattern():

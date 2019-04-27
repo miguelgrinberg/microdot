@@ -1,5 +1,5 @@
 import sys
-sys.path.append('tests')
+sys.path.append('tests/libs')
 
 import unittest
 
