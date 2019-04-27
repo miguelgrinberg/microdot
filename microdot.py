@@ -39,9 +39,14 @@ def urldecode(string):
 
 
 class Request():
+    class G:
+        pass
+
     def __init__(self, client_sock, client_addr):
         self.client_sock = client_sock
         self.client_addr = client_addr
+        self.url_args = None
+        self.g = Request.G()
 
         if not hasattr(client_sock, 'readline'):  # pragma: no cover
             self.client_stream = client_sock.makefile("rwb")
@@ -263,6 +268,8 @@ class URLPattern():
 class Microdot():
     def __init__(self):
         self.url_map = []
+        self.before_request_handlers = []
+        self.after_request_handlers = []
         self.error_handlers = {}
 
     def route(self, url_pattern, methods=None):
@@ -271,6 +278,14 @@ class Microdot():
                 (methods or ['GET'], URLPattern(url_pattern), f))
             return f
         return decorated
+
+    def before_request(self, f):
+        self.before_request_handlers.append(f)
+        return f
+
+    def after_request(self, f):
+        self.after_request_handlers.append(f)
+        return f
 
     def errorhandler(self, status_code_or_exception_class):
         def decorated(f):
@@ -292,42 +307,53 @@ class Microdot():
         while True:
             req = Request(*s.accept())
             f = None
-            args = None
             for route_methods, route_pattern, route_handler in self.url_map:
                 if req.method in route_methods:
-                    args = route_pattern.match(req.path)
-                    if args is not None:
+                    req.url_args = route_pattern.match(req.path)
+                    if req.url_args is not None:
                         f = route_handler
                         break
             try:
+                res = None
                 if f:
-                    resp = f(req, **args)
+                    for handler in self.before_request_handlers:
+                        res = handler(req)
+                        if res:
+                            break
+                    if res is None:
+                        res = f(req, **req.url_args)
+                    if isinstance(res, tuple):
+                        res = Response(*res)
+                    elif not isinstance(res, Response):
+                        res = Response(res)
+                    for handler in self.after_request_handlers:
+                        res = handler(req, res) or res
                 elif 404 in self.error_handlers:
-                    resp = self.error_handlers[404](req)
+                    res = self.error_handlers[404](req)
                 else:
-                    resp = 'Not found', 404
+                    res = 'Not found', 404
             except Exception as exc:
                 print_exception(exc)
-                resp = None
+                res = None
                 if exc.__class__ in self.error_handlers:
                     try:
-                        resp = self.error_handlers[exc.__class__](req, exc)
+                        res = self.error_handlers[exc.__class__](req, exc)
                     except Exception as exc2:  # pragma: no cover
                         print_exception(exc2)
-                if resp is None:
+                if res is None:
                     if 500 in self.error_handlers:
-                        resp = self.error_handlers[500](req)
+                        res = self.error_handlers[500](req)
                     else:
-                        resp = 'Internal server error', 500
-            if isinstance(resp, tuple):
-                resp = Response(*resp)
-            elif not isinstance(resp, Response):
-                resp = Response(resp)
+                        res = 'Internal server error', 500
+            if isinstance(res, tuple):
+                res = Response(*res)
+            elif not isinstance(res, Response):
+                res = Response(res)
             if debug:  # pragma: no cover
                 print('{method} {path} {status_code}'.format(
                     method=req.method, path=req.path,
-                    status_code=resp.status_code))
-            resp.write(req.client_stream)
+                    status_code=res.status_code))
+            res.write(req.client_stream)
             req.close()
 
 
