@@ -219,18 +219,18 @@ class URLPattern():
                     raise ValueError('invalid URL pattern')
                 segment = segment[1:-1]
                 if ':' in segment:
-                    type_, name = segment.split(':', 1)
+                    type_, name = segment.rsplit(':', 1)
                 else:
                     type_ = 'string'
                     name = segment
                 if type_ == 'string':
-                    pattern = '[^/]*'
+                    pattern = '[^/]+'
                 elif type_ == 'int':
                     pattern = '\\d+'
                 elif type_ == 'path':
-                    pattern = '.*'
-                elif type_.startswith('regex'):
-                    pattern = eval(type_[5:])
+                    pattern = '.+'
+                elif type_.startswith('re:'):
+                    pattern = type_[3:]
                 else:
                     raise ValueError('invalid URL segment type')
                 use_regex = True
@@ -239,7 +239,7 @@ class URLPattern():
             else:
                 self.pattern += '/{segment}'.format(segment=segment)
         if use_regex:
-            self.pattern = re.compile(self.pattern)
+            self.pattern = re.compile('^' + self.pattern + '$')
 
     def match(self, path):
         if isinstance(self.pattern, str):
