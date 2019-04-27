@@ -253,7 +253,7 @@ class URLPattern():
 
 
 class Microdot():
-    def __init__(self) :
+    def __init__(self):
         self.url_map = []
         self.error_handlers = {}
 
