@@ -78,7 +78,6 @@ class TestURLPattern(unittest.TestCase):
 
     def test_regex_argument(self):
         p = URLPattern('/users/<re:[a-c]+:id>')
-        print(p.pattern)
         self.assertEqual(p.match('/users/ab'), {'id': 'ab'})
         self.assertEqual(p.match('/users/bca'), {'id': 'bca'})
         self.assertIsNone(p.match('/users/abcd'))

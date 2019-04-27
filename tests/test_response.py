@@ -55,6 +55,21 @@ class TestResponse(unittest.TestCase):
             b'\r\n'
             b'foo')
 
+    def test_create_empty(self):
+        res = Response(headers={'X-Foo': 'Bar'})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers, {'X-Foo': 'Bar'})
+        self.assertEqual(res.body, b'')
+        fd = io.BytesIO()
+        res.write(fd)
+        self.assertEqual(
+            fd.getvalue(),
+            b'HTTP/1.0 200 OK\r\n'
+            b'X-Foo: Bar\r\n'
+            b'Content-Length: 0\r\n'
+            b'Content-Type: text/plain\r\n'
+            b'\r\n')
+
     def test_create_json(self):
         res = Response({'foo': 'bar'})
         self.assertEqual(res.status_code, 200)
@@ -159,3 +174,9 @@ class TestResponse(unittest.TestCase):
             self.assertEqual(res.headers['Content-Type'], content_type)
             self.assertEqual(res.headers['Content-Length'], '4')
             self.assertEqual(res.body, b'foo\n')
+        res = Response.send_file('tests/files/test.txt',
+                                 content_type='text/html')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'], 'text/html')
+        self.assertEqual(res.headers['Content-Length'], '4')
+        self.assertEqual(res.body, b'foo\n')

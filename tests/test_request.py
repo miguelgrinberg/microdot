@@ -1,32 +1,11 @@
-try:
-    import uio as io
-except ImportError:
-    import io
-
 import unittest
 from microdot import Request
+from tests.mock_socket import get_request_fd
 
 
 class TestRequest(unittest.TestCase):
-    def _get_request_fd(self, method, path, headers=None, body=None):
-        if headers is None:
-            headers = {}
-        if body is None:
-            body = ''
-        elif 'Content-Length' not in headers:
-            headers['Content-Length'] = str(len(body))
-        request_bytes = '{method} {path} HTTP/1.0\n'.format(
-            method=method, path=path)
-        if 'Host' not in headers:
-            headers['Host'] = 'example.com:1234'
-        for header, value in headers.items():
-            request_bytes += '{header}: {value}\n'.format(
-                header=header, value=value)
-        request_bytes += '\n' + body
-        return io.BytesIO(request_bytes.encode())
-
     def test_create_request(self):
-        fd = self._get_request_fd('GET', '/foo')
+        fd = get_request_fd('GET', '/foo')
         req = Request(fd, 'addr')
         req.close()
         self.assertEqual(req.client_sock, fd)
@@ -45,7 +24,7 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(req.form, None)
 
     def test_headers(self):
-        fd = self._get_request_fd('GET', '/foo', headers={
+        fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json',
             'Cookie': 'foo=bar;abc=def',
             'Content-Length': '3'}, body='aaa')
@@ -61,35 +40,39 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(req.body, b'aaa')
 
     def test_args(self):
-        fd = self._get_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
+        fd = get_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
         req = Request(fd, 'addr')
         self.assertEqual(req.query_string, 'foo=bar&abc=def&x=%2f%%')
         self.assertEqual(req.args, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
 
     def test_json(self):
-        fd = self._get_request_fd('GET', '/foo', headers={
+        fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'}, body='{"foo":"bar"}')
         req = Request(fd, 'addr')
-        self.assertEqual(req.json, {'foo': 'bar'})
+        json = req.json
+        self.assertEqual(json, {'foo': 'bar'})
+        self.assertTrue(req.json is json)
 
-        fd = self._get_request_fd('GET', '/foo', headers={
+        fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'}, body='[1, "2"]')
         req = Request(fd, 'addr')
         self.assertEqual(req.json, [1, '2'])
 
-        fd = self._get_request_fd('GET', '/foo', headers={
+        fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/xml'}, body='[1, "2"]')
         req = Request(fd, 'addr')
         self.assertIsNone(req.json)
 
     def test_form(self):
-        fd = self._get_request_fd('GET', '/foo', headers={
+        fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/x-www-form-urlencoded'},
             body='foo=bar&abc=def&x=%2f%%')
         req = Request(fd, 'addr')
-        self.assertEqual(req.form, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        form = req.form
+        self.assertEqual(form, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        self.assertTrue(req.form is form)
 
-        fd = self._get_request_fd('GET', '/foo', headers={
+        fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'},
             body='foo=bar&abc=def&x=%2f%%')
         req = Request(fd, 'addr')

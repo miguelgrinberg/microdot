@@ -283,7 +283,7 @@ class Microdot():
         ai = socket.getaddrinfo(host, port)
         addr = ai[0][-1]
 
-        if debug:
+        if debug:  # pragma: no cover
             print('Listening on {host}:{port}...'.format(host=host, port=port))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(addr)
@@ -312,15 +312,18 @@ class Microdot():
                 if exc.__class__ in self.error_handlers:
                     try:
                         resp = self.error_handlers[exc.__class__](req, exc)
-                    except Exception as exc2:
+                    except Exception as exc2:  # pragma: no cover
                         print_exception(exc2)
                 if resp is None:
-                    resp = 'Internal server error', 500
+                    if 500 in self.error_handlers:
+                        resp = self.error_handlers[500](req)
+                    else:
+                        resp = 'Internal server error', 500
             if isinstance(resp, tuple):
                 resp = Response(*resp)
             elif not isinstance(resp, Response):
                 resp = Response(resp)
-            if debug:
+            if debug:  # pragma: no cover
                 print('{method} {path} {status_code}'.format(
                     method=req.method, path=req.path,
                     status_code=resp.status_code))
