@@ -63,7 +63,6 @@ class TestMicrodot(unittest.TestCase):
 
         @app.after_request
         def after_request_two(req, res):
-            print('two')
             res.set_cookie('foo', 'bar')
             return res
 
