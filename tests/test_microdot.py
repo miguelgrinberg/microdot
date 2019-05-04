@@ -27,7 +27,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\nfoo'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nfoo'))
 
     def test_post_request(self):
         app = Microdot()
@@ -46,7 +46,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\nbar'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nbar'))
 
     def test_before_after_request(self):
         app = Microdot()
@@ -82,7 +82,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Set-Cookie: foo=bar\r\n', fd.response)
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\nbar'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nbar'))
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/baz')
@@ -92,7 +92,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Set-Cookie: foo=bar\r\n', fd.response)
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\nbaz'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nbaz'))
 
     def test_404(self):
         app = Microdot()
@@ -107,7 +107,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 404 N/A\r\n'))
         self.assertIn(b'Content-Length: 9\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\nNot found'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nNot found'))
 
     def test_404_handler(self):
         app = Microdot()
@@ -126,7 +126,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\n404'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n404'))
 
     def test_500(self):
         app = Microdot()
@@ -141,7 +141,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 500 N/A\r\n'))
         self.assertIn(b'Content-Length: 21\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\nInternal server error'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nInternal server error'))
 
     def test_500_handler(self):
         app = Microdot()
@@ -160,7 +160,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 501 N/A\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\n501'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n501'))
 
     def test_exception_handler(self):
         app = Microdot()
@@ -179,4 +179,4 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 501 N/A\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\n501'))
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n501'))

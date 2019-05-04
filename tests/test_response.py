@@ -17,13 +17,11 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.body, b'foo')
         fd = io.BytesIO()
         res.write(fd)
-        self.assertEqual(
-            fd.getvalue(),
-            b'HTTP/1.0 200 OK\r\n'
-            b'Content-Length: 3\r\n'
-            b'Content-Type: text/plain\r\n'
-            b'\r\n'
-            b'foo')
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
+        self.assertIn(b'Content-Length: 3\r\n', response)
+        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_from_string_with_content_length(self):
         res = Response('foo', headers={'Content-Length': '2'})
@@ -32,13 +30,11 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.body, b'foo')
         fd = io.BytesIO()
         res.write(fd)
-        self.assertEqual(
-            fd.getvalue(),
-            b'HTTP/1.0 200 OK\r\n'
-            b'Content-Length: 2\r\n'
-            b'Content-Type: text/plain\r\n'
-            b'\r\n'
-            b'foo')
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
+        self.assertIn(b'Content-Length: 2\r\n', response)
+        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_from_bytes(self):
         res = Response(b'foo')
@@ -47,13 +43,11 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.body, b'foo')
         fd = io.BytesIO()
         res.write(fd)
-        self.assertEqual(
-            fd.getvalue(),
-            b'HTTP/1.0 200 OK\r\n'
-            b'Content-Length: 3\r\n'
-            b'Content-Type: text/plain\r\n'
-            b'\r\n'
-            b'foo')
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
+        self.assertIn(b'Content-Length: 3\r\n', response)
+        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_empty(self):
         res = Response(headers={'X-Foo': 'Bar'})
@@ -62,13 +56,12 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.body, b'')
         fd = io.BytesIO()
         res.write(fd)
-        self.assertEqual(
-            fd.getvalue(),
-            b'HTTP/1.0 200 OK\r\n'
-            b'X-Foo: Bar\r\n'
-            b'Content-Length: 0\r\n'
-            b'Content-Type: text/plain\r\n'
-            b'\r\n')
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
+        self.assertIn(b'X-Foo: Bar\r\n', response)
+        self.assertIn(b'Content-Length: 0\r\n', response)
+        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertTrue(response.endswith(b'\r\n\r\n'))
 
     def test_create_json(self):
         res = Response({'foo': 'bar'})
@@ -77,13 +70,11 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.body, b'{"foo": "bar"}')
         fd = io.BytesIO()
         res.write(fd)
-        self.assertEqual(
-            fd.getvalue(),
-            b'HTTP/1.0 200 OK\r\n'
-            b'Content-Type: application/json\r\n'
-            b'Content-Length: 14\r\n'
-            b'\r\n'
-            b'{"foo": "bar"}')
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
+        self.assertIn(b'Content-Length: 14\r\n', response)
+        self.assertIn(b'Content-Type: application/json\r\n', response)
+        self.assertTrue(response.endswith(b'\r\n\r\n{"foo": "bar"}'))
 
         res = Response([1, '2'])
         self.assertEqual(res.status_code, 200)
@@ -91,13 +82,11 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.body, b'[1, "2"]')
         fd = io.BytesIO()
         res.write(fd)
-        self.assertEqual(
-            fd.getvalue(),
-            b'HTTP/1.0 200 OK\r\n'
-            b'Content-Type: application/json\r\n'
-            b'Content-Length: 8\r\n'
-            b'\r\n'
-            b'[1, "2"]')
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
+        self.assertIn(b'Content-Length: 8\r\n', response)
+        self.assertIn(b'Content-Type: application/json\r\n', response)
+        self.assertTrue(response.endswith(b'\r\n\r\n[1, "2"]'))
 
     def test_create_from_other(self):
         res = Response(123)

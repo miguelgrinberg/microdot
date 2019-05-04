@@ -166,9 +166,9 @@ class Response():
             self.headers['Set-Cookie'] = [http_cookie]
 
     def complete(self):
-        if not 'Content-Length' in self.headers:
+        if 'Content-Length' not in self.headers:
             self.headers['Content-Length'] = str(len(self.body))
-        if not 'Content-Type' in self.headers:
+        if 'Content-Type' not in self.headers:
             self.headers['Content-Type'] = 'text/plain'
 
     def write(self, stream):
