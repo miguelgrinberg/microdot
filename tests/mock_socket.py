@@ -43,6 +43,26 @@ class FakeStream(io.BytesIO):
         self.response += data
 
 
+class FakeStreamAsync:
+    def __init__(self, stream=None):
+        if stream is None:
+            stream = FakeStream(b'')
+        self.stream = stream
+
+    @property
+    def response(self):
+        return self.stream.response
+
+    async def readline(self):
+        return self.stream.readline()
+
+    async def read(self, n):
+        return self.stream.read(n)
+
+    async def awrite(self, data):
+        self.stream.write(data)
+
+
 def get_request_fd(method, path, headers=None, body=None):
     if headers is None:
         headers = {}
@@ -59,6 +79,11 @@ def get_request_fd(method, path, headers=None, body=None):
             header=header, value=value)
     request_bytes += '\n' + body
     return FakeStream(request_bytes.encode())
+
+
+def get_async_request_fd(method, path, headers=None, body=None):
+    fd = get_request_fd(method, path, headers=headers, body=body)
+    return FakeStreamAsync(fd)
 
 
 def clear_requests():
