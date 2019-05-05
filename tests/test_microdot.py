@@ -4,15 +4,22 @@ from microdot import Microdot, Response
 from tests import mock_socket
 
 
+def mock_create_thread(f, *args, **kwargs):
+    f(*args, **kwargs)
+
+
 class TestMicrodot(unittest.TestCase):
     def setUp(self):
         # mock socket module
         self.original_socket = sys.modules['microdot'].socket
+        self.original_create_thread = sys.modules['microdot'].create_thread
         sys.modules['microdot'].socket = mock_socket
+        sys.modules['microdot'].create_thread = mock_create_thread
 
     def tearDown(self):
         # restore original socket module
         sys.modules['microdot'].socket = self.original_socket
+        sys.modules['microdot'].create_thread = self.original_create_thread
 
     def test_get_request(self):
         app = Microdot()

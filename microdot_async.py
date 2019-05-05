@@ -64,17 +64,11 @@ class Response(BaseResponse):
 
 class Microdot(BaseMicrodot):
     def run(self, host='0.0.0.0', port=5000, debug=False):
-        async def serve(reader, writer):
-            req = await Request.create(reader,
-                                       writer.get_extra_info('peername'))
-            res = await self.dispatch_request(req)
-            if debug:  # pragma: no cover
-                print('{method} {path} {status_code}'.format(
-                    method=req.method, path=req.path,
-                    status_code=res.status_code))
+        self.debug = debug
 
+        async def serve(reader, writer):
             if not hasattr(writer, 'awrite'):  # pragma: no cover
-                # CPython adds the awrite and aclose methods in 3.8
+                # CPython provides the awrite and aclose methods in 3.8+
                 async def awrite(self, data):
                     self.write(data)
                     await self.drain()
@@ -87,17 +81,18 @@ class Microdot(BaseMicrodot):
                 writer.awrite = MethodType(awrite, writer)
                 writer.aclose = MethodType(aclose, writer)
 
-            await res.write(writer)
-            await writer.aclose()
+            await self.dispatch_request(reader, writer)
 
-        if debug:  # pragma: no cover
-            print('Listening on {host}:{port}...'.format(host=host, port=port))
+        if self.debug:  # pragma: no cover
+            print('Starting async server on {host}:{port}...'.format(
+                host=host, port=port))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.start_server(serve, host, port))
         loop.run_forever()
         loop.close()  # pragma: no cover
 
-    async def dispatch_request(self, req):
+    async def dispatch_request(self, reader, writer):
+        req = await Request.create(reader, writer.get_extra_info('peername'))
         f = self.find_route(req)
         try:
             res = None
@@ -137,7 +132,12 @@ class Microdot(BaseMicrodot):
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
-        return res
+        await res.write(writer)
+        await writer.aclose()
+        if self.debug:  # pragma: no cover
+            print('{method} {path} {status_code}'.format(
+                method=req.method, path=req.path,
+                status_code=res.status_code))
 
     async def _invoke_handler(self, f_or_coro, *args, **kwargs):
         ret = f_or_coro(*args, **kwargs)

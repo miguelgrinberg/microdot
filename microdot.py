@@ -1,4 +1,36 @@
 try:
+    from sys import print_exception
+except ImportError:  # pragma: no cover
+    import traceback
+
+    def print_exception(exc):
+        traceback.print_exc()
+
+concurrency_mode = 'threaded'
+
+try:  # pragma: no cover
+    import threading
+
+    def create_thread(f, *args, **kwargs):
+        """Use the threading module."""
+        threading.Thread(target=f, args=args, kwargs=kwargs).start()
+except ImportError:  # pragma: no cover
+    try:
+        import _thread
+
+        def create_thread(f, *args, **kwargs):
+            """Use MicroPython's _thread module."""
+            def run():
+                f(*args, **kwargs)
+
+            _thread.start_new_thread(run, ())
+    except ImportError:
+        def create_thread(f, *args, **kwargs):
+            """No threads available, call function synchronously."""
+            f(*args, **kwargs)
+
+        concurrency_mode = 'sync'
+try:
     import ujson as json
 except ImportError:
     import json
@@ -7,14 +39,6 @@ try:
     import ure as re
 except ImportError:
     import re
-
-try:
-    from sys import print_exception
-except ImportError:  # pragma: no cover
-    import traceback
-
-    def print_exception(exc):
-        traceback.print_exc()
 
 try:
     import usocket as socket
@@ -268,6 +292,7 @@ class Microdot():
         self.before_request_handlers = []
         self.after_request_handlers = []
         self.error_handlers = {}
+        self.debug = False
 
     def route(self, url_pattern, methods=None):
         def decorated(f):
@@ -291,33 +316,22 @@ class Microdot():
         return decorated
 
     def run(self, host='0.0.0.0', port=5000, debug=False):
+        self.debug = debug
+
         s = socket.socket()
         ai = socket.getaddrinfo(host, port)
         addr = ai[0][-1]
 
-        if debug:  # pragma: no cover
-            print('Listening on {host}:{port}...'.format(host=host, port=port))
+        if self.debug:  # pragma: no cover
+            print('Starting {mode} server on {host}:{port}...'.format(
+                mode=concurrency_mode, host=host, port=port))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(addr)
         s.listen(5)
 
         while True:
             sock, addr = s.accept()
-            if not hasattr(sock, 'readline'):  # pragma: no cover
-                stream = sock.makefile("rwb")
-            else:
-                stream = sock
-
-            req = Request.create(stream, addr)
-            res = self.dispatch_request(req)
-            if debug:  # pragma: no cover
-                print('{method} {path} {status_code}'.format(
-                    method=req.method, path=req.path,
-                    status_code=res.status_code))
-            res.write(stream)
-            stream.close()
-            if stream != sock:  # pragma: no cover
-                sock.close()
+            create_thread(self.dispatch_request, sock, addr)
 
     def find_route(self, req):
         f = None
@@ -329,7 +343,13 @@ class Microdot():
                     break
         return f
 
-    def dispatch_request(self, req):
+    def dispatch_request(self, sock, addr):
+        if not hasattr(sock, 'readline'):  # pragma: no cover
+            stream = sock.makefile("rwb")
+        else:
+            stream = sock
+
+        req = Request.create(stream, addr)
         f = self.find_route(req)
         try:
             res = None
@@ -367,7 +387,14 @@ class Microdot():
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
-        return res
+        res.write(stream)
+        stream.close()
+        if stream != sock:  # pragma: no cover
+            sock.close()
+        if self.debug:  # pragma: no cover
+            print('{method} {path} {status_code}'.format(
+                method=req.method, path=req.path,
+                status_code=res.status_code))
 
 
 redirect = Response.redirect
