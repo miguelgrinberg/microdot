@@ -5,3 +5,4 @@ from tests.test_microdot import TestMicrodot
 
 from tests.test_request_async import TestRequestAsync
 from tests.test_response_async import TestResponseAsync
+from tests.test_microdot_async import TestMicrodotAsync

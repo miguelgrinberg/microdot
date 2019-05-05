@@ -8,6 +8,10 @@ from microdot import Request as BaseRequest
 from microdot import Response as BaseResponse
 
 
+def _iscoroutine(coro):
+    return hasattr(coro, 'send') and hasattr(coro, 'throw')
+
+
 class Request(BaseRequest):
     @staticmethod
     async def create(stream, client_addr):
@@ -69,19 +73,20 @@ class Microdot(BaseMicrodot):
                     method=req.method, path=req.path,
                     status_code=res.status_code))
 
-            if not hasattr(writer, 'awrite'):
-                class AWriter:
-                    def __init__(self, writer):
-                        self.writer = writer
+            if not hasattr(writer, 'awrite'):  # pragma: no cover
+                # CPython adds the awrite and aclose methods in 3.8
+                async def awrite(self, data):
+                    self.write(data)
+                    await self.drain()
 
-                    async def awrite(self, data):
-                        self.writer.write(data)
-                        await self.writer.drain()
+                async def aclose(self):
+                    self.close()
+                    await self.wait_closed()
 
-                    async def aclose(self):
-                        self.writer.close()
+                from types import MethodType
+                writer.awrite = MethodType(awrite, writer)
+                writer.aclose = MethodType(aclose, writer)
 
-                writer = AWriter(writer)
             await res.write(writer)
             await writer.aclose()
 
@@ -90,7 +95,7 @@ class Microdot(BaseMicrodot):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.start_server(serve, host, port))
         loop.run_forever()
-        loop.close()
+        loop.close()  # pragma: no cover
 
     async def dispatch_request(self, req):
         f = self.find_route(req)
@@ -110,7 +115,7 @@ class Microdot(BaseMicrodot):
                 for handler in self.after_request_handlers:
                     res = await self._invoke_handler(handler, req, res) or res
             elif 404 in self.error_handlers:
-                res = self._invoke_handler(self.error_handlers[404], req)
+                res = await self._invoke_handler(self.error_handlers[404], req)
             else:
                 res = 'Not found', 404
         except Exception as exc:
@@ -118,7 +123,7 @@ class Microdot(BaseMicrodot):
             res = None
             if exc.__class__ in self.error_handlers:
                 try:
-                    res = self._invoke_handler(
+                    res = await self._invoke_handler(
                         self.error_handlers[exc.__class__], req, exc)
                 except Exception as exc2:  # pragma: no cover
                     print_exception(exc2)
@@ -135,13 +140,10 @@ class Microdot(BaseMicrodot):
         return res
 
     async def _invoke_handler(self, f_or_coro, *args, **kwargs):
-        r = f_or_coro(*args, **kwargs)
-        try:
-            r = await r
-        except TypeError:
-            # not a coroutine
-            pass
-        return r
+        ret = f_or_coro(*args, **kwargs)
+        if _iscoroutine(ret):
+            ret = await ret
+        return ret
 
 
 redirect = Response.redirect

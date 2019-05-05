@@ -62,6 +62,12 @@ class FakeStreamAsync:
     async def awrite(self, data):
         self.stream.write(data)
 
+    async def aclose(self):
+        pass
+
+    def get_extra_info(self, name, default=None):
+        return name
+
 
 def get_request_fd(method, path, headers=None, body=None):
     if headers is None:
