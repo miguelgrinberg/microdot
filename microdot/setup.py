@@ -2,26 +2,21 @@
 Microdot
 --------
 
-Impossibly small web framework for MicroPython.
+The impossibly small web framework for MicroPython.
 """
 from setuptools import setup
 
 setup(
     name='microdot',
-    version='0.2.0',
+    version="0.3.0",
     url='http://github.com/miguelgrinberg/microdot/',
     license='MIT',
     author='Miguel Grinberg',
     author_email='miguel.grinberg@gmail.com',
-    description='Impossibly small web framework for MicroPython',
+    description='The impossibly small web framework for MicroPython',
     long_description=__doc__,
     py_modules=['microdot'],
-    zip_safe=False,
-    include_package_data=True,
     platforms='any',
-    tests_require=[
-        'coverage'
-    ],
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

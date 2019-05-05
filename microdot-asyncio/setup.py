@@ -8,7 +8,7 @@ from setuptools import setup
 
 setup(
     name='microdot-asyncio',
-    version='0.1.0',
+    version="0.3.0",
     url='http://github.com/miguelgrinberg/microdot/',
     license='MIT',
     author='Miguel Grinberg',
@@ -16,7 +16,6 @@ setup(
     description='AsyncIO support for the Microdot web framework',
     long_description=__doc__,
     py_modules=['microdot_asyncio'],
-    include_package_data=True,
     platforms='any',
     install_requires=[
         'microdot',
