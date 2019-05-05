@@ -1,8 +1,8 @@
-from tests.test_request import TestRequest
-from tests.test_response import TestResponse
-from tests.test_url_pattern import TestURLPattern
-from tests.test_microdot import TestMicrodot
+from tests.microdot.test_request import TestRequest
+from tests.microdot.test_response import TestResponse
+from tests.microdot.test_url_pattern import TestURLPattern
+from tests.microdot.test_microdot import TestMicrodot
 
-from tests.test_request_asyncio import TestRequestAsync
-from tests.test_response_asyncio import TestResponseAsync
-from tests.test_microdot_asyncio import TestMicrodotAsync
+from tests.microdot_asyncio.test_request_asyncio import TestRequestAsync
+from tests.microdot_asyncio.test_response_asyncio import TestResponseAsync
+from tests.microdot_asyncio.test_microdot_asyncio import TestMicrodotAsync
