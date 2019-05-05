@@ -1,0 +1,33 @@
+#!/bin/bash
+VERSION=$1
+if [[ "$VERSION" == "" ]]; then
+    echo Usage: $0 "<version>"
+    exit 1
+fi
+
+git diff --cached --exit-code >/dev/null
+if [[ "$?" != "0" ]]; then
+    echo Commit your changes before using this script.
+    exit 1
+fi
+
+set -e
+for PKG in microdot*; do
+    echo Building $PKG...
+    cd $PKG
+    sed -i "s/version.*$/version=\"$VERSION\",/" setup.py
+    git add setup.py
+    rm -rf dist
+    python setup.py sdist bdist_wheel --universal
+    cd ..
+done
+git commit -m "Release v$VERSION"
+git tag v$VERSION
+git push --tags origin master
+
+for PKG in microdot*; do
+    echo Releasing $PKG...
+    cd $PKG
+    twine upload dist/*
+    cd ..
+done
