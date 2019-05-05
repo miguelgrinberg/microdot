@@ -4,7 +4,7 @@ except ImportError:
     import asyncio
 
 import unittest
-from microdot_async import Request
+from microdot_asyncio import Request
 from tests.mock_socket import get_async_request_fd
 
 

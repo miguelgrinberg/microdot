@@ -1,18 +1,18 @@
 import sys
 import unittest
-from microdot_async import Microdot, Response
+from microdot_asyncio import Microdot, Response
 from tests import mock_asyncio, mock_socket
 
 
 class TestMicrodotAsync(unittest.TestCase):
     def setUp(self):
         # mock socket module
-        self.original_asyncio = sys.modules['microdot_async'].asyncio
-        sys.modules['microdot_async'].asyncio = mock_asyncio
+        self.original_asyncio = sys.modules['microdot_asyncio'].asyncio
+        sys.modules['microdot_asyncio'].asyncio = mock_asyncio
 
     def tearDown(self):
         # restore original socket module
-        sys.modules['microdot_async'].asyncio = self.original_asyncio
+        sys.modules['microdot_asyncio'].asyncio = self.original_asyncio
 
     def test_get_request(self):
         app = Microdot()
