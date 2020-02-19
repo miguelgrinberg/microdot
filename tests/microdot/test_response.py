@@ -92,7 +92,7 @@ class TestResponse(unittest.TestCase):
         res = Response(123)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers, {})
-        self.assertEqual(res.body, b'123')
+        self.assertEqual(res.body, 123)
 
     def test_create_with_status_code(self):
         res = Response('not found', 404)
@@ -161,11 +161,9 @@ class TestResponse(unittest.TestCase):
             res = Response.send_file('tests/files/' + file)
             self.assertEqual(res.status_code, 200)
             self.assertEqual(res.headers['Content-Type'], content_type)
-            self.assertEqual(res.headers['Content-Length'], '4')
-            self.assertEqual(res.body, b'foo\n')
+            self.assertEqual(res.body.read(), b'foo\n')
         res = Response.send_file('tests/files/test.txt',
                                  content_type='text/html')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/html')
-        self.assertEqual(res.headers['Content-Length'], '4')
-        self.assertEqual(res.body, b'foo\n')
+        self.assertEqual(res.body.read(), b'foo\n')

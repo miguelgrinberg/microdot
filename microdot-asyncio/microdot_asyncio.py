@@ -59,7 +59,17 @@ class Response(BaseResponse):
 
         # body
         if self.body:
-            await stream.awrite(self.body)
+            if hasattr(self.body, 'read'):
+                while True:
+                    buf = self.body.read(self.send_file_buffer_size)
+                    if len(buf):
+                        await stream.awrite(buf)
+                    if len(buf) < self.send_file_buffer_size:
+                        break
+                if hasattr(self.body, 'close'):
+                    self.body.close()
+            else:
+                await stream.awrite(self.body)
 
 
 class Microdot(BaseMicrodot):
