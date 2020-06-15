@@ -99,6 +99,8 @@ class Request():
     def create(client_stream, client_addr):
         # request line
         line = client_stream.readline().strip().decode()
+        if not line:
+            return None
         method, url, http_version = line.split()
         http_version = http_version.split('/', 1)[1]
 
@@ -359,51 +361,55 @@ class Microdot():
             stream = sock
 
         req = Request.create(stream, addr)
-        f = self.find_route(req)
-        try:
-            res = None
-            if f:
-                for handler in self.before_request_handlers:
-                    res = handler(req)
-                    if res:
-                        break
-                if res is None:
-                    res = f(req, **req.url_args)
-                if isinstance(res, tuple):
-                    res = Response(*res)
-                elif not isinstance(res, Response):
-                    res = Response(res)
-                for handler in self.after_request_handlers:
-                    res = handler(req, res) or res
-            elif 404 in self.error_handlers:
-                res = self.error_handlers[404](req)
-            else:
-                res = 'Not found', 404
-        except Exception as exc:
-            print_exception(exc)
-            res = None
-            if exc.__class__ in self.error_handlers:
-                try:
-                    res = self.error_handlers[exc.__class__](req, exc)
-                except Exception as exc2:  # pragma: no cover
-                    print_exception(exc2)
-            if res is None:
-                if 500 in self.error_handlers:
-                    res = self.error_handlers[500](req)
+        if req:
+            f = self.find_route(req)
+            try:
+                res = None
+                if f:
+                    for handler in self.before_request_handlers:
+                        res = handler(req)
+                        if res:
+                            break
+                    if res is None:
+                        res = f(req, **req.url_args)
+                    if isinstance(res, tuple):
+                        res = Response(*res)
+                    elif not isinstance(res, Response):
+                        res = Response(res)
+                    for handler in self.after_request_handlers:
+                        res = handler(req, res) or res
+                elif 404 in self.error_handlers:
+                    res = self.error_handlers[404](req)
                 else:
-                    res = 'Internal server error', 500
-        if isinstance(res, tuple):
-            res = Response(*res)
-        elif not isinstance(res, Response):
-            res = Response(res)
-        res.write(stream)
+                    res = 'Not found', 404
+            except Exception as exc:
+                print_exception(exc)
+                res = None
+                if exc.__class__ in self.error_handlers:
+                    try:
+                        res = self.error_handlers[exc.__class__](req, exc)
+                    except Exception as exc2:  # pragma: no cover
+                        print_exception(exc2)
+                if res is None:
+                    if 500 in self.error_handlers:
+                        res = self.error_handlers[500](req)
+                    else:
+                        res = 'Internal server error', 500
+            if isinstance(res, tuple):
+                res = Response(*res)
+            elif not isinstance(res, Response):
+                res = Response(res)
+            res.write(stream)
         stream.close()
         if stream != sock:  # pragma: no cover
             sock.close()
         if self.debug:  # pragma: no cover
-            print('{method} {path} {status_code}'.format(
-                method=req.method, path=req.path,
-                status_code=res.status_code))
+            if req:
+                print('{method} {path} {status_code}'.format(
+                    method=req.method, path=req.path,
+                    status_code=res.status_code))
+            else:
+                print('(Empty request)')
 
 
 redirect = Response.redirect
