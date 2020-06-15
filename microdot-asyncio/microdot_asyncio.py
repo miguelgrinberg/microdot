@@ -17,6 +17,8 @@ class Request(BaseRequest):
     async def create(stream, client_addr):
         # request line
         line = (await stream.readline()).strip().decode()
+        if not line:  # pragma: no cover
+            return None
         method, url, http_version = line.split()
         http_version = http_version.split('/', 1)[1]
 
@@ -103,48 +105,52 @@ class Microdot(BaseMicrodot):
 
     async def dispatch_request(self, reader, writer):
         req = await Request.create(reader, writer.get_extra_info('peername'))
-        f = self.find_route(req)
-        try:
-            res = None
-            if f:
-                for handler in self.before_request_handlers:
-                    res = await self._invoke_handler(handler, req)
-                    if res:
-                        break
-                if res is None:
-                    res = await self._invoke_handler(f, req, **req.url_args)
-                if isinstance(res, tuple):
-                    res = Response(*res)
-                elif not isinstance(res, Response):
-                    res = Response(res)
-                for handler in self.after_request_handlers:
-                    res = await self._invoke_handler(handler, req, res) or res
-            elif 404 in self.error_handlers:
-                res = await self._invoke_handler(self.error_handlers[404], req)
-            else:
-                res = 'Not found', 404
-        except Exception as exc:
-            print_exception(exc)
-            res = None
-            if exc.__class__ in self.error_handlers:
-                try:
+        if req:
+            f = self.find_route(req)
+            try:
+                res = None
+                if f:
+                    for handler in self.before_request_handlers:
+                        res = await self._invoke_handler(handler, req)
+                        if res:
+                            break
+                    if res is None:
+                        res = await self._invoke_handler(
+                            f, req, **req.url_args)
+                    if isinstance(res, tuple):
+                        res = Response(*res)
+                    elif not isinstance(res, Response):
+                        res = Response(res)
+                    for handler in self.after_request_handlers:
+                        res = await self._invoke_handler(
+                            handler, req, res) or res
+                elif 404 in self.error_handlers:
                     res = await self._invoke_handler(
-                        self.error_handlers[exc.__class__], req, exc)
-                except Exception as exc2:  # pragma: no cover
-                    print_exception(exc2)
-            if res is None:
-                if 500 in self.error_handlers:
-                    res = await self._invoke_handler(self.error_handlers[500],
-                                                     req)
+                        self.error_handlers[404], req)
                 else:
-                    res = 'Internal server error', 500
-        if isinstance(res, tuple):
-            res = Response(*res)
-        elif not isinstance(res, Response):
-            res = Response(res)
-        await res.write(writer)
+                    res = 'Not found', 404
+            except Exception as exc:
+                print_exception(exc)
+                res = None
+                if exc.__class__ in self.error_handlers:
+                    try:
+                        res = await self._invoke_handler(
+                            self.error_handlers[exc.__class__], req, exc)
+                    except Exception as exc2:  # pragma: no cover
+                        print_exception(exc2)
+                if res is None:
+                    if 500 in self.error_handlers:
+                        res = await self._invoke_handler(
+                            self.error_handlers[500], req)
+                    else:
+                        res = 'Internal server error', 500
+            if isinstance(res, tuple):
+                res = Response(*res)
+            elif not isinstance(res, Response):
+                res = Response(res)
+            await res.write(writer)
         await writer.aclose()
-        if self.debug:  # pragma: no cover
+        if self.debug and req:  # pragma: no cover
             print('{method} {path} {status_code}'.format(
                 method=req.method, path=req.path,
                 status_code=res.status_code))
