@@ -114,15 +114,18 @@ class Microdot(BaseMicrodot):
                         if res:
                             break
                     if res is None:
-                        res = await self._invoke_handler(f, req, **req.url_args)
+                        res = await self._invoke_handler(f, 
+                                req, **req.url_args)
                     if isinstance(res, tuple):
                         res = Response(*res)
                     elif not isinstance(res, Response):
                         res = Response(res)
                     for handler in self.after_request_handlers:
-                        res = await self._invoke_handler(handler, req, res) or res
+                        res = await self._invoke_handler(handler, req, res) \
+                                or res
                 elif 404 in self.error_handlers:
-                    res = await self._invoke_handler(self.error_handlers[404], req)
+                    res = await self._invoke_handler(self.error_handlers[404], 
+                        req)
                 else:
                     res = 'Not found', 404
             except Exception as exc:
@@ -136,8 +139,8 @@ class Microdot(BaseMicrodot):
                         print_exception(exc2)
                 if res is None:
                     if 500 in self.error_handlers:
-                        res = await self._invoke_handler(self.error_handlers[500],
-                                                         req)
+                        res = await self._invoke_handler(
+                            self.error_handlers[500], req)
                     else:
                         res = 'Internal server error', 500
             if isinstance(res, tuple):
