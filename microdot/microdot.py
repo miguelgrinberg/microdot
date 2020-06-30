@@ -43,7 +43,10 @@ except ImportError:
 try:
     import usocket as socket
 except ImportError:
-    import socket
+    try:
+        import socket
+    except ImportError:
+        socket = None
 
 
 def urldecode(string):
