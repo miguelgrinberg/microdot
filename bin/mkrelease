@@ -15,7 +15,7 @@ set -e
 for PKG in microdot*; do
     echo Building $PKG...
     cd $PKG
-    sed -i "s/version.*$/version=\"$VERSION\",/" setup.py
+    sed -i "" "s/version.*$/version=\"$VERSION\",/" setup.py
     git add setup.py
     rm -rf dist
     python setup.py sdist bdist_wheel --universal
