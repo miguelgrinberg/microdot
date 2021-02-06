@@ -8,7 +8,7 @@ from setuptools import setup
 
 setup(
     name='microdot',
-    version="0.3.0",
+    version="0.3.1",
     url='http://github.com/miguelgrinberg/microdot/',
     license='MIT',
     author='Miguel Grinberg',
