@@ -324,6 +324,21 @@ class Microdot():
             return f
         return decorated
 
+    def get(self, url_pattern):
+        return self.route(url_pattern, methods=['GET'])
+
+    def post(self, url_pattern):
+        return self.route(url_pattern, methods=['POST'])
+
+    def put(self, url_pattern):
+        return self.route(url_pattern, methods=['PUT'])
+
+    def patch(self, url_pattern):
+        return self.route(url_pattern, methods=['PATCH'])
+
+    def delete(self, url_pattern):
+        return self.route(url_pattern, methods=['DELETE'])
+
     def before_request(self, f):
         self.before_request_handlers.append(f)
         return f
