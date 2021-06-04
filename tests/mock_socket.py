@@ -6,12 +6,10 @@ except ImportError:
 SOL_SOCKET = 'SOL_SOCKET'
 SO_REUSEADDR = 'SO_REUSEADDR'
 
-_calls = []
 _requests = []
 
 
 def getaddrinfo(host, port):
-    _calls.append(('getaddrinfo', host, port))
     return (('family', 'addr'), 'socktype', 'proto', 'canonname', 'sockaddr')
 
 
@@ -20,18 +18,20 @@ class socket:
         self.request_index = 0
 
     def setsockopt(self, level, optname, value):
-        _calls.append(('setsockopt', level, optname, value))
+        pass
 
     def bind(self, addr):
-        _calls.append(('bind', addr))
+        pass
 
     def listen(self, backlog):
-        _calls.append(('listen', backlog))
+        pass
 
     def accept(self):
-        _calls.append(('accept',))
         self.request_index += 1
         return _requests[self.request_index - 1], 'addr'
+
+    def close(self):
+        pass
 
 
 class FakeStream(io.BytesIO):

@@ -6,7 +6,8 @@ from tests.mock_socket import get_request_fd
 class TestRequest(unittest.TestCase):
     def test_create_request(self):
         fd = get_request_fd('GET', '/foo')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
+        self.assertEqual(req.app, 'app')
         self.assertEqual(req.client_addr, 'addr')
         self.assertEqual(req.method, 'GET')
         self.assertEqual(req.path, '/foo')
@@ -26,7 +27,7 @@ class TestRequest(unittest.TestCase):
             'Content-Type': 'application/json',
             'Cookie': 'foo=bar;abc=def',
             'Content-Length': '3'}, body='aaa')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
         self.assertEqual(req.headers, {
             'Host': 'example.com:1234',
             'Content-Type': 'application/json',
@@ -39,33 +40,33 @@ class TestRequest(unittest.TestCase):
 
     def test_args(self):
         fd = get_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
         self.assertEqual(req.query_string, 'foo=bar&abc=def&x=%2f%%')
         self.assertEqual(req.args, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
 
     def test_json(self):
         fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'}, body='{"foo":"bar"}')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
         json = req.json
         self.assertEqual(json, {'foo': 'bar'})
         self.assertTrue(req.json is json)
 
         fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'}, body='[1, "2"]')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
         self.assertEqual(req.json, [1, '2'])
 
         fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/xml'}, body='[1, "2"]')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
         self.assertIsNone(req.json)
 
     def test_form(self):
         fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/x-www-form-urlencoded'},
             body='foo=bar&abc=def&x=%2f%%')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
         form = req.form
         self.assertEqual(form, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
         self.assertTrue(req.form is form)
@@ -73,5 +74,5 @@ class TestRequest(unittest.TestCase):
         fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'},
             body='foo=bar&abc=def&x=%2f%%')
-        req = Request.create(fd, 'addr')
+        req = Request.create('app', fd, 'addr')
         self.assertIsNone(req.form)

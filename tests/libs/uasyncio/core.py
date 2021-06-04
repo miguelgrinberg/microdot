@@ -1,318 +1,281 @@
-import utime as time
-import utimeq
-import ucollections
+# MicroPython uasyncio module
+# MIT license; Copyright (c) 2019 Damien P. George
+
+from time import ticks_ms as ticks, ticks_diff, ticks_add
+import sys, select
+
+# Import TaskQueue and Task, preferring built-in C code over Python code
+try:
+    from _uasyncio import TaskQueue, Task
+except:
+    from .task import TaskQueue, Task
 
 
-type_gen = type((lambda: (yield))())
-
-DEBUG = 0
-log = None
-
-def set_debug(val):
-    global DEBUG, log
-    DEBUG = val
-    if val:
-        import logging
-        log = logging.getLogger("uasyncio.core")
+################################################################################
+# Exceptions
 
 
-class CancelledError(Exception):
+class CancelledError(BaseException):
     pass
 
 
-class TimeoutError(CancelledError):
+class TimeoutError(Exception):
     pass
 
 
-class EventLoop:
-
-    def __init__(self, runq_len=16, waitq_len=16):
-        self.runq = ucollections.deque((), runq_len, True)
-        self.waitq = utimeq.utimeq(waitq_len)
-        # Current task being run. Task is a top-level coroutine scheduled
-        # in the event loop (sub-coroutines executed transparently by
-        # yield from/await, event loop "doesn't see" them).
-        self.cur_task = None
-
-    def time(self):
-        return time.ticks_ms()
-
-    def create_task(self, coro):
-        # CPython 3.4.2
-        self.call_later_ms(0, coro)
-        # CPython asyncio incompatibility: we don't return Task object
-
-    def call_soon(self, callback, *args):
-        if __debug__ and DEBUG:
-            log.debug("Scheduling in runq: %s", (callback, args))
-        self.runq.append(callback)
-        if not isinstance(callback, type_gen):
-            self.runq.append(args)
-
-    def call_later(self, delay, callback, *args):
-        self.call_at_(time.ticks_add(self.time(), int(delay * 1000)), callback, args)
-
-    def call_later_ms(self, delay, callback, *args):
-        if not delay:
-            return self.call_soon(callback, *args)
-        self.call_at_(time.ticks_add(self.time(), delay), callback, args)
-
-    def call_at_(self, time, callback, args=()):
-        if __debug__ and DEBUG:
-            log.debug("Scheduling in waitq: %s", (time, callback, args))
-        self.waitq.push(time, callback, args)
-
-    def wait(self, delay):
-        # Default wait implementation, to be overriden in subclasses
-        # with IO scheduling
-        if __debug__ and DEBUG:
-            log.debug("Sleeping for: %s", delay)
-        time.sleep_ms(delay)
-
-    def run_forever(self):
-        cur_task = [0, 0, 0]
-        while True:
-            # Expire entries in waitq and move them to runq
-            tnow = self.time()
-            while self.waitq:
-                t = self.waitq.peektime()
-                delay = time.ticks_diff(t, tnow)
-                if delay > 0:
-                    break
-                self.waitq.pop(cur_task)
-                if __debug__ and DEBUG:
-                    log.debug("Moving from waitq to runq: %s", cur_task[1])
-                self.call_soon(cur_task[1], *cur_task[2])
-
-            # Process runq
-            l = len(self.runq)
-            if __debug__ and DEBUG:
-                log.debug("Entries in runq: %d", l)
-            while l:
-                cb = self.runq.popleft()
-                l -= 1
-                args = ()
-                if not isinstance(cb, type_gen):
-                    args = self.runq.popleft()
-                    l -= 1
-                    if __debug__ and DEBUG:
-                        log.info("Next callback to run: %s", (cb, args))
-                    cb(*args)
-                    continue
-
-                if __debug__ and DEBUG:
-                    log.info("Next coroutine to run: %s", (cb, args))
-                self.cur_task = cb
-                delay = 0
-                try:
-                    if args is ():
-                        ret = next(cb)
-                    else:
-                        ret = cb.send(*args)
-                    if __debug__ and DEBUG:
-                        log.info("Coroutine %s yield result: %s", cb, ret)
-                    if isinstance(ret, SysCall1):
-                        arg = ret.arg
-                        if isinstance(ret, SleepMs):
-                            delay = arg
-                        elif isinstance(ret, IORead):
-                            cb.pend_throw(False)
-                            self.add_reader(arg, cb)
-                            continue
-                        elif isinstance(ret, IOWrite):
-                            cb.pend_throw(False)
-                            self.add_writer(arg, cb)
-                            continue
-                        elif isinstance(ret, IOReadDone):
-                            self.remove_reader(arg)
-                        elif isinstance(ret, IOWriteDone):
-                            self.remove_writer(arg)
-                        elif isinstance(ret, StopLoop):
-                            return arg
-                        else:
-                            assert False, "Unknown syscall yielded: %r (of type %r)" % (ret, type(ret))
-                    elif isinstance(ret, type_gen):
-                        self.call_soon(ret)
-                    elif isinstance(ret, int):
-                        # Delay
-                        delay = ret
-                    elif ret is None:
-                        # Just reschedule
-                        pass
-                    elif ret is False:
-                        # Don't reschedule
-                        continue
-                    else:
-                        assert False, "Unsupported coroutine yield value: %r (of type %r)" % (ret, type(ret))
-                except StopIteration as e:
-                    if __debug__ and DEBUG:
-                        log.debug("Coroutine finished: %s", cb)
-                    continue
-                except CancelledError as e:
-                    if __debug__ and DEBUG:
-                        log.debug("Coroutine cancelled: %s", cb)
-                    continue
-                # Currently all syscalls don't return anything, so we don't
-                # need to feed anything to the next invocation of coroutine.
-                # If that changes, need to pass that value below.
-                if delay:
-                    self.call_later_ms(delay, cb)
-                else:
-                    self.call_soon(cb)
-
-            # Wait until next waitq task or I/O availability
-            delay = 0
-            if not self.runq:
-                delay = -1
-                if self.waitq:
-                    tnow = self.time()
-                    t = self.waitq.peektime()
-                    delay = time.ticks_diff(t, tnow)
-                    if delay < 0:
-                        delay = 0
-            self.wait(delay)
-
-    def run_until_complete(self, coro):
-        ret = None
-        def _run_and_stop():
-            nonlocal ret
-            ret = yield from coro
-            yield StopLoop(0)
-        self.call_soon(_run_and_stop())
-        self.run_forever()
-        return ret
-
-    def stop(self):
-        self.call_soon((lambda: (yield StopLoop(0)))())
-
-    def close(self):
-        pass
+# Used when calling Loop.call_exception_handler
+_exc_context = {"message": "Task exception wasn't retrieved", "exception": None, "future": None}
 
 
-class SysCall:
+################################################################################
+# Sleep functions
 
-    def __init__(self, *args):
-        self.args = args
-
-    def handle(self):
-        raise NotImplementedError
-
-# Optimized syscall with 1 arg
-class SysCall1(SysCall):
-
-    def __init__(self, arg):
-        self.arg = arg
-
-class StopLoop(SysCall1):
-    pass
-
-class IORead(SysCall1):
-    pass
-
-class IOWrite(SysCall1):
-    pass
-
-class IOReadDone(SysCall1):
-    pass
-
-class IOWriteDone(SysCall1):
-    pass
-
-
-_event_loop = None
-_event_loop_class = EventLoop
-def get_event_loop(runq_len=16, waitq_len=16):
-    global _event_loop
-    if _event_loop is None:
-        _event_loop = _event_loop_class(runq_len, waitq_len)
-    return _event_loop
-
-def sleep(secs):
-    yield int(secs * 1000)
-
-# Implementation of sleep_ms awaitable with zero heap memory usage
-class SleepMs(SysCall1):
-
+# "Yield" once, then raise StopIteration
+class SingletonGenerator:
     def __init__(self):
-        self.v = None
-        self.arg = None
-
-    def __call__(self, arg):
-        self.v = arg
-        #print("__call__")
-        return self
+        self.state = None
+        self.exc = StopIteration()
 
     def __iter__(self):
-        #print("__iter__")
         return self
 
     def __next__(self):
-        if self.v is not None:
-            #print("__next__ syscall enter")
-            self.arg = self.v
-            self.v = None
-            return self
-        #print("__next__ syscall exit")
-        _stop_iter.__traceback__ = None
-        raise _stop_iter
-
-_stop_iter = StopIteration()
-sleep_ms = SleepMs()
+        if self.state is not None:
+            _task_queue.push_sorted(cur_task, self.state)
+            self.state = None
+            return None
+        else:
+            self.exc.__traceback__ = None
+            raise self.exc
 
 
-def cancel(coro):
-    prev = coro.pend_throw(CancelledError())
-    if prev is False:
-        _event_loop.call_soon(coro)
+# Pause task execution for the given time (integer in milliseconds, uPy extension)
+# Use a SingletonGenerator to do it without allocating on the heap
+def sleep_ms(t, sgen=SingletonGenerator()):
+    assert sgen.state is None
+    sgen.state = ticks_add(ticks(), max(0, t))
+    return sgen
 
 
-class TimeoutObj:
-    def __init__(self, coro):
-        self.coro = coro
+# Pause task execution for the given time (in seconds)
+def sleep(t):
+    return sleep_ms(int(t * 1000))
 
 
-def wait_for_ms(coro, timeout):
-
-    def waiter(coro, timeout_obj):
-        res = yield from coro
-        if __debug__ and DEBUG:
-            log.debug("waiter: cancelling %s", timeout_obj)
-        timeout_obj.coro = None
-        return res
-
-    def timeout_func(timeout_obj):
-        if timeout_obj.coro:
-            if __debug__ and DEBUG:
-                log.debug("timeout_func: cancelling %s", timeout_obj.coro)
-            prev = timeout_obj.coro.pend_throw(TimeoutError())
-            #print("prev pend", prev)
-            if prev is False:
-                _event_loop.call_soon(timeout_obj.coro)
-
-    timeout_obj = TimeoutObj(_event_loop.cur_task)
-    _event_loop.call_later_ms(timeout, timeout_func, timeout_obj)
-    return (yield from waiter(coro, timeout_obj))
+################################################################################
+# Queue and poller for stream IO
 
 
-def wait_for(coro, timeout):
-    return wait_for_ms(coro, int(timeout * 1000))
+class IOQueue:
+    def __init__(self):
+        self.poller = select.poll()
+        self.map = {}  # maps id(stream) to [task_waiting_read, task_waiting_write, stream]
+
+    def _enqueue(self, s, idx):
+        if id(s) not in self.map:
+            entry = [None, None, s]
+            entry[idx] = cur_task
+            self.map[id(s)] = entry
+            self.poller.register(s, select.POLLIN if idx == 0 else select.POLLOUT)
+        else:
+            sm = self.map[id(s)]
+            assert sm[idx] is None
+            assert sm[1 - idx] is not None
+            sm[idx] = cur_task
+            self.poller.modify(s, select.POLLIN | select.POLLOUT)
+        # Link task to this IOQueue so it can be removed if needed
+        cur_task.data = self
+
+    def _dequeue(self, s):
+        del self.map[id(s)]
+        self.poller.unregister(s)
+
+    def queue_read(self, s):
+        self._enqueue(s, 0)
+
+    def queue_write(self, s):
+        self._enqueue(s, 1)
+
+    def remove(self, task):
+        while True:
+            del_s = None
+            for k in self.map:  # Iterate without allocating on the heap
+                q0, q1, s = self.map[k]
+                if q0 is task or q1 is task:
+                    del_s = s
+                    break
+            if del_s is not None:
+                self._dequeue(s)
+            else:
+                break
+
+    def wait_io_event(self, dt):
+        for s, ev in self.poller.ipoll(dt):
+            sm = self.map[id(s)]
+            # print('poll', s, sm, ev)
+            if ev & ~select.POLLOUT and sm[0] is not None:
+                # POLLIN or error
+                _task_queue.push_head(sm[0])
+                sm[0] = None
+            if ev & ~select.POLLIN and sm[1] is not None:
+                # POLLOUT or error
+                _task_queue.push_head(sm[1])
+                sm[1] = None
+            if sm[0] is None and sm[1] is None:
+                self._dequeue(s)
+            elif sm[0] is None:
+                self.poller.modify(s, select.POLLOUT)
+            else:
+                self.poller.modify(s, select.POLLIN)
 
 
-def coroutine(f):
-    return f
+################################################################################
+# Main run loop
 
-#
-# The functions below are deprecated in uasyncio, and provided only
-# for compatibility with CPython asyncio
-#
-
-def ensure_future(coro, loop=_event_loop):
-    _event_loop.call_soon(coro)
-    # CPython asyncio incompatibility: we don't return Task object
-    return coro
+# Ensure the awaitable is a task
+def _promote_to_task(aw):
+    return aw if isinstance(aw, Task) else create_task(aw)
 
 
-# CPython asyncio incompatibility: Task is a function, not a class (for efficiency)
-def Task(coro, loop=_event_loop):
-    # Same as async()
-    _event_loop.call_soon(coro)
+# Create and schedule a new task from a coroutine
+def create_task(coro):
+    if not hasattr(coro, "send"):
+        raise TypeError("coroutine expected")
+    t = Task(coro, globals())
+    _task_queue.push_head(t)
+    return t
+
+
+# Keep scheduling tasks until there are none left to schedule
+def run_until_complete(main_task=None):
+    global cur_task
+    excs_all = (CancelledError, Exception)  # To prevent heap allocation in loop
+    excs_stop = (CancelledError, StopIteration)  # To prevent heap allocation in loop
+    while True:
+        # Wait until the head of _task_queue is ready to run
+        dt = 1
+        while dt > 0:
+            dt = -1
+            t = _task_queue.peek()
+            if t:
+                # A task waiting on _task_queue; "ph_key" is time to schedule task at
+                dt = max(0, ticks_diff(t.ph_key, ticks()))
+            elif not _io_queue.map:
+                # No tasks can be woken so finished running
+                return
+            # print('(poll {})'.format(dt), len(_io_queue.map))
+            _io_queue.wait_io_event(dt)
+
+        # Get next task to run and continue it
+        t = _task_queue.pop_head()
+        cur_task = t
+        try:
+            # Continue running the coroutine, it's responsible for rescheduling itself
+            exc = t.data
+            if not exc:
+                t.coro.send(None)
+            else:
+                t.data = None
+                t.coro.throw(exc)
+        except excs_all as er:
+            # Check the task is not on any event queue
+            assert t.data is None
+            # This task is done, check if it's the main task and then loop should stop
+            if t is main_task:
+                if isinstance(er, StopIteration):
+                    return er.value
+                raise er
+            # Schedule any other tasks waiting on the completion of this task
+            waiting = False
+            if hasattr(t, "waiting"):
+                while t.waiting.peek():
+                    _task_queue.push_head(t.waiting.pop_head())
+                    waiting = True
+                t.waiting = None  # Free waiting queue head
+            if not waiting and not isinstance(er, excs_stop):
+                # An exception ended this detached task, so queue it for later
+                # execution to handle the uncaught exception if no other task retrieves
+                # the exception in the meantime (this is handled by Task.throw).
+                _task_queue.push_head(t)
+            # Indicate task is done by setting coro to the task object itself
+            t.coro = t
+            # Save return value of coro to pass up to caller
+            t.data = er
+
+
+# Create a new task from a coroutine and run it until it finishes
+def run(coro):
+    return run_until_complete(create_task(coro))
+
+
+################################################################################
+# Event loop wrapper
+
+
+async def _stopper():
+    pass
+
+
+_stop_task = None
+
+
+class Loop:
+    _exc_handler = None
+
+    def create_task(coro):
+        return create_task(coro)
+
+    def run_forever():
+        global _stop_task
+        _stop_task = Task(_stopper(), globals())
+        run_until_complete(_stop_task)
+        # TODO should keep running until .stop() is called, even if there're no tasks left
+
+    def run_until_complete(aw):
+        return run_until_complete(_promote_to_task(aw))
+
+    def stop():
+        global _stop_task
+        if _stop_task is not None:
+            _task_queue.push_head(_stop_task)
+            # If stop() is called again, do nothing
+            _stop_task = None
+
+    def close():
+        pass
+
+    def set_exception_handler(handler):
+        Loop._exc_handler = handler
+
+    def get_exception_handler():
+        return Loop._exc_handler
+
+    def default_exception_handler(loop, context):
+        print(context["message"])
+        print("future:", context["future"], "coro=", context["future"].coro)
+        sys.print_exception(context["exception"])
+
+    def call_exception_handler(context):
+        (Loop._exc_handler or Loop.default_exception_handler)(Loop, context)
+
+
+# The runq_len and waitq_len arguments are for legacy uasyncio compatibility
+def get_event_loop(runq_len=0, waitq_len=0):
+    return Loop
+
+
+def current_task():
+    return cur_task
+
+
+def new_event_loop():
+    global _task_queue, _io_queue
+    # TaskQueue of Task instances
+    _task_queue = TaskQueue()
+    # Task queue and poller for stream IO
+    _io_queue = IOQueue()
+    return Loop
+
+
+# Initialise default event loop
+new_event_loop()

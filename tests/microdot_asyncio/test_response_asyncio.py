@@ -84,3 +84,28 @@ class TestResponseAsync(unittest.TestCase):
         self.assertIn(b'Content-Length: 8\r\n', fd.response)
         self.assertIn(b'Content-Type: application/json\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n[1, "2"]'))
+
+    def test_send_file(self):
+        res = Response.send_file('tests/files/test.txt',
+                                 content_type='text/html')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'], 'text/html')
+        fd = FakeStreamAsync()
+        _run(res.write(fd))
+        self.assertEqual(
+            fd.response,
+            b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
+
+    def test_send_file_small_buffer(self):
+        original_buffer_size = Response.send_file_buffer_size
+        Response.send_file_buffer_size = 2
+        res = Response.send_file('tests/files/test.txt',
+                                 content_type='text/html')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'], 'text/html')
+        fd = FakeStreamAsync()
+        _run(res.write(fd))
+        self.assertEqual(
+            fd.response,
+            b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
+        Response.send_file_buffer_size = original_buffer_size

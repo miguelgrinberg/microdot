@@ -1,4 +1,8 @@
-from microdot import Microdot, Response
+try:
+    import uasyncio as asyncio
+except ImportError:
+    import asyncio
+from microdot_asyncio import Microdot, Response
 
 app = Microdot()
 
@@ -19,14 +23,18 @@ htmldoc = '''<!DOCTYPE html>
 
 
 @app.route('/')
-def hello(request):
+async def hello(request):
     return Response(body=htmldoc, headers={'Content-Type': 'text/html'})
 
 
 @app.route('/shutdown')
-def shutdown(request):
+async def shutdown(request):
     request.app.shutdown()
     return 'The server is shutting down...'
 
 
-app.run(debug=True)
+async def main():
+    await app.start_server(debug=True)
+
+
+asyncio.run(main())

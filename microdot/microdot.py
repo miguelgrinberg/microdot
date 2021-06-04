@@ -5,6 +5,10 @@ except ImportError:  # pragma: no cover
 
     def print_exception(exc):
         traceback.print_exc()
+try:
+    import uerrno as errno
+except ImportError:
+    import errno
 
 concurrency_mode = 'threaded'
 
@@ -69,7 +73,9 @@ class Request():
     class G:
         pass
 
-    def __init__(self, client_addr, method, url, http_version, headers, body):
+    def __init__(self, app, client_addr, method, url, http_version, headers,
+                 body):
+        self.app = app
         self.client_addr = client_addr
         self.method = method
         self.path = url
@@ -99,7 +105,7 @@ class Request():
         self.g = Request.G()
 
     @staticmethod
-    def create(client_stream, client_addr):
+    def create(app, client_stream, client_addr):
         # request line
         line = client_stream.readline().strip().decode()
         if not line:  # pragma: no cover
@@ -123,7 +129,8 @@ class Request():
         # body
         body = client_stream.read(content_length) if content_length else b''
 
-        return Request(client_addr, method, url, http_version, headers, body)
+        return Request(app, client_addr, method, url, http_version, headers,
+                       body)
 
     def _parse_urlencoded(self, urlencoded):
         return {
@@ -226,7 +233,7 @@ class Response():
                         stream.write(buf)
                     if len(buf) < self.send_file_buffer_size:
                         break
-                if hasattr(self.body, 'close'):
+                if hasattr(self.body, 'close'):  # pragma: no close
                     self.body.close()
             else:
                 stream.write(self.body)
@@ -306,7 +313,9 @@ class Microdot():
         self.before_request_handlers = []
         self.after_request_handlers = []
         self.error_handlers = {}
+        self.shutdown_requested = False
         self.debug = False
+        self.server = None
 
     def route(self, url_pattern, methods=None):
         def decorated(f):
@@ -331,21 +340,31 @@ class Microdot():
 
     def run(self, host='0.0.0.0', port=5000, debug=False):
         self.debug = debug
+        self.shutdown_requested = False
 
-        s = socket.socket()
+        self.server = socket.socket()
         ai = socket.getaddrinfo(host, port)
         addr = ai[0][-1]
 
         if self.debug:  # pragma: no cover
             print('Starting {mode} server on {host}:{port}...'.format(
                 mode=concurrency_mode, host=host, port=port))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind(addr)
-        s.listen(5)
+        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server.bind(addr)
+        self.server.listen(5)
 
-        while True:
-            sock, addr = s.accept()
+        while not self.shutdown_requested:
+            try:
+                sock, addr = self.server.accept()
+            except OSError as exc:
+                if exc.args[0] == errno.ECONNABORTED:
+                    break
+                else:
+                    raise
             create_thread(self.dispatch_request, sock, addr)
+
+    def shutdown(self):
+        self.shutdown_requested = True
 
     def find_route(self, req):
         f = None
@@ -363,7 +382,7 @@ class Microdot():
         else:
             stream = sock
 
-        req = Request.create(stream, addr)
+        req = Request.create(self, stream, addr)
         if req:
             f = self.find_route(req)
             try:
@@ -406,6 +425,8 @@ class Microdot():
         stream.close()
         if stream != sock:  # pragma: no cover
             sock.close()
+        if self.shutdown_requested:  # pragma: no cover
+            self.server.close()
         if self.debug and req:  # pragma: no cover
             print('{method} {path} {status_code}'.format(
                 method=req.method, path=req.path,

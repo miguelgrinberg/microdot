@@ -161,9 +161,34 @@ class TestResponse(unittest.TestCase):
             res = Response.send_file('tests/files/' + file)
             self.assertEqual(res.status_code, 200)
             self.assertEqual(res.headers['Content-Type'], content_type)
-            self.assertEqual(res.body.read(), b'foo\n')
+            fd = io.BytesIO()
+            res.write(fd)
+            response = fd.getvalue()
+            self.assertEqual(response, (
+                b'HTTP/1.0 200 OK\r\nContent-Type: ' + content_type.encode()
+                + b'\r\n\r\nfoo\n'))
         res = Response.send_file('tests/files/test.txt',
                                  content_type='text/html')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/html')
-        self.assertEqual(res.body.read(), b'foo\n')
+        fd = io.BytesIO()
+        res.write(fd)
+        response = fd.getvalue()
+        self.assertEqual(
+            response,
+            b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
+
+    def test_send_file_small_buffer(self):
+        original_buffer_size = Response.send_file_buffer_size
+        Response.send_file_buffer_size = 2
+        res = Response.send_file('tests/files/test.txt',
+                                 content_type='text/html')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'], 'text/html')
+        fd = io.BytesIO()
+        res.write(fd)
+        response = fd.getvalue()
+        self.assertEqual(
+            response,
+            b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
+        Response.send_file_buffer_size = original_buffer_size

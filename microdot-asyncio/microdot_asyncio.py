@@ -14,7 +14,7 @@ def _iscoroutine(coro):
 
 class Request(BaseRequest):
     @staticmethod
-    async def create(stream, client_addr):
+    async def create(app, stream, client_addr):
         # request line
         line = (await stream.readline()).strip().decode()
         if not line:  # pragma: no cover
@@ -39,7 +39,8 @@ class Request(BaseRequest):
         body = await stream.read(content_length) \
             if content_length else b''
 
-        return Request(client_addr, method, url, http_version, headers, body)
+        return Request(app, client_addr, method, url, http_version, headers,
+                       body)
 
 
 class Response(BaseResponse):
@@ -75,7 +76,7 @@ class Response(BaseResponse):
 
 
 class Microdot(BaseMicrodot):
-    def run(self, host='0.0.0.0', port=5000, debug=False):
+    async def start_server(self, host='0.0.0.0', port=5000, debug=False):
         self.debug = debug
 
         async def serve(reader, writer):
@@ -98,13 +99,19 @@ class Microdot(BaseMicrodot):
         if self.debug:  # pragma: no cover
             print('Starting async server on {host}:{port}...'.format(
                 host=host, port=port))
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(asyncio.start_server(serve, host, port))
-        loop.run_forever()
-        loop.close()  # pragma: no cover
+
+        self.server = await asyncio.start_server(serve, host, port)
+        await self.server.wait_closed()
+
+    def run(self, host='0.0.0.0', port=5000, debug=False):
+        asyncio.run(self.start_server(host=host, port=port, debug=debug))
+
+    def shutdown(self):
+        self.server.close()
 
     async def dispatch_request(self, reader, writer):
-        req = await Request.create(reader, writer.get_extra_info('peername'))
+        req = await Request.create(self, reader,
+                                   writer.get_extra_info('peername'))
         if req:
             f = self.find_route(req)
             try:

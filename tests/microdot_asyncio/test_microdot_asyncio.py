@@ -14,6 +14,14 @@ class TestMicrodotAsync(unittest.TestCase):
         # restore original socket module
         sys.modules['microdot_asyncio'].asyncio = self.original_asyncio
 
+    def _add_shutdown(self, app):
+        @app.route('/shutdown')
+        def shutdown(req):
+            app.shutdown()
+            return ''
+
+        mock_socket.add_request('GET', '/shutdown')
+
     def test_get_request(self):
         app = Microdot()
 
@@ -28,7 +36,8 @@ class TestMicrodotAsync(unittest.TestCase):
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/')
         fd2 = mock_socket.add_request('GET', '/async')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
@@ -56,7 +65,8 @@ class TestMicrodotAsync(unittest.TestCase):
         mock_socket.clear_requests()
         fd = mock_socket.add_request('POST', '/')
         fd2 = mock_socket.add_request('POST', '/async')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
@@ -94,7 +104,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/bar')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 202 N/A\r\n'))
         self.assertIn(b'X-One: 1\r\n', fd.response)
         self.assertIn(b'Set-Cookie: foo=bar\r\n', fd.response)
@@ -104,7 +115,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/baz')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'X-One: 1\r\n', fd.response)
         self.assertIn(b'Set-Cookie: foo=bar\r\n', fd.response)
@@ -121,7 +133,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/foo')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 404 N/A\r\n'))
         self.assertIn(b'Content-Length: 9\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
@@ -140,7 +153,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/foo')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
@@ -155,7 +169,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 500 N/A\r\n'))
         self.assertIn(b'Content-Length: 21\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
@@ -174,7 +189,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 501 N/A\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
@@ -193,7 +209,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         mock_socket.clear_requests()
         fd = mock_socket.add_request('GET', '/')
-        self.assertRaises(IndexError, app.run)
+        self._add_shutdown(app)
+        app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 501 N/A\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
