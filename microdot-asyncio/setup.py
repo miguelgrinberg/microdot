@@ -8,7 +8,7 @@ from setuptools import setup
 
 setup(
     name='microdot-asyncio',
-    version="0.3.1",
+    version="0.4.0",
     url='http://github.com/miguelgrinberg/microdot/',
     license='MIT',
     author='Miguel Grinberg',
