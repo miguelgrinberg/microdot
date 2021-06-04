@@ -3,6 +3,6 @@
 
 A minimalistic Python web framework for microcontrollers inspired by Flask
 
-## Documentation
+## Resources
 
-Coming soon!
+- [Documentation](https://microdot.readthedocs.io/en/latest/)
