@@ -40,3 +40,8 @@ def get_event_loop():
 def start_server(cb, host, port):
     _calls.append(('start_server', cb, host, port))
     return cb
+
+
+def create_task(coro):
+    _calls.append(('create_task', coro))
+    return coro

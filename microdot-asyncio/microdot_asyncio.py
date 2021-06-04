@@ -75,7 +75,11 @@ class Response(BaseResponse):
 
 
 class Microdot(BaseMicrodot):
-    def run(self, host='0.0.0.0', port=5000, debug=False):
+    def __init__(self):
+        super().__init__()
+        self.server_task = None
+
+    def run(self, host='0.0.0.0', port=5000, debug=False, start_serving=True):
         self.debug = debug
 
         async def serve(reader, writer):
@@ -98,10 +102,24 @@ class Microdot(BaseMicrodot):
         if self.debug:  # pragma: no cover
             print('Starting async server on {host}:{port}...'.format(
                 host=host, port=port))
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(asyncio.start_server(serve, host, port))
-        loop.run_forever()
-        loop.close()  # pragma: no cover
+        if start_serving:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(asyncio.start_server(serve, host, port))
+            loop.run_forever()
+            loop.close()  # pragma: no cover
+        else:
+            self.server_task = asyncio.create_task(
+                asyncio.start_server(serve, host, port)
+            )
+
+    async def shutdown(self):
+        if self.server_task is None:
+            return
+        if self.debug:
+            print("Shutting down async server")
+        server = await self.server_task
+        server.close()
+        await server.wait_closed()
 
     async def dispatch_request(self, reader, writer):
         req = await Request.create(reader, writer.get_extra_info('peername'))

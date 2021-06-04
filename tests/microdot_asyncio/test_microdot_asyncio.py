@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import unittest
 from microdot_asyncio import Microdot, Response
@@ -198,3 +199,32 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n501'))
+
+    def test_run(self):
+        self.tearDown()
+
+        async def test():
+            app = Microdot()
+            app.run(start_serving=False)
+            await app.shutdown()
+        asyncio.run(test())
+
+    def test_shutdown(self):
+        self.tearDown()
+
+        async def test():
+            app = Microdot()
+            app.run(start_serving=False)
+            await app.shutdown()
+        asyncio.run(test())
+
+    def test_shutdown_reuseaddr(self):
+        self.tearDown()
+
+        async def test():
+            app = Microdot()
+            app.run(start_serving=False)
+            await app.shutdown()
+            app.run(start_serving=False)
+            await app.shutdown()
+        asyncio.run(test())
