@@ -1,3 +1,11 @@
+"""
+microdot
+--------
+
+The ``microdot`` module defines a few classes that help implement HTTP-based
+servers for MicroPython and standard Python, with multithreading support for
+Python interpreters that support it.
+"""
 try:
     from sys import print_exception
 except ImportError:  # pragma: no cover
@@ -16,21 +24,21 @@ try:  # pragma: no cover
     import threading
 
     def create_thread(f, *args, **kwargs):
-        """Use the threading module."""
+        # use the threading module
         threading.Thread(target=f, args=args, kwargs=kwargs).start()
 except ImportError:  # pragma: no cover
     try:
         import _thread
 
         def create_thread(f, *args, **kwargs):
-            """Use MicroPython's _thread module."""
+            # use MicroPython's _thread module
             def run():
                 f(*args, **kwargs)
 
             _thread.start_new_thread(run, ())
     except ImportError:
         def create_thread(f, *args, **kwargs):
-            """No threads available, call function synchronously."""
+            # no threads available, call function synchronously
             f(*args, **kwargs)
 
         concurrency_mode = 'sync'
@@ -70,6 +78,8 @@ def urldecode(string):
 
 
 class Request():
+    """An HTTP request class."""
+
     class G:
         pass
 
@@ -106,6 +116,15 @@ class Request():
 
     @staticmethod
     def create(app, client_stream, client_addr):
+        """Create a request object.
+
+        :param app: The Microdot application instance.
+        :param client_stream: An input stream from where the request data can
+                              be read.
+        :param client_addr: The address of the client, as a tuple.
+
+        This method returns a newly created ``Request`` object.
+        """
         # request line
         line = client_stream.readline().strip().decode()
         if not line:  # pragma: no cover
@@ -140,6 +159,9 @@ class Request():
 
     @property
     def json(self):
+        """The parsed JSON body of the request, or ``None`` if the request
+        does not have a JSON body.
+        """
         if self.content_type != 'application/json':
             return None
         if self._json is None:
@@ -148,6 +170,9 @@ class Request():
 
     @property
     def form(self):
+        """The parsed form data from the request, or ``None`` if the request
+        does not have form data.
+        """
         if self.content_type != 'application/x-www-form-urlencoded':
             return None
         if self._form is None:
@@ -156,6 +181,14 @@ class Request():
 
 
 class Response():
+    """An HTTP response class.
+
+    :param body: The body of the response. If a dictionary or list is given,
+                 a JSON formatter is used to generate the body.
+    :param status_code: The numeric HTTP status code of the response. The
+                        default is 200.
+    :param headers: A dictionary of headers to include in the response.
+    """
     types_map = {
         'css': 'text/css',
         'gif': 'image/gif',
@@ -182,6 +215,17 @@ class Response():
 
     def set_cookie(self, cookie, value, path=None, domain=None, expires=None,
                    max_age=None, secure=False, http_only=False):
+        """Add a cookie to the response.
+
+        :param cookie: The cookie's name.
+        :param value: The cookie's value.
+        :param path: The cookie's path.
+        :param domain: The cookie's domain.
+        :param expires: The cookie expiration time, as a ``datetime`` object.
+        :param max_age: The cookie's ``Max-Age`` value.
+        :param secure: The cookie's ``secure`` flag.
+        :param http_only: The cookie's ``HttpOnly`` flag.
+        """
         http_cookie = '{cookie}={value}'.format(cookie=cookie, value=value)
         if path:
             http_cookie += '; Path=' + path
@@ -240,10 +284,25 @@ class Response():
 
     @classmethod
     def redirect(cls, location, status_code=302):
+        """Return a redirect response.
+
+        :param location: The URL to redirect to.
+        :param status_code: The 3xx status code to use for the redirect. The
+                            default is 302.
+        """
         return cls(status_code=status_code, headers={'Location': location})
 
     @classmethod
     def send_file(cls, filename, status_code=200, content_type=None):
+        """Send file contents in a response.
+
+        :param filename: The filename of the file.
+        :param status_code: The 3xx status code to use for the redirect. The
+                            default is 302.
+        :param content_type: The ``Content-Type`` header to use in the
+                             response. If omitted, it is generated
+                             automatically from the file extension.
+        """
         if content_type is None:
             ext = filename.split('.')[-1]
             if ext in Response.types_map:
@@ -308,6 +367,19 @@ class URLPattern():
 
 
 class Microdot():
+    """An HTTP application class.
+
+    This class implements an HTTP application instance and is heavily
+    influenced by the ``Flask`` class of the Flask framework. It is typically
+    declared near the start of the main application script.
+
+    Example::
+
+        from microdot import Microdot
+
+        app = Microdot()
+    """
+
     def __init__(self):
         self.url_map = []
         self.before_request_handlers = []
@@ -318,6 +390,35 @@ class Microdot():
         self.server = None
 
     def route(self, url_pattern, methods=None):
+        """Decorator that is used to register a function as a request handler
+        for a given URL.
+
+        :param url_pattern: The URL pattern that will be compared against
+                            incoming requests.
+        :param methods: The list of HTTP methods to be handled by the
+                        decorated function. If omitted, only ``GET`` requests
+                        are handled.
+
+        The URL pattern can be a static path (for example, ``/users`` or
+        ``/api/invoices/search``) or a path with dynamic components enclosed
+        in ``<`` and ``>`` (for example, ``/users/<id>`` or
+        ``/invoices/<number>/products``). Dynamic path components can also
+        include a type prefix, separated from the name with a colon (for
+        example, ``/users/<int:id>``). The type can be ``string`` (the
+        default), ``int``, ``path`` or ``re:[regular-expression]``.
+
+        The first argument of the decorated function must be
+        the request object. Any path arguments that are specified in the URL
+        pattern are passed as keyword arguments. The return value of the
+        function must be a :class:`Response` instance, or the arguments to
+        be passed to this class.
+
+        Example::
+
+            @app.route('/')
+            def index(request):
+                return 'Hello, world!'
+        """
         def decorated(f):
             self.url_map.append(
                 (methods or ['GET'], URLPattern(url_pattern), f))
@@ -325,35 +426,179 @@ class Microdot():
         return decorated
 
     def get(self, url_pattern):
+        """Decorator that is used to register a function as a ``GET`` request
+        handler for a given URL.
+
+        :param url_pattern: The URL pattern that will be compared against
+                            incoming requests.
+
+        This decorator can be used as an alias to the ``route`` decorator with
+        ``methods=['GET']``.
+
+        Example::
+
+            @app.get('/users/<int:id>')
+            def get_user(request, id):
+                # ...
+        """
         return self.route(url_pattern, methods=['GET'])
 
     def post(self, url_pattern):
+        """Decorator that is used to register a function as a ``POST`` request
+        handler for a given URL.
+
+        :param url_pattern: The URL pattern that will be compared against
+                            incoming requests.
+
+        This decorator can be used as an alias to the``route`` decorator with
+        ``methods=['POST']``.
+
+        Example::
+
+            @app.post('/users')
+            def create_user(request):
+                # ...
+        """
         return self.route(url_pattern, methods=['POST'])
 
     def put(self, url_pattern):
+        """Decorator that is used to register a function as a ``PUT`` request
+        handler for a given URL.
+
+        :param url_pattern: The URL pattern that will be compared against
+                            incoming requests.
+
+        This decorator can be used as an alias to the ``route`` decorator with
+        ``methods=['PUT']``.
+
+        Example::
+
+            @app.put('/users/<int:id>')
+            def edit_user(request, id):
+                # ...
+        """
         return self.route(url_pattern, methods=['PUT'])
 
     def patch(self, url_pattern):
+        """Decorator that is used to register a function as a ``PATCH`` request
+        handler for a given URL.
+
+        :param url_pattern: The URL pattern that will be compared against
+                            incoming requests.
+
+        This decorator can be used as an alias to the ``route`` decorator with
+        ``methods=['PATCH']``.
+
+        Example::
+
+            @app.patch('/users/<int:id>')
+            def edit_user(request, id):
+                # ...
+        """
         return self.route(url_pattern, methods=['PATCH'])
 
     def delete(self, url_pattern):
+        """Decorator that is used to register a function as a ``DELETE``
+        request handler for a given URL.
+
+        :param url_pattern: The URL pattern that will be compared against
+                            incoming requests.
+
+        This decorator can be used as an alias to the ``route`` decorator with
+        ``methods=['DELETE']``.
+
+        Example::
+
+            @app.delete('/users/<int:id>')
+            def delete_user(request, id):
+                # ...
+        """
         return self.route(url_pattern, methods=['DELETE'])
 
     def before_request(self, f):
+        """Decorator to register a function to run before each request is
+        handled. The decorated function must take a single argument, the
+        request object.
+
+        Example::
+
+            @app.before_request
+            def func(request):
+                # ...
+        """
         self.before_request_handlers.append(f)
         return f
 
     def after_request(self, f):
+        """Decorator to register a function to run after each request is
+        handled. The decorated function must take two arguments, the request
+        and response objects. The return value of the function must be an
+        updated response object.
+
+        Example::
+
+            @app.before_request
+            def func(request, response):
+                # ...
+        """
         self.after_request_handlers.append(f)
         return f
 
     def errorhandler(self, status_code_or_exception_class):
+        """Decorator to register a function as an error handler. Error handler
+        functions for numeric HTTP status codes must accept a single argument,
+        the request object. Error handler functions for Python exceptions
+        must accept two arguments, the request object and the exception
+        object.
+
+        :param status_code_or_exception_class: The numeric HTTP status code or
+                                               Python exception class to
+                                               handle.
+
+        Examples::
+
+            @app.errorhandler(404)
+            def not_found(request):
+                return 'Not found'
+
+            @app.errorhandler(RuntimeError)
+            def runtime_error(request, exception):
+                return 'Runtime error'
+        """
         def decorated(f):
             self.error_handlers[status_code_or_exception_class] = f
             return f
         return decorated
 
     def run(self, host='0.0.0.0', port=5000, debug=False):
+        """Start the web server. This function does not normally return, as
+        the server enters an endless listening loop. The :func:`shutdown`
+        function provides a method for terminating the server gracefully.
+
+        :param host: The hostname or IP address of the network interface that
+                     will be listening for requests. A value of ``'0.0.0.0'``
+                     (the default) indicates that the server should listen for
+                     requests on all the available interfaces, and a value of
+                     ``127.0.0.1`` indicates that the server should listen
+                     for requests only on the internal networking interface of
+                     the host.
+        :param port: The port number to listen for requests. The default is
+                     port 5000.
+        :param debug: If ``True``, the server logs debugging information. The
+                      default is ``False``.
+
+        Example::
+
+            from microdot import Microdot
+
+            app = Microdot()
+
+            @app.route('/')
+            def index():
+                return 'Hello, world!'
+
+            app.run(debug=True)
+        """
         self.debug = debug
         self.shutdown_requested = False
 
@@ -379,6 +624,18 @@ class Microdot():
             create_thread(self.dispatch_request, sock, addr)
 
     def shutdown(self):
+        """Request a server shutdown. The server will then exit its request
+        listening loop and the :func:`run` function will return. This function
+        can be safely called from a route handler, as it only schedules the
+        server to terminate as soon as the request completes.
+
+        Example::
+
+            @app.route('/shutdown')
+            def shutdown(request):
+                request.app.shutdown()
+                return 'The server is shutting down...'
+        """
         self.shutdown_requested = True
 
     def find_route(self, req):

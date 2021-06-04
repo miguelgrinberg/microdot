@@ -1,3 +1,11 @@
+"""
+microdot_asyncio
+----------------
+
+The ``microdot_asyncio`` module defines a few classes that help implement
+HTTP-based servers for MicroPython and standard Python that use ``asyncio``
+and coroutines.
+"""
 try:
     import uasyncio as asyncio
 except ImportError:
@@ -14,9 +22,19 @@ def _iscoroutine(coro):
 
 class Request(BaseRequest):
     @staticmethod
-    async def create(app, stream, client_addr):
+    async def create(app, client_stream, client_addr):
+        """Create a request object.
+
+        :param app: The Microdot application instance.
+        :param client_stream: An input stream from where the request data can
+                              be read.
+        :param client_addr: The address of the client, as a tuple.
+
+        This method is a coroutine. It returns a newly created ``Request``
+        object.
+        """
         # request line
-        line = (await stream.readline()).strip().decode()
+        line = (await client_stream.readline()).strip().decode()
         if not line:  # pragma: no cover
             return None
         method, url, http_version = line.split()
@@ -26,7 +44,7 @@ class Request(BaseRequest):
         headers = {}
         content_length = 0
         while True:
-            line = (await stream.readline()).strip().decode()
+            line = (await client_stream.readline()).strip().decode()
             if line == '':
                 break
             header, value = line.split(':', 1)
@@ -36,7 +54,7 @@ class Request(BaseRequest):
                 content_length = int(value)
 
         # body
-        body = await stream.read(content_length) \
+        body = await client_stream.read(content_length) \
             if content_length else b''
 
         return Request(app, client_addr, method, url, http_version, headers,
@@ -44,6 +62,14 @@ class Request(BaseRequest):
 
 
 class Response(BaseResponse):
+    """An HTTP response class.
+
+    :param body: The body of the response. If a dictionary or list is given,
+                 a JSON formatter is used to generate the body.
+    :param status_code: The numeric HTTP status code of the response. The
+                        default is 200.
+    :param headers: A dictionary of headers to include in the response.
+    """
     async def write(self, stream):
         self.complete()
 
@@ -77,6 +103,41 @@ class Response(BaseResponse):
 
 class Microdot(BaseMicrodot):
     async def start_server(self, host='0.0.0.0', port=5000, debug=False):
+        """Start the Microdot web server as a coroutine. This coroutine does
+        not normally return, as the server enters an endless listening loop.
+        The :func:`shutdown` function provides a method for terminating the
+        server gracefully.
+
+        :param host: The hostname or IP address of the network interface that
+                     will be listening for requests. A value of ``'0.0.0.0'``
+                     (the default) indicates that the server should listen for
+                     requests on all the available interfaces, and a value of
+                     ``127.0.0.1`` indicates that the server should listen
+                     for requests only on the internal networking interface of
+                     the host.
+        :param port: The port number to listen for requests. The default is
+                     port 5000.
+        :param debug: If ``True``, the server logs debugging information. The
+                      default is ``False``.
+
+        This method is a coroutine.
+
+        Example::
+
+            import asyncio
+            from microdot_asyncio import Microdot
+
+            app = Microdot()
+
+            @app.route('/')
+            async def index():
+                return 'Hello, world!'
+
+            async def main():
+                await app.start_server(debug=True)
+
+            asyncio.run(main())
+        """
         self.debug = debug
 
         async def serve(reader, writer):
@@ -104,6 +165,34 @@ class Microdot(BaseMicrodot):
         await self.server.wait_closed()
 
     def run(self, host='0.0.0.0', port=5000, debug=False):
+        """Start the web server. This function does not normally return, as
+        the server enters an endless listening loop. The :func:`shutdown`
+        function provides a method for terminating the server gracefully.
+
+        :param host: The hostname or IP address of the network interface that
+                     will be listening for requests. A value of ``'0.0.0.0'``
+                     (the default) indicates that the server should listen for
+                     requests on all the available interfaces, and a value of
+                     ``127.0.0.1`` indicates that the server should listen
+                     for requests only on the internal networking interface of
+                     the host.
+        :param port: The port number to listen for requests. The default is
+                     port 5000.
+        :param debug: If ``True``, the server logs debugging information. The
+                      default is ``False``.
+
+        Example::
+
+            from microdot_asyncio import Microdot
+
+            app = Microdot()
+
+            @app.route('/')
+            async def index():
+                return 'Hello, world!'
+
+            app.run(debug=True)
+        """
         asyncio.run(self.start_server(host=host, port=port, debug=debug))
 
     def shutdown(self):
