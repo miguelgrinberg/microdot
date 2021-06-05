@@ -1,5 +1,5 @@
 import unittest
-from microdot import Request
+from microdot import Request, MultiDict
 from tests.mock_socket import get_request_fd
 
 
@@ -42,7 +42,8 @@ class TestRequest(unittest.TestCase):
         fd = get_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
         req = Request.create('app', fd, 'addr')
         self.assertEqual(req.query_string, 'foo=bar&abc=def&x=%2f%%')
-        self.assertEqual(req.args, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        self.assertEqual(req.args, MultiDict(
+            {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
 
     def test_json(self):
         fd = get_request_fd('GET', '/foo', headers={
@@ -68,7 +69,8 @@ class TestRequest(unittest.TestCase):
             body='foo=bar&abc=def&x=%2f%%')
         req = Request.create('app', fd, 'addr')
         form = req.form
-        self.assertEqual(form, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        self.assertEqual(form, MultiDict(
+            {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
         self.assertTrue(req.form is form)
 
         fd = get_request_fd('GET', '/foo', headers={

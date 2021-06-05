@@ -4,6 +4,7 @@ except ImportError:
     import asyncio
 
 import unittest
+from microdot import MultiDict
 from microdot_asyncio import Request
 from tests.mock_socket import get_async_request_fd
 
@@ -51,7 +52,8 @@ class TestRequestAsync(unittest.TestCase):
         fd = get_async_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
         req = _run(Request.create('app', fd, 'addr'))
         self.assertEqual(req.query_string, 'foo=bar&abc=def&x=%2f%%')
-        self.assertEqual(req.args, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        self.assertEqual(req.args, MultiDict(
+            {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
 
     def test_json(self):
         fd = get_async_request_fd('GET', '/foo', headers={
@@ -77,7 +79,8 @@ class TestRequestAsync(unittest.TestCase):
             body='foo=bar&abc=def&x=%2f%%')
         req = _run(Request.create('app', fd, 'addr'))
         form = req.form
-        self.assertEqual(form, {'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        self.assertEqual(form, MultiDict(
+            {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
         self.assertTrue(req.form is form)
 
         fd = get_async_request_fd('GET', '/foo', headers={

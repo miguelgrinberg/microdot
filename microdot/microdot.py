@@ -77,6 +77,38 @@ def urldecode(string):
     return ''.join(result)
 
 
+class MultiDict(dict):
+    def __init__(self, initial_dict=None):
+        super().__init__()
+        if initial_dict:
+            for key, value in initial_dict.items():
+                self[key] = value
+
+    def __setitem__(self, key, value):
+        if key not in self:
+            super().__setitem__(key, [])
+        super().__getitem__(key).append(value)
+
+    def __getitem__(self, key):
+        return super().__getitem__(key)[0]
+
+    def get(self, key, default=None, type=None):
+        if key not in self:
+            return default
+        value = self[key]
+        if type is not None:
+            value = type(value)
+        return value
+
+    def getlist(self, key, type=None):
+        if key not in self:
+            return []
+        values = super().__getitem__(key)
+        if type is not None:
+            values = [type(value) for value in values]
+        return values
+
+
 class Request():
     """An HTTP request class."""
 
@@ -152,10 +184,10 @@ class Request():
                        body)
 
     def _parse_urlencoded(self, urlencoded):
-        return {
-            urldecode(key): urldecode(value) for key, value in [
-                pair.split('=', 1) for pair in
-                urlencoded.split('&')]}
+        data = MultiDict()
+        for k, v in [pair.split('=', 1) for pair in urlencoded.split('&')]:
+            data[urldecode(k)] = urldecode(v)
+        return data
 
     @property
     def json(self):
@@ -277,7 +309,7 @@ class Response():
                         stream.write(buf)
                     if len(buf) < self.send_file_buffer_size:
                         break
-                if hasattr(self.body, 'close'):  # pragma: no close
+                if hasattr(self.body, 'close'):  # pragma: no cover
                     self.body.close()
             else:
                 stream.write(self.body)
@@ -616,7 +648,7 @@ class Microdot():
         while not self.shutdown_requested:
             try:
                 sock, addr = self.server.accept()
-            except OSError as exc:
+            except OSError as exc:  # pragma: no cover
                 if exc.args[0] == errno.ECONNABORTED:
                     break
                 else:

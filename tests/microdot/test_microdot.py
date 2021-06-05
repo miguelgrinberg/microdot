@@ -65,6 +65,39 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nbar'))
 
+    def test_method_decorators(self):
+        app = Microdot()
+
+        @app.get('/get')
+        def get(req):
+            return 'GET'
+
+        @app.post('/post')
+        def post(req):
+            return 'POST'
+
+        @app.put('/put')
+        def put(req):
+            return 'PUT'
+
+        @app.patch('/patch')
+        def patch(req):
+            return 'PATCH'
+
+        @app.delete('/delete')
+        def delete(req):
+            return 'DELETE'
+
+        methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+        mock_socket.clear_requests()
+        fds = [mock_socket.add_request(method, '/' + method.lower())
+               for method in methods]
+        self._add_shutdown(app)
+        app.run()
+        for fd, method in zip(fds, methods):
+            self.assertTrue(fd.response.endswith(
+                b'\r\n\r\n' + method.encode()))
+
     def test_before_after_request(self):
         app = Microdot()
 

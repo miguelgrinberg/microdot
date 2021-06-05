@@ -1,3 +1,4 @@
+from tests.microdot.test_multidict import TestMultiDict
 from tests.microdot.test_request import TestRequest
 from tests.microdot.test_response import TestResponse
 from tests.microdot.test_url_pattern import TestURLPattern
