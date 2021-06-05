@@ -78,6 +78,23 @@ def urldecode(string):
 
 
 class MultiDict(dict):
+    """A subclass of dictionary that can hold multiple values for the same
+    key. It is used to hold key/value pairs decoded from query strings and
+    form submissions.
+
+    :param initial_dict: an initial dictionary of key/value pairs to
+                         initialize this object with.
+
+    Example::
+
+        >>> d = MultiDict()
+        >>> d['sort'] = 'name'
+        >>> d['sort'] = 'email'
+        >>> print(d['sort'])
+        'name'
+        >>> print(d.getlist('sort'))
+        ['name', 'email']
+    """
     def __init__(self, initial_dict=None):
         super().__init__()
         if initial_dict:
@@ -93,6 +110,26 @@ class MultiDict(dict):
         return super().__getitem__(key)[0]
 
     def get(self, key, default=None, type=None):
+        """Return the value for a given key.
+
+        :param key: The key to retrieve.
+        :param default: A default value to use if the key does not exist.
+        :param type: A type conversion callable to apply to the value.
+
+        If the multidict contains more than one value for the requested key,
+        this method returns the first value only.
+
+        Example::
+
+            >>> d = MultiDict()
+            >>> d['age'] = '42'
+            >>> d.get('age')
+            '42'
+            >>> d.get('age', type=int)
+            42
+            >>> d.get('name', default='noname')
+            'noname'
+        """
         if key not in self:
             return default
         value = self[key]
@@ -101,6 +138,28 @@ class MultiDict(dict):
         return value
 
     def getlist(self, key, type=None):
+        """Return all the values for a given key.
+
+        :param key: The key to retrieve.
+        :param type: A type conversion callable to apply to the values.
+
+        If the requested key does not exist in the dictionary, this method
+        returns an empty list.
+
+        Example::
+
+            >>> d = MultiDict()
+            >>> d.getlist('items')
+            []
+            >>> d['items'] = '3'
+            >>> d.getlist('items')
+            ['3']
+            >>> d['items'] = '56'
+            >>> d.getlist('items')
+            ['3', '56']
+            >>> d.getlist('items', type=int)
+            [3, 56]
+        """
         if key not in self:
             return []
         values = super().__getitem__(key)
@@ -110,8 +169,25 @@ class MultiDict(dict):
 
 
 class Request():
-    """An HTTP request class."""
+    """An HTTP request class.
 
+    :var app: The application instance to which this request belongs.
+    :var method: The HTTP method of the request.
+    :var path: The path portion of the URL.
+    :var query_string: The query string portion of the URL.
+    :var args: The parsed query string, as a :class:`MultiDict` object.
+    :var headers: A dictionary with the headers included in the request.
+    :var cookies: A dictionary with the cookies included in the request.
+    :var content_length: The parsed ``Content-Length`` header.
+    :var content_type: The parsed ``Content-Type`` header.
+    :var body: A stream from where the body can be read.
+    :var json: The parsed JSON body, as a dictionary or list, or ``None`` if
+               the request does not have a JSON body.
+    :var form: The parsed form submission body, as a :class:`MultiDict` object,
+               or ``None`` if the request does not have a form submission.
+    :var g: A general purpose container for applications to store data during
+            the life of the request.
+    """
     class G:
         pass
 
@@ -191,9 +267,6 @@ class Request():
 
     @property
     def json(self):
-        """The parsed JSON body of the request, or ``None`` if the request
-        does not have a JSON body.
-        """
         if self.content_type != 'application/json':
             return None
         if self._json is None:
@@ -202,9 +275,6 @@ class Request():
 
     @property
     def form(self):
-        """The parsed form data from the request, or ``None`` if the request
-        does not have form data.
-        """
         if self.content_type != 'application/x-www-form-urlencoded':
             return None
         if self._form is None:

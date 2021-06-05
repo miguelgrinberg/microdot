@@ -26,6 +26,12 @@ Python interpreters that support it.
 .. autoclass:: microdot.Response
    :members:
 
+``MultiDict`` class
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: microdot.MultiDict
+   :members:
+
 ``microdot_asyncio`` module
 ---------------------------
 
