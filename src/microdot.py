@@ -275,7 +275,10 @@ class Request():
 
     @property
     def form(self):
-        if self.content_type != 'application/x-www-form-urlencoded':
+        if self.content_type is None:
+            return None
+        mime_type = self.content_type.split(';')[0]
+        if mime_type != 'application/x-www-form-urlencoded':
             return None
         if self._form is None:
             self._form = self._parse_urlencoded(self.body.decode())
