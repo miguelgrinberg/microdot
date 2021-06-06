@@ -6,8 +6,8 @@
 Microdot
 ========
 
-Microdot is a minimalistic Python web framework for microcontrollers inspired
-by `Flask <https://flask.palletsprojects.com/>`_, and designed to run on
+Microdot is a minimalistic Python web framework inspired by
+`Flask <https://flask.palletsprojects.com/>`_, and designed to run on
 systems with limited resources such as microcontrollers. It runs on standard
 Python and on `MicroPython <https://micropython.org>`_.
 
