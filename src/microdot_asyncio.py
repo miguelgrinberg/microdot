@@ -162,7 +162,14 @@ class Microdot(BaseMicrodot):
                 host=host, port=port))
 
         self.server = await asyncio.start_server(serve, host, port)
-        await self.server.wait_closed()
+        while True:
+            try:
+                await self.server.wait_closed()
+                break
+            except AttributeError:  # pragma: no cover
+                # the task hasn't been initialized in the server object yet
+                # wait a bit and try again
+                await asyncio.sleep(0.1)
 
     def run(self, host='0.0.0.0', port=5000, debug=False):
         """Start the web server. This function does not normally return, as
