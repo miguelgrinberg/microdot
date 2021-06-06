@@ -1,3 +1,13 @@
+Installation
+------------
+
+Microdot can be installed with ``pip``::
+
+    pip install microdot
+
+For platforms that do not support or cannot run ``pip``, you can also manually
+copy and install the ``microdot.py`` and ``microdot_asyncio.py`` source files.
+
 Examples
 --------
 
