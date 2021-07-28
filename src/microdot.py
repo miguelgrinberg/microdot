@@ -308,7 +308,7 @@ class Response():
 
     def __init__(self, body='', status_code=200, headers=None):
         self.status_code = status_code
-        self.headers = headers or {}
+        self.headers = headers.copy() if headers else {}
         if isinstance(body, (dict, list)):
             self.body = json.dumps(body).encode()
             self.headers['Content-Type'] = 'application/json'
