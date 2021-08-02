@@ -212,6 +212,8 @@ class Request():
             if header == 'Content-Length':
                 self.content_length = int(value)
             elif header == 'Content-Type':
+                if value:
+                    value = value.split(';')[0]
                 self.content_type = value
             elif header == 'Cookie':
                 for cookie in value.split(';'):
@@ -275,10 +277,7 @@ class Request():
 
     @property
     def form(self):
-        if self.content_type is None:
-            return None
-        mime_type = self.content_type.split(';')[0]
-        if mime_type != 'application/x-www-form-urlencoded':
+        if self.content_type != 'application/x-www-form-urlencoded':
             return None
         if self._form is None:
             self._form = self._parse_urlencoded(self.body.decode())
