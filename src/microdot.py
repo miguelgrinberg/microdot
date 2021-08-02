@@ -267,20 +267,23 @@ class Request():
 
     @property
     def json(self):
-        if self.content_type != 'application/json':
-            return None
         if self._json is None:
+            if self.content_type is None:
+                return None
+            mime_type = self.content_type.split(';')[0]
+            if mime_type != 'application/json':
+                return None
             self._json = json.loads(self.body.decode())
         return self._json
 
     @property
     def form(self):
-        if self.content_type is None:
-            return None
-        mime_type = self.content_type.split(';')[0]
-        if mime_type != 'application/x-www-form-urlencoded':
-            return None
         if self._form is None:
+            if self.content_type is None:
+                return None
+            mime_type = self.content_type.split(';')[0]
+            if mime_type != 'application/x-www-form-urlencoded':
+                return None
             self._form = self._parse_urlencoded(self.body.decode())
         return self._form
 
