@@ -76,6 +76,16 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertIn(b'Content-Type: text/plain\r\n', fd2.response)
         self.assertTrue(fd2.response.endswith(b'\r\n\r\nbar-async'))
 
+    def test_empty_request(self):
+        app = Microdot()
+
+        mock_socket.clear_requests()
+        fd = mock_socket.FakeStream(b'\n')
+        mock_socket._requests.append(fd)
+        self._add_shutdown(app)
+        app.run()
+        assert fd.response == b''
+
     def test_before_after_request(self):
         app = Microdot()
 

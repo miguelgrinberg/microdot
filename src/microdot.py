@@ -235,7 +235,7 @@ class Request():
         """
         # request line
         line = client_stream.readline().strip().decode()
-        if not line:  # pragma: no cover
+        if not line:
             return None
         method, url, http_version = line.split()
         http_version = http_version.split('/', 1)[1]

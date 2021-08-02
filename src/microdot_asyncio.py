@@ -95,7 +95,7 @@ class Response(BaseResponse):
                         await stream.awrite(buf)
                     if len(buf) < self.send_file_buffer_size:
                         break
-                if hasattr(self.body, 'close'):
+                if hasattr(self.body, 'close'):  # pragma: no cover
                     self.body.close()
             else:
                 await stream.awrite(self.body)

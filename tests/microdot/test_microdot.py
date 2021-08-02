@@ -65,6 +65,16 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nbar'))
 
+    def test_empty_request(self):
+        app = Microdot()
+
+        mock_socket.clear_requests()
+        fd = mock_socket.FakeStream(b'\n')
+        mock_socket._requests.append(fd)
+        self._add_shutdown(app)
+        app.run()
+        assert fd.response == b''
+
     def test_method_decorators(self):
         app = Microdot()
 
