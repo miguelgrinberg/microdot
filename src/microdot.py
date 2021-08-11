@@ -296,6 +296,9 @@ class Response():
     :param status_code: The numeric HTTP status code of the response. The
                         default is 200.
     :param headers: A dictionary of headers to include in the response.
+    :param reason: A custom reason phrase to add after the status code. The
+                   default is "OK" for responses with a 200 status code and
+                   "N/A" for any other status codes.
     """
     types_map = {
         'css': 'text/css',
