@@ -85,6 +85,26 @@ class TestResponseAsync(unittest.TestCase):
         self.assertIn(b'Content-Type: application/json\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n[1, "2"]'))
 
+    def test_create_with_reason(self):
+        res = Response('foo', reason='ALL GOOD!')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers, {})
+        self.assertEqual(res.reason, 'ALL GOOD!')
+        self.assertEqual(res.body, b'foo')
+        fd = FakeStreamAsync()
+        _run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 ALL GOOD!\r\n', fd.response)
+
+    def test_create_with_status_and_reason(self):
+        res = Response('not found', 404, reason='NOT FOUND')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.headers, {})
+        self.assertEqual(res.reason, 'NOT FOUND')
+        self.assertEqual(res.body, b'not found')
+        fd = FakeStreamAsync()
+        _run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 404 NOT FOUND\r\n', fd.response)
+
     def test_send_file(self):
         res = Response.send_file('tests/files/test.txt',
                                  content_type='text/html')

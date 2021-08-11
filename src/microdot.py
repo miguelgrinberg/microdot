@@ -309,9 +309,10 @@ class Response():
     }
     send_file_buffer_size = 1024
 
-    def __init__(self, body='', status_code=200, headers=None):
+    def __init__(self, body='', status_code=200, headers=None, reason=None):
         self.status_code = status_code
         self.headers = headers.copy() if headers else {}
+        self.reason = reason
         if isinstance(body, (dict, list)):
             self.body = json.dumps(body).encode()
             self.headers['Content-Type'] = 'application/json'
@@ -364,9 +365,10 @@ class Response():
         self.complete()
 
         # status code
+        reason = self.reason if self.reason is not None else \
+            ('OK' if self.status_code == 200 else 'N/A')
         stream.write('HTTP/1.0 {status_code} {reason}\r\n'.format(
-            status_code=self.status_code,
-            reason='OK' if self.status_code == 200 else 'N/A').encode())
+            status_code=self.status_code, reason=reason).encode())
 
         # headers
         for header, value in self.headers.items():

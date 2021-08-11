@@ -112,6 +112,28 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.headers, {'X-Test': 'Foo'})
         self.assertEqual(res.body, b'foo')
 
+    def test_create_with_reason(self):
+        res = Response('foo', reason='ALL GOOD!')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers, {})
+        self.assertEqual(res.reason, 'ALL GOOD!')
+        self.assertEqual(res.body, b'foo')
+        fd = io.BytesIO()
+        res.write(fd)
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 200 ALL GOOD!\r\n', response)
+
+    def test_create_with_status_and_reason(self):
+        res = Response('not found', 404, reason='NOT FOUND')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.headers, {})
+        self.assertEqual(res.reason, 'NOT FOUND')
+        self.assertEqual(res.body, b'not found')
+        fd = io.BytesIO()
+        res.write(fd)
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 404 NOT FOUND\r\n', response)
+
     def test_cookies(self):
         res = Response('ok')
         res.set_cookie('foo1', 'bar1')
