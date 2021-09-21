@@ -172,6 +172,7 @@ class Request():
     """An HTTP request class.
 
     :var app: The application instance to which this request belongs.
+    :var client_addr: The address of the client, as a tuple (host, port).
     :var method: The HTTP method of the request.
     :var path: The path portion of the URL.
     :var query_string: The query string portion of the URL.
