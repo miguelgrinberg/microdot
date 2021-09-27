@@ -34,7 +34,7 @@ class Request(BaseRequest):
         object.
         """
         # request line
-        line = (await client_stream.readline()).strip().decode()
+        line = (await Request._safe_readline(client_stream)).strip().decode()
         if not line:  # pragma: no cover
             return None
         method, url, http_version = line.split()
@@ -44,7 +44,8 @@ class Request(BaseRequest):
         headers = {}
         content_length = 0
         while True:
-            line = (await client_stream.readline()).strip().decode()
+            line = (await Request._safe_readline(
+                client_stream)).strip().decode()
             if line == '':
                 break
             header, value = line.split(':', 1)
@@ -59,6 +60,13 @@ class Request(BaseRequest):
 
         return Request(app, client_addr, method, url, http_version, headers,
                        body)
+
+    @staticmethod
+    async def _safe_readline(stream):
+        line = (await stream.readline())
+        if len(line) > Request.max_readline:
+            raise ValueError('line too long')
+        return line
 
 
 class Response(BaseResponse):

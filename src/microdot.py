@@ -198,6 +198,15 @@ class Request():
     #:    Request.max_content_length = 1 * 1024 * 1024  # 1MB requests allowed
     max_content_length = 16 * 1024
 
+    #: Specify the maximum length allowed for a line in the request. Requests
+    #: with longer lines will not be correctly interpreted. Applications can
+    #: change this maximum as necessary.
+    #:
+    #: Example::
+    #:
+    #:    Request.max_readline = 16 * 1024  # 16KB lines allowed
+    max_readline = 2 * 1024
+
     class G:
         pass
 
@@ -244,7 +253,7 @@ class Request():
         This method returns a newly created ``Request`` object.
         """
         # request line
-        line = client_stream.readline().strip().decode()
+        line = Request._safe_readline(client_stream).strip().decode()
         if not line:
             return None
         method, url, http_version = line.split()
@@ -254,7 +263,7 @@ class Request():
         headers = {}
         content_length = 0
         while True:
-            line = client_stream.readline().strip().decode()
+            line = Request._safe_readline(client_stream).strip().decode()
             if line == '':
                 break
             header, value = line.split(':', 1)
@@ -297,6 +306,14 @@ class Request():
                 return None
             self._form = self._parse_urlencoded(self.body.decode())
         return self._form
+
+    @staticmethod
+    def _safe_readline(stream):
+        line = stream.readline(Request.max_readline + 1)
+        print(line, Request.max_readline)
+        if len(line) > Request.max_readline:
+            raise ValueError('line too long')
+        return line
 
 
 class Response():
