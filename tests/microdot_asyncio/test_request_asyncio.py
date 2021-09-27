@@ -88,3 +88,15 @@ class TestRequestAsync(unittest.TestCase):
             body='foo=bar&abc=def&x=%2f%%')
         req = _run(Request.create('app', fd, 'addr'))
         self.assertIsNone(req.form)
+
+    def test_large_payload(self):
+        saved_max_content_length = Request.max_content_length
+        Request.max_content_length = 16
+
+        fd = get_async_request_fd('GET', '/foo', headers={
+            'Content-Type': 'application/x-www-form-urlencoded'},
+            body='foo=bar&abc=def&x=y')
+        req = _run(Request.create('app', fd, 'addr'))
+        assert req.body == b''
+
+        Request.max_content_length = saved_max_content_length

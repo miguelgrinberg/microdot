@@ -189,6 +189,15 @@ class Request():
     :var g: A general purpose container for applications to store data during
             the life of the request.
     """
+    #: Specify the maximum payload size that is accepted. Requests with larger
+    #: payloads will be rejected with a 413 status code. Applications can
+    #: change this maximum as necessary.
+    #:
+    #: Example::
+    #:
+    #:    Request.max_content_length = 1 * 1024 * 1024  # 1MB requests allowed
+    max_content_length = 16 * 1024
+
     class G:
         pass
 
@@ -255,7 +264,8 @@ class Request():
                 content_length = int(value)
 
         # body
-        body = client_stream.read(content_length) if content_length else b''
+        body = client_stream.read(content_length) if content_length and \
+            content_length <= Request.max_content_length else b''
 
         return Request(app, client_addr, method, url, http_version, headers,
                        body)
@@ -770,39 +780,45 @@ class Microdot():
 
         req = Request.create(self, stream, addr)
         if req:
-            f = self.find_route(req)
-            try:
-                res = None
-                if f:
-                    for handler in self.before_request_handlers:
-                        res = handler(req)
-                        if res:
-                            break
-                    if res is None:
-                        res = f(req, **req.url_args)
-                    if isinstance(res, tuple):
-                        res = Response(*res)
-                    elif not isinstance(res, Response):
-                        res = Response(res)
-                    for handler in self.after_request_handlers:
-                        res = handler(req, res) or res
-                elif 404 in self.error_handlers:
-                    res = self.error_handlers[404](req)
+            if req.content_length > req.max_content_length:
+                if 413 in self.error_handlers:
+                    res = self.error_handlers[413](req)
                 else:
-                    res = 'Not found', 404
-            except Exception as exc:
-                print_exception(exc)
-                res = None
-                if exc.__class__ in self.error_handlers:
-                    try:
-                        res = self.error_handlers[exc.__class__](req, exc)
-                    except Exception as exc2:  # pragma: no cover
-                        print_exception(exc2)
-                if res is None:
-                    if 500 in self.error_handlers:
-                        res = self.error_handlers[500](req)
+                    res = 'Payload too large', 413
+            else:
+                f = self.find_route(req)
+                try:
+                    res = None
+                    if f:
+                        for handler in self.before_request_handlers:
+                            res = handler(req)
+                            if res:
+                                break
+                        if res is None:
+                            res = f(req, **req.url_args)
+                        if isinstance(res, tuple):
+                            res = Response(*res)
+                        elif not isinstance(res, Response):
+                            res = Response(res)
+                        for handler in self.after_request_handlers:
+                            res = handler(req, res) or res
+                    elif 404 in self.error_handlers:
+                        res = self.error_handlers[404](req)
                     else:
-                        res = 'Internal server error', 500
+                        res = 'Not found', 404
+                except Exception as exc:
+                    print_exception(exc)
+                    res = None
+                    if exc.__class__ in self.error_handlers:
+                        try:
+                            res = self.error_handlers[exc.__class__](req, exc)
+                        except Exception as exc2:  # pragma: no cover
+                            print_exception(exc2)
+                    if res is None:
+                        if 500 in self.error_handlers:
+                            res = self.error_handlers[500](req)
+                        else:
+                            res = 'Internal server error', 500
             if isinstance(res, tuple):
                 res = Response(*res)
             elif not isinstance(res, Response):
