@@ -218,8 +218,12 @@ class Microdot(BaseMicrodot):
         self.server.close()
 
     async def dispatch_request(self, reader, writer):
-        req = await Request.create(self, reader,
-                                   writer.get_extra_info('peername'))
+        req = None
+        try:
+            req = await Request.create(self, reader,
+                                       writer.get_extra_info('peername'))
+        except Exception as exc:  # pragma: no cover
+            print_exception(exc)
         if req:
             if req.content_length > req.max_content_length:
                 if 413 in self.error_handlers:
@@ -266,11 +270,13 @@ class Microdot(BaseMicrodot):
                                 self.error_handlers[500], req)
                         else:
                             res = 'Internal server error', 500
-            if isinstance(res, tuple):
-                res = Response(*res)
-            elif not isinstance(res, Response):
-                res = Response(res)
-            await res.write(writer)
+        else:
+            res = 'Bad request', 400
+        if isinstance(res, tuple):
+            res = Response(*res)
+        elif not isinstance(res, Response):
+            res = Response(res)
+        await res.write(writer)
         await writer.aclose()
         if self.debug and req:  # pragma: no cover
             print('{method} {path} {status_code}'.format(

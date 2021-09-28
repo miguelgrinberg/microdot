@@ -73,7 +73,10 @@ class TestMicrodot(unittest.TestCase):
         mock_socket._requests.append(fd)
         self._add_shutdown(app)
         app.run()
-        assert fd.response == b''
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 400 N/A\r\n'))
+        self.assertIn(b'Content-Length: 11\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nBad request'))
 
     def test_method_decorators(self):
         app = Microdot()

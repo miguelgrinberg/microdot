@@ -310,7 +310,6 @@ class Request():
     @staticmethod
     def _safe_readline(stream):
         line = stream.readline(Request.max_readline + 1)
-        print(line, Request.max_readline)
         if len(line) > Request.max_readline:
             raise ValueError('line too long')
         return line
@@ -795,7 +794,11 @@ class Microdot():
         else:
             stream = sock
 
-        req = Request.create(self, stream, addr)
+        req = None
+        try:
+            req = Request.create(self, stream, addr)
+        except Exception as exc:  # pragma: no cover
+            print_exception(exc)
         if req:
             if req.content_length > req.max_content_length:
                 if 413 in self.error_handlers:
@@ -836,11 +839,13 @@ class Microdot():
                             res = self.error_handlers[500](req)
                         else:
                             res = 'Internal server error', 500
-            if isinstance(res, tuple):
-                res = Response(*res)
-            elif not isinstance(res, Response):
-                res = Response(res)
-            res.write(stream)
+        else:
+            res = 'Bad request', 400
+        if isinstance(res, tuple):
+            res = Response(*res)
+        elif not isinstance(res, Response):
+            res = Response(res)
+        res.write(stream)
         stream.close()
         if stream != sock:  # pragma: no cover
             sock.close()
