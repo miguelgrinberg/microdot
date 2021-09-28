@@ -444,6 +444,10 @@ class Response():
         :param content_type: The ``Content-Type`` header to use in the
                              response. If omitted, it is generated
                              automatically from the file extension.
+
+        Security note: The filename is assumed to be trusted. Never pass
+        filenames provided by the user before validating and sanitizing them
+        first.
         """
         if content_type is None:
             ext = filename.split('.')[-1]
