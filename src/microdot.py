@@ -430,6 +430,8 @@ class Response():
         :param status_code: The 3xx status code to use for the redirect. The
                             default is 302.
         """
+        if '\x0d' in location or '\x0a' in location:
+            raise ValueError('invalid redirect URL')
         return cls(status_code=status_code, headers={'Location': location})
 
     @classmethod
