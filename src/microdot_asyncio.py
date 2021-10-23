@@ -55,7 +55,8 @@ class Request(BaseRequest):
                 content_length = int(value)
 
         # body
-        body = await client_stream.read(content_length) if content_length and \
+        body = await client_stream.readexactly(content_length) \
+            if content_length and \
             content_length <= Request.max_content_length else b''
 
         return Request(app, client_addr, method, url, http_version, headers,

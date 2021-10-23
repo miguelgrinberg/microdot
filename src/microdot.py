@@ -273,8 +273,13 @@ class Request():
                 content_length = int(value)
 
         # body
-        body = client_stream.read(content_length) if content_length and \
-            content_length <= Request.max_content_length else b''
+        body = b''
+        if content_length and content_length <= Request.max_content_length:
+            while len(body) < content_length:
+                data = client_stream.read(content_length - len(body))
+                if len(data) == 0:  # pragma: no cover
+                    raise EOFError()
+                body += data
 
         return Request(app, client_addr, method, url, http_version, headers,
                        body)

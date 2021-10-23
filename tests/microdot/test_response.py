@@ -167,6 +167,9 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.status_code, 301)
         self.assertEqual(res.headers['Location'], '/foo')
 
+        with self.assertRaises(ValueError):
+            Response.redirect('/foo\x0d\x0a\x0d\x0a<p>Foo</p>')
+
     def test_send_file(self):
         files = [
             ('test.txt', 'text/plain'),

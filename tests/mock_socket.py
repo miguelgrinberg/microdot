@@ -59,6 +59,9 @@ class FakeStreamAsync:
     async def read(self, n):
         return self.stream.read(n)
 
+    async def readexactly(self, n):
+        return self.stream.read(n)
+
     async def awrite(self, data):
         self.stream.write(data)
 
