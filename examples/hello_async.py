@@ -33,8 +33,4 @@ async def shutdown(request):
     return 'The server is shutting down...'
 
 
-async def main():
-    await app.start_server(debug=True)
-
-
-asyncio.run(main())
+app.run(debug=True)
