@@ -51,7 +51,7 @@ class Request(BaseRequest):
             header, value = line.split(':', 1)
             value = value.strip()
             headers[header] = value
-            if header == 'Content-Length':
+            if header.lower() == 'content-length':
                 content_length = int(value)
 
         # body

@@ -228,11 +228,12 @@ class Request():
         self.content_length = 0
         self.content_type = None
         for header, value in self.headers.items():
-            if header == 'Content-Length':
+            header = header.lower()
+            if header == 'content-length':
                 self.content_length = int(value)
-            elif header == 'Content-Type':
+            elif header == 'content-type':
                 self.content_type = value
-            elif header == 'Cookie':
+            elif header == 'cookie':
                 for cookie in value.split(';'):
                     name, value = cookie.strip().split('=', 1)
                     self.cookies[name] = value
@@ -269,7 +270,7 @@ class Request():
             header, value = line.split(':', 1)
             value = value.strip()
             headers[header] = value
-            if header == 'Content-Length':
+            if header.lower() == 'content-length':
                 content_length = int(value)
 
         # body
