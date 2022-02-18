@@ -10,6 +10,12 @@ try:
     import uasyncio as asyncio
 except ImportError:
     import asyncio
+
+try:
+    import uio as io
+except ImportError:
+    import io
+
 from microdot import Microdot as BaseMicrodot
 from microdot import print_exception
 from microdot import Request as BaseRequest
@@ -18,6 +24,23 @@ from microdot import Response as BaseResponse
 
 def _iscoroutine(coro):
     return hasattr(coro, 'send') and hasattr(coro, 'throw')
+
+
+class _AsyncBytesIO:
+    def __init__(self, data):
+        self.stream = io.BytesIO(data)
+
+    async def read(self, n=-1):
+        return self.stream.read(n)
+
+    async def readline(self):  # pragma: no cover
+        return self.stream.readline()
+
+    async def readexactly(self, n):  # pragma: no cover
+        return self.stream.read(n)
+
+    async def readuntil(self, separator=b'\n'):  # pragma: no cover
+        return self.stream.readuntil(separator=separator)
 
 
 class Request(BaseRequest):
@@ -55,12 +78,15 @@ class Request(BaseRequest):
                 content_length = int(value)
 
         # body
-        body = await client_stream.readexactly(content_length) \
-            if content_length and \
-            content_length <= Request.max_content_length else b''
+        body = b''
+        if content_length and content_length <= Request.max_body_length:
+            body = await client_stream.readexactly(content_length)
+            stream = _AsyncBytesIO(body)
+        else:
+            stream = client_stream
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       body)
+                       body, stream)
 
     @staticmethod
     async def _safe_readline(stream):

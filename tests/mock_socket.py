@@ -56,7 +56,7 @@ class FakeStreamAsync:
     async def readline(self):
         return self.stream.readline()
 
-    async def read(self, n):
+    async def read(self, n=-1):
         return self.stream.read(n)
 
     async def readexactly(self, n):

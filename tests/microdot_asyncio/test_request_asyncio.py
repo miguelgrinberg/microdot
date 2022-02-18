@@ -101,14 +101,30 @@ class TestRequestAsync(unittest.TestCase):
 
         Request.max_readline = saved_max_readline
 
+    def test_stream(self):
+        fd = get_async_request_fd('GET', '/foo', headers={
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': '19'},
+            body='foo=bar&abc=def&x=y')
+        req = _run(Request.create('app', fd, 'addr'))
+        self.assertEqual(req.body, b'foo=bar&abc=def&x=y')
+        data = _run(req.stream.read())
+        self.assertEqual(data, b'foo=bar&abc=def&x=y')
+
     def test_large_payload(self):
         saved_max_content_length = Request.max_content_length
-        Request.max_content_length = 16
+        saved_max_body_length = Request.max_body_length
+        Request.max_content_length = 32
+        Request.max_body_length = 16
 
         fd = get_async_request_fd('GET', '/foo', headers={
-            'Content-Type': 'application/x-www-form-urlencoded'},
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': '19'},
             body='foo=bar&abc=def&x=y')
         req = _run(Request.create('app', fd, 'addr'))
         self.assertEqual(req.body, b'')
+        data = _run(req.stream.read())
+        self.assertEqual(data, b'foo=bar&abc=def&x=y')
 
         Request.max_content_length = saved_max_content_length
+        Request.max_body_length = saved_max_body_length

@@ -18,6 +18,11 @@ try:
 except ImportError:
     import errno
 
+try:
+    import uio as io
+except ImportError:
+    import io
+
 concurrency_mode = 'threaded'
 
 try:  # pragma: no cover
@@ -181,7 +186,8 @@ class Request():
     :var cookies: A dictionary with the cookies included in the request.
     :var content_length: The parsed ``Content-Length`` header.
     :var content_type: The parsed ``Content-Type`` header.
-    :var body: A stream from where the body can be read.
+    :var stream: The input stream, containing the request body.
+    :var body: The body of the request, as bytes.
     :var json: The parsed JSON body, as a dictionary or list, or ``None`` if
                the request does not have a JSON body.
     :var form: The parsed form submission body, as a :class:`MultiDict` object,
@@ -198,6 +204,17 @@ class Request():
     #:    Request.max_content_length = 1 * 1024 * 1024  # 1MB requests allowed
     max_content_length = 16 * 1024
 
+    #: Specify the maximum payload size that can be stored in ``body``.
+    #: Requests with payloads that are larger than this size and up to
+    #: ``max_content_length`` bytes will be accepted, but the application will
+    #: only be able to access the body of the request by reading from
+    #: ``stream``. Set to 0 if you always access the body as a stream.
+    #:
+    #: Example::
+    #:
+    #:    Request.max_body_length = 4 * 1024  # up to 4KB bodies read
+    max_body_length = 16 * 1024
+
     #: Specify the maximum length allowed for a line in the request. Requests
     #: with longer lines will not be correctly interpreted. Applications can
     #: change this maximum as necessary.
@@ -211,7 +228,7 @@ class Request():
         pass
 
     def __init__(self, app, client_addr, method, url, http_version, headers,
-                 body):
+                 body, stream):
         self.app = app
         self.client_addr = client_addr
         self.method = method
@@ -238,6 +255,7 @@ class Request():
                     name, value = cookie.strip().split('=', 1)
                     self.cookies[name] = value
         self.body = body
+        self.stream = stream
         self._json = None
         self._form = None
         self.g = Request.G()
@@ -275,15 +293,18 @@ class Request():
 
         # body
         body = b''
-        if content_length and content_length <= Request.max_content_length:
+        if content_length and content_length <= Request.max_body_length:
             while len(body) < content_length:
                 data = client_stream.read(content_length - len(body))
                 if len(data) == 0:  # pragma: no cover
                     raise EOFError()
                 body += data
+            stream = io.BytesIO(body)
+        else:
+            stream = client_stream
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       body)
+                       body, stream)
 
     def _parse_urlencoded(self, urlencoded):
         data = MultiDict()
