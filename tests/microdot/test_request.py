@@ -18,7 +18,7 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(req.cookies, {})
         self.assertEqual(req.content_length, 0)
         self.assertEqual(req.content_type, None)
-        self.assertEqual(req.body, b'')
+        self.assertEqual(req.body, fd)
         self.assertEqual(req.json, None)
         self.assertEqual(req.form, None)
 

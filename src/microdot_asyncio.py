@@ -20,6 +20,13 @@ def _iscoroutine(coro):
     return hasattr(coro, 'send') and hasattr(coro, 'throw')
 
 
+async def _process_body(req):
+    content_length = req.content_length
+    req.body = await req.body.readexactly(content_length) \
+        if content_length and \
+        content_length <= Request.max_content_length else b''
+
+
 class Request(BaseRequest):
     @staticmethod
     async def create(app, client_stream, client_addr):
@@ -42,7 +49,6 @@ class Request(BaseRequest):
 
         # headers
         headers = {}
-        content_length = 0
         while True:
             line = (await Request._safe_readline(
                 client_stream)).strip().decode()
@@ -51,16 +57,9 @@ class Request(BaseRequest):
             header, value = line.split(':', 1)
             value = value.strip()
             headers[header] = value
-            if header.lower() == 'content-length':
-                content_length = int(value)
-
-        # body
-        body = await client_stream.readexactly(content_length) \
-            if content_length and \
-            content_length <= Request.max_content_length else b''
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       body)
+                       client_stream)
 
     @staticmethod
     async def _safe_readline(stream):
@@ -237,13 +236,15 @@ class Microdot(BaseMicrodot):
                 try:
                     res = None
                     if f:
+                        if not f[1]:
+                            await _process_body(req)
                         for handler in self.before_request_handlers:
                             res = await self._invoke_handler(handler, req)
                             if res:
                                 break
                         if res is None:
                             res = await self._invoke_handler(
-                                f, req, **req.url_args)
+                                f[0], req, **req.url_args)
                         if isinstance(res, tuple):
                             res = Response(*res)
                         elif not isinstance(res, Response):

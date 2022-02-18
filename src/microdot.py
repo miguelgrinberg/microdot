@@ -77,6 +77,18 @@ def urldecode(string):
     return ''.join(result)
 
 
+def _process_body(req):
+    content_length = req.content_length
+    body = b''
+    if content_length and content_length <= Request.max_content_length:
+        while len(body) < content_length:
+            data = req.body.read(content_length - len(body))
+            if len(data) == 0:  # pragma: no cover
+                raise EOFError()
+            body += data
+    req.body = body
+
+
 class MultiDict(dict):
     """A subclass of dictionary that can hold multiple values for the same
     key. It is used to hold key/value pairs decoded from query strings and
@@ -262,7 +274,6 @@ class Request():
 
         # headers
         headers = {}
-        content_length = 0
         while True:
             line = Request._safe_readline(client_stream).strip().decode()
             if line == '':
@@ -270,20 +281,9 @@ class Request():
             header, value = line.split(':', 1)
             value = value.strip()
             headers[header] = value
-            if header.lower() == 'content-length':
-                content_length = int(value)
-
-        # body
-        body = b''
-        if content_length and content_length <= Request.max_content_length:
-            while len(body) < content_length:
-                data = client_stream.read(content_length - len(body))
-                if len(data) == 0:  # pragma: no cover
-                    raise EOFError()
-                body += data
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       body)
+                       client_stream)
 
     def _parse_urlencoded(self, urlencoded):
         data = MultiDict()
@@ -541,7 +541,7 @@ class Microdot():
         self.debug = False
         self.server = None
 
-    def route(self, url_pattern, methods=None):
+    def route(self, url_pattern, methods=None, stream=False):
         """Decorator that is used to register a function as a request handler
         for a given URL.
 
@@ -573,7 +573,7 @@ class Microdot():
         """
         def decorated(f):
             self.url_map.append(
-                (methods or ['GET'], URLPattern(url_pattern), f))
+                (methods or ['GET'], URLPattern(url_pattern), f, stream))
             return f
         return decorated
 
@@ -791,14 +791,17 @@ class Microdot():
         self.shutdown_requested = True
 
     def find_route(self, req):
-        f = None
-        for route_methods, route_pattern, route_handler in self.url_map:
+        for (
+            route_methods,
+            route_pattern,
+            route_handler,
+            route_stream,
+        ) in self.url_map:
             if req.method in route_methods:
                 req.url_args = route_pattern.match(req.path)
                 if req.url_args is not None:
-                    f = route_handler
-                    break
-        return f
+                    return route_handler, route_stream
+        return None
 
     def dispatch_request(self, sock, addr):
         if not hasattr(sock, 'readline'):  # pragma: no cover
@@ -822,12 +825,14 @@ class Microdot():
                 try:
                     res = None
                     if f:
+                        if not f[1]:
+                            _process_body(req)
                         for handler in self.before_request_handlers:
                             res = handler(req)
                             if res:
                                 break
                         if res is None:
-                            res = f(req, **req.url_args)
+                            res = f[0](req, **req.url_args)
                         if isinstance(res, tuple):
                             res = Response(*res)
                         elif not isinstance(res, Response):
