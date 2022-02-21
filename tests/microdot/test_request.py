@@ -93,11 +93,23 @@ class TestRequest(unittest.TestCase):
 
     def test_stream(self):
         fd = get_request_fd('GET', '/foo', headers={
-            'Content-Type': 'application/x-www-form-urlencoded'},
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': '19'},
+            body='foo=bar&abc=def&x=y')
+        req = Request.create('app', fd, 'addr')
+        self.assertEqual(req.stream.read(), b'foo=bar&abc=def&x=y')
+        with self.assertRaises(RuntimeError):
+            req.body
+
+    def test_body(self):
+        fd = get_request_fd('GET', '/foo', headers={
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': '19'},
             body='foo=bar&abc=def&x=y')
         req = Request.create('app', fd, 'addr')
         self.assertEqual(req.body, b'foo=bar&abc=def&x=y')
-        self.assertEqual(req.stream.read(), b'foo=bar&abc=def&x=y')
+        with self.assertRaises(RuntimeError):
+            req.stream
 
     def test_large_payload(self):
         saved_max_content_length = Request.max_content_length

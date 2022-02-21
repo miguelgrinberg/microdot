@@ -79,14 +79,22 @@ class Request(BaseRequest):
 
         # body
         body = b''
+        print(Request.max_body_length)
         if content_length and content_length <= Request.max_body_length:
             body = await client_stream.readexactly(content_length)
-            stream = _AsyncBytesIO(body)
+            stream = None
         else:
+            body = b''
             stream = client_stream
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       body, stream)
+                       body=body, stream=stream)
+
+    @property
+    def stream(self):
+        if self._stream is None:
+            self._stream = _AsyncBytesIO(self._body)
+        return self._stream
 
     @staticmethod
     async def _safe_readline(stream):

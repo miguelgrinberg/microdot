@@ -18,11 +18,6 @@ try:
 except ImportError:
     import errno
 
-try:
-    import uio as io
-except ImportError:
-    import io
-
 concurrency_mode = 'threaded'
 
 try:  # pragma: no cover
@@ -228,7 +223,7 @@ class Request():
         pass
 
     def __init__(self, app, client_addr, method, url, http_version, headers,
-                 body, stream):
+                 body=None, stream=None):
         self.app = app
         self.client_addr = client_addr
         self.method = method
@@ -254,8 +249,10 @@ class Request():
                 for cookie in value.split(';'):
                     name, value = cookie.strip().split('=', 1)
                     self.cookies[name] = value
-        self.body = body
-        self.stream = stream
+        self._body = body
+        self.body_used = False
+        self._stream = stream
+        self.stream_used = False
         self._json = None
         self._form = None
         self.g = Request.G()
@@ -280,7 +277,6 @@ class Request():
 
         # headers
         headers = {}
-        content_length = 0
         while True:
             line = Request._safe_readline(client_stream).strip().decode()
             if line == '':
@@ -288,29 +284,39 @@ class Request():
             header, value = line.split(':', 1)
             value = value.strip()
             headers[header] = value
-            if header.lower() == 'content-length':
-                content_length = int(value)
-
-        # body
-        body = b''
-        if content_length and content_length <= Request.max_body_length:
-            while len(body) < content_length:
-                data = client_stream.read(content_length - len(body))
-                if len(data) == 0:  # pragma: no cover
-                    raise EOFError()
-                body += data
-            stream = io.BytesIO(body)
-        else:
-            stream = client_stream
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       body, stream)
+                       stream=client_stream)
 
     def _parse_urlencoded(self, urlencoded):
         data = MultiDict()
         for k, v in [pair.split('=', 1) for pair in urlencoded.split('&')]:
             data[urldecode(k)] = urldecode(v)
         return data
+
+    @property
+    def body(self):
+        if self.stream_used:
+            raise RuntimeError('Cannot use both stream and body')
+        if self._body is None:
+            self._body = b''
+            if self.content_length and \
+                    self.content_length <= Request.max_body_length:
+                while len(self._body) < self.content_length:
+                    data = self._stream.read(
+                        self.content_length - len(self._body))
+                    if len(data) == 0:  # pragma: no cover
+                        raise EOFError()
+                    self._body += data
+                self.body_used = True
+        return self._body
+
+    @property
+    def stream(self):
+        if self.body_used:
+            raise RuntimeError('Cannot use both stream and body')
+        self.stream_used = True
+        return self._stream
 
     @property
     def json(self):
