@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 0.8.1** - 2022-03-18
+
+- Optimizations for request streams and bodies ([commit](https://github.com/miguelgrinberg/microdot/commit/29a9f6f46c737aa0fd452766c23bd83008594ac4))
+
 **Release 0.8.0** - 2022-02-18
 
 - Support streamed request payloads [#26](https://github.com/miguelgrinberg/microdot/issues/26) ([commit](https://github.com/miguelgrinberg/microdot/commit/992fa722c1312c0ac0ee9fbd5e23ad7b52d3caca))
