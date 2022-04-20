@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 0.8.2** - 2022-04-20
+
+- Remove debugging print statement [#38](https://github.com/miguelgrinberg/microdot/issues/38) ([commit](https://github.com/miguelgrinberg/microdot/commit/0f278321c8bd65c5cb67425eb837e6581cbb0054)) (thanks **Mark Blakeney**!)
+
 **Release 0.8.1** - 2022-03-18
 
 - Optimizations for request streams and bodies ([commit](https://github.com/miguelgrinberg/microdot/commit/29a9f6f46c737aa0fd452766c23bd83008594ac4))
