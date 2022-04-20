@@ -79,7 +79,6 @@ class Request(BaseRequest):
 
         # body
         body = b''
-        print(Request.max_body_length)
         if content_length and content_length <= Request.max_body_length:
             body = await client_stream.readexactly(content_length)
             stream = None
