@@ -1,4 +1,4 @@
-from microdot import Microdot, Response
+from microdot_wsgi import Microdot, Response
 
 app = Microdot()
 
@@ -29,4 +29,5 @@ def shutdown(request):
     return 'The server is shutting down...'
 
 
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)

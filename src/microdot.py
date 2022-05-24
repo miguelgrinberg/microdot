@@ -440,20 +440,22 @@ class Response():
                 stream.write('{header}: {value}\r\n'.format(
                     header=header, value=value).encode())
         stream.write(b'\r\n')
+        for body in self.body_iter():
+            stream.write(body)
 
-        # body
+    def body_iter(self):
         if self.body:
             if hasattr(self.body, 'read'):
                 while True:
                     buf = self.body.read(self.send_file_buffer_size)
                     if len(buf):
-                        stream.write(buf)
+                        yield buf
                     if len(buf) < self.send_file_buffer_size:
                         break
                 if hasattr(self.body, 'close'):  # pragma: no cover
                     self.body.close()
             else:
-                stream.write(self.body)
+                yield self.body
 
     @classmethod
     def redirect(cls, location, status_code=302):
@@ -800,7 +802,7 @@ class Microdot():
                     break
                 else:
                     raise
-            create_thread(self.dispatch_request, sock, addr)
+            create_thread(self.handle_request, sock, addr)
 
     def shutdown(self):
         """Request a server shutdown. The server will then exit its request
@@ -827,7 +829,7 @@ class Microdot():
                     break
         return f
 
-    def dispatch_request(self, sock, addr):
+    def handle_request(self, sock, addr):
         if not hasattr(sock, 'readline'):  # pragma: no cover
             stream = sock.makefile("rwb")
         else:
@@ -838,6 +840,19 @@ class Microdot():
             req = Request.create(self, stream, addr)
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
+        res = self.dispatch_request(req)
+        res.write(stream)
+        stream.close()
+        if stream != sock:  # pragma: no cover
+            sock.close()
+        if self.shutdown_requested:  # pragma: no cover
+            self.server.close()
+        if self.debug and req:  # pragma: no cover
+            print('{method} {path} {status_code}'.format(
+                method=req.method, path=req.path,
+                status_code=res.status_code))
+
+    def dispatch_request(self, req):
         if req:
             if req.content_length > req.max_content_length:
                 if 413 in self.error_handlers:
@@ -884,16 +899,7 @@ class Microdot():
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
-        res.write(stream)
-        stream.close()
-        if stream != sock:  # pragma: no cover
-            sock.close()
-        if self.shutdown_requested:  # pragma: no cover
-            self.server.close()
-        if self.debug and req:  # pragma: no cover
-            print('{method} {path} {status_code}'.format(
-                method=req.method, path=req.path,
-                status_code=res.status_code))
+        return res
 
 
 redirect = Response.redirect
