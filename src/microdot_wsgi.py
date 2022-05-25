@@ -6,32 +6,29 @@ from microdot import Microdot as BaseMicrodot
 from microdot import Request
 
 
-class WSGIRequest(Request):
-    def __init__(self, app, environ):
-        url = environ.get('SCRIPT_NAME', '') + environ.get('PATH_INFO', '')
+class Microdot(BaseMicrodot):
+    def wsgi_app(self, environ, start_response):
+        path = environ.get('SCRIPT_NAME', '') + environ.get('PATH_INFO', '')
         if 'QUERY_STRING' in environ and environ['QUERY_STRING']:
-            url += '?' + environ['QUERY_STRING']
+            path += '?' + environ['QUERY_STRING']
         headers = {}
         for k, v in environ.items():
             if k.startswith('HTTP_'):
                 h = '-'.join([p.title() for p in k[5:].split('_')])
                 headers[h] = v
-        super().__init__(
-            app,
+        req = Request(
+            self,
             (environ['REMOTE_ADDR'], int(environ.get('REMOTE_PORT', '0'))),
             environ['REQUEST_METHOD'],
-            url,
+            path,
             environ['SERVER_PROTOCOL'],
             headers,
             stream=environ['wsgi.input'])
-        self.environ = environ
+        req.environ = environ
 
-
-class Microdot(BaseMicrodot):
-    def wsgi_app(self, environ, start_response):
-        req = WSGIRequest(self, environ)
         res = self.dispatch_request(req)
         res.complete()
+
         reason = res.reason or ('OK' if res.status_code == 200 else 'N/A')
         start_response(
             str(res.status_code) + ' ' + reason,

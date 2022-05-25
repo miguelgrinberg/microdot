@@ -133,18 +133,27 @@ class Response(BaseResponse):
         await stream.awrite(b'\r\n')
 
         # body
+        async for body in self.body_iter():
+            await stream.awrite(body)
+
+    async def body_iter(self):
         if self.body:
             if hasattr(self.body, 'read'):
                 while True:
                     buf = self.body.read(self.send_file_buffer_size)
+                    if _iscoroutine(buf):  # pragma: no cover
+                        buf = await buf
                     if len(buf):
-                        await stream.awrite(buf)
+                        print('*', buf, self.send_file_buffer_size)
+                        yield buf
                     if len(buf) < self.send_file_buffer_size:
                         break
                 if hasattr(self.body, 'close'):  # pragma: no cover
-                    self.body.close()
+                    result = self.body.close()
+                    if _iscoroutine(result):
+                        await result
             else:
-                await stream.awrite(self.body)
+                yield self.body
 
 
 class Microdot(BaseMicrodot):
@@ -201,7 +210,7 @@ class Microdot(BaseMicrodot):
                 writer.awrite = MethodType(awrite, writer)
                 writer.aclose = MethodType(aclose, writer)
 
-            await self.dispatch_request(reader, writer)
+            await self.handle_request(reader, writer)
 
         if self.debug:  # pragma: no cover
             print('Starting async server on {host}:{port}...'.format(
@@ -251,13 +260,23 @@ class Microdot(BaseMicrodot):
     def shutdown(self):
         self.server.close()
 
-    async def dispatch_request(self, reader, writer):
+    async def handle_request(self, reader, writer):
         req = None
         try:
             req = await Request.create(self, reader,
                                        writer.get_extra_info('peername'))
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
+
+        res = await self.dispatch_request(req)
+        await res.write(writer)
+        await writer.aclose()
+        if self.debug and req:  # pragma: no cover
+            print('{method} {path} {status_code}'.format(
+                method=req.method, path=req.path,
+                status_code=res.status_code))
+
+    async def dispatch_request(self, req):
         if req:
             if req.content_length > req.max_content_length:
                 if 413 in self.error_handlers:
@@ -310,12 +329,7 @@ class Microdot(BaseMicrodot):
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
-        await res.write(writer)
-        await writer.aclose()
-        if self.debug and req:  # pragma: no cover
-            print('{method} {path} {status_code}'.format(
-                method=req.method, path=req.path,
-                status_code=res.status_code))
+        return res
 
     async def _invoke_handler(self, f_or_coro, *args, **kwargs):
         ret = f_or_coro(*args, **kwargs)

@@ -2,7 +2,7 @@ try:
     import uasyncio as asyncio
 except ImportError:
     import asyncio
-from microdot_asyncio import Microdot, Response
+from microdot_asgi import Microdot, Response
 
 app = Microdot()
 
@@ -33,4 +33,5 @@ async def shutdown(request):
     return 'The server is shutting down...'
 
 
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)

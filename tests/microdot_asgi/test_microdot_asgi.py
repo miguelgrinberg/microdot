@@ -1,0 +1,133 @@
+import unittest
+import sys
+
+try:
+    from unittest import mock
+except ImportError:
+    mock = None
+
+from microdot_asgi import Microdot, Response
+from tests import mock_asyncio
+
+
+@unittest.skipIf(sys.implementation.name == 'micropython',
+                 'not supported under MicroPython')
+class TestMicrodotASGI(unittest.TestCase):
+    def test_asgi_request_with_query_string(self):
+        app = Microdot()
+
+        @app.post('/foo/bar')
+        async def index(req):
+            self.assertEqual(req.app, app)
+            self.assertEqual(req.client_addr, ('1.2.3.4', 1234))
+            self.assertEqual(req.method, 'POST')
+            self.assertEqual(req.http_version, 'HTTP/1.1')
+            self.assertEqual(req.path, '/foo/bar')
+            self.assertEqual(req.args, {'baz': ['1']})
+            self.assertEqual(req.cookies, {'session': 'xyz'})
+            self.assertEqual(req.body, b'body')
+
+            class R:
+                def __init__(self):
+                    self.i = 0
+                    self.body = [b're', b'sp', b'on', b'se', b'']
+
+                async def read(self, n):
+                    data = self.body[self.i]
+                    self.i += 1
+                    return data
+
+            return Response(body=R(), headers={'Content-Length': '8'})
+
+        scope = {
+            'type': 'http',
+            'path': '/foo/bar',
+            'query_string': b'baz=1',
+            'headers': [('Authorization', 'Bearer 123'),
+                        ('Cookie', 'session=xyz'),
+                        ('Content-Length', 4)],
+            'client': ['1.2.3.4', 1234],
+            'method': 'POST',
+            'http_version': '1.1',
+        }
+
+        async def receive():
+            return {
+                'type': 'http.request',
+                'body': b'body',
+                'more_body': False,
+            }
+
+        async def send(packet):
+            if packet['type'] == 'http.response.start':
+                self.assertEqual(packet['status'], 200)
+                self.assertEqual(
+                    packet['headers'],
+                    [('Content-Length', '8'), ('Content-Type', 'text/plain')])
+            elif packet['type'] == 'http.response.body':
+                self.assertIn(packet['body'], [b're', b'sp', b'on', b'se'])
+
+        original_buffer_size = Response.send_file_buffer_size
+        Response.send_file_buffer_size = 2
+
+        mock_asyncio.run(app(scope, receive, send))
+
+        Response.send_file_buffer_size = original_buffer_size
+
+    def test_wsgi_request_without_query_string(self):
+        app = Microdot()
+
+        @app.route('/foo/bar')
+        async def index(req):
+            self.assertEqual(req.path, '/foo/bar')
+            self.assertEqual(req.args, {})
+            return 'response'
+
+        scope = {
+            'type': 'http',
+            'path': '/foo/bar',
+            'headers': [('Authorization', 'Bearer 123'),
+                        ('Cookie', 'session=xyz'),
+                        ('Content-Length', 4)],
+            'client': ['1.2.3.4', 1234],
+            'method': 'POST',
+            'http_version': '1.1',
+        }
+
+        async def receive():
+            return {
+                'type': 'http.request',
+                'body': b'body',
+                'more_body': False,
+            }
+
+        async def send(packet):
+            pass
+
+        mock_asyncio.run(app(scope, receive, send))
+
+    def test_shutdown(self):
+        app = Microdot()
+
+        @app.route('/shutdown')
+        async def shutdown(request):
+            request.app.shutdown()
+
+        scope = {
+            'type': 'http',
+            'path': '/shutdown',
+            'client': ['1.2.3.4', 1234],
+            'method': 'GET',
+            'http_version': '1.1',
+        }
+
+        async def receive():
+            pass
+
+        async def send(packet):
+            pass
+
+        with mock.patch('microdot_asgi.os.kill') as kill:
+            mock_asyncio.run(app(scope, receive, send))
+
+        kill.assert_called()

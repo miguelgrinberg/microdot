@@ -440,6 +440,8 @@ class Response():
                 stream.write('{header}: {value}\r\n'.format(
                     header=header, value=value).encode())
         stream.write(b'\r\n')
+
+        # body
         for body in self.body_iter():
             stream.write(body)
 

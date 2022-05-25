@@ -11,13 +11,27 @@ try:
 except ImportError:
     mock = None
 
-from microdot_wsgi import Microdot, WSGIRequest
+from microdot_wsgi import Microdot
 
 
 @unittest.skipIf(sys.implementation.name == 'micropython',
                  'not supported under MicroPython')
 class TestMicrodotWSGI(unittest.TestCase):
     def test_wsgi_request_with_query_string(self):
+        app = Microdot()
+
+        @app.post('/foo/bar')
+        def index(req):
+            self.assertEqual(req.app, app)
+            self.assertEqual(req.client_addr, ('1.2.3.4', 1234))
+            self.assertEqual(req.method, 'POST')
+            self.assertEqual(req.http_version, 'HTTP/1.1')
+            self.assertEqual(req.path, '/foo/bar')
+            self.assertEqual(req.args, {'baz': ['1']})
+            self.assertEqual(req.cookies, {'session': 'xyz'})
+            self.assertEqual(req.body, b'body')
+            return 'response'
+
         environ = {
             'SCRIPT_NAME': '/foo',
             'PATH_INFO': '/bar',
@@ -31,18 +45,25 @@ class TestMicrodotWSGI(unittest.TestCase):
             'SERVER_PROTOCOL': 'HTTP/1.1',
             'wsgi.input': io.BytesIO(b'body'),
         }
-        app = Microdot()
-        req = WSGIRequest(app, environ)
-        self.assertEqual(req.app, app)
-        self.assertEqual(req.client_addr, ('1.2.3.4', 1234))
-        self.assertEqual(req.method, 'POST')
-        self.assertEqual(req.http_version, 'HTTP/1.1')
-        self.assertEqual(req.path, '/foo/bar')
-        self.assertEqual(req.args, {'baz': ['1']})
-        self.assertEqual(req.cookies, {'session': 'xyz'})
-        self.assertEqual(req.body, b'body')
 
-    def test_wsgi_request_withiout_query_string(self):
+        def start_response(status, headers):
+            self.assertEqual(status, '200 OK')
+            self.assertEqual(
+                headers,
+                [('Content-Length', '8'), ('Content-Type', 'text/plain')])
+
+        r = app(environ, start_response)
+        self.assertEqual(next(r), b'response')
+
+    def test_wsgi_request_without_query_string(self):
+        app = Microdot()
+
+        @app.route('/foo/bar')
+        def index(req):
+            self.assertEqual(req.path, '/foo/bar')
+            self.assertEqual(req.args, {})
+            return 'response'
+
         environ = {
             'SCRIPT_NAME': '/foo',
             'PATH_INFO': '/bar',
@@ -52,37 +73,11 @@ class TestMicrodotWSGI(unittest.TestCase):
             'SERVER_PROTOCOL': 'HTTP/1.1',
             'wsgi.input': io.BytesIO(b''),
         }
-        app = Microdot()
-        req = WSGIRequest(app, environ)
-        self.assertEqual(req.path, '/foo/bar')
-        self.assertEqual(req.args, {})
-
-    def test_wsgi_app(self):
-        app = Microdot()
-
-        @app.route('/foo')
-        def foo(request):
-            return 'bar'
-
-        environ = {
-            'PATH_INFO': '/foo',
-            'REMOTE_ADDR': '1.2.3.4',
-            'REMOTE_PORT': '1234',
-            'REQUEST_METHOD': 'GET',
-            'SERVER_PROTOCOL': 'HTTP/1.1',
-            'wsgi.input': io.BytesIO(b''),
-        }
 
         def start_response(status, headers):
-            self.assertEqual(status, '200 OK')
-            self.assertEqual(headers, [('Content-Length', '3'),
-                                       ('Content-Type', 'text/plain')])
+            pass
 
-        res = app(environ, start_response)
-        body = b''
-        for b in res:
-            body += b
-        self.assertEqual(body, b'bar')
+        app(environ, start_response)
 
     def test_shutdown(self):
         app = Microdot()
