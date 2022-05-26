@@ -136,24 +136,38 @@ class Response(BaseResponse):
         async for body in self.body_iter():
             await stream.awrite(body)
 
-    async def body_iter(self):
-        if self.body:
-            if hasattr(self.body, 'read'):
-                while True:
-                    buf = self.body.read(self.send_file_buffer_size)
-                    if _iscoroutine(buf):  # pragma: no cover
-                        buf = await buf
-                    if len(buf):
-                        print('*', buf, self.send_file_buffer_size)
-                        yield buf
-                    if len(buf) < self.send_file_buffer_size:
-                        break
-                if hasattr(self.body, 'close'):  # pragma: no cover
-                    result = self.body.close()
-                    if _iscoroutine(result):
-                        await result
-            else:
-                yield self.body
+    def body_iter(self):
+        response = self
+
+        class iter:
+            def __aiter__(self):
+                if response.body:
+                    self.i = 0
+                else:
+                    self.i = -1
+                return self
+
+            async def __anext__(self):
+                if self.i == -1:
+                    raise StopAsyncIteration
+                if self.i == 0:
+                    if not hasattr(response.body, 'read'):
+                        self.i = -1
+                        return response.body
+                    else:
+                        self.i = 1
+                buf = response.body.read(response.send_file_buffer_size)
+                if _iscoroutine(buf):  # pragma: no cover
+                    buf = await buf
+                if len(buf) < response.send_file_buffer_size:
+                    self.i = -1
+                    if hasattr(response.body, 'close'):  # pragma: no cover
+                        result = response.body.close()
+                        if _iscoroutine(result):
+                            await result
+                return buf
+
+        return iter()
 
 
 class Microdot(BaseMicrodot):

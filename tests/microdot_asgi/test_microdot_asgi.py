@@ -65,7 +65,8 @@ class TestMicrodotASGI(unittest.TestCase):
                     packet['headers'],
                     [('Content-Length', '8'), ('Content-Type', 'text/plain')])
             elif packet['type'] == 'http.response.body':
-                self.assertIn(packet['body'], [b're', b'sp', b'on', b'se'])
+                self.assertIn(packet['body'],
+                              [b're', b'sp', b'on', b'se', b''])
 
         original_buffer_size = Response.send_file_buffer_size
         Response.send_file_buffer_size = 2

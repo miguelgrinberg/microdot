@@ -88,7 +88,7 @@ class Microdot(BaseMicrodot):
                     'status': res.status_code,
                     'headers': [(name, value)
                                 for name, value in res.headers.items()]})
-        body_iter = res.body_iter()
+        body_iter = res.body_iter().__aiter__()
         body = b''
         try:
             body += await body_iter.__anext__()
