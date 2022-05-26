@@ -88,6 +88,18 @@ class TestResponse(unittest.TestCase):
         self.assertIn(b'Content-Type: application/json\r\n', response)
         self.assertTrue(response.endswith(b'\r\n\r\n[1, "2"]'))
 
+    def test_create_from_none(self):
+        res = Response(None)
+        self.assertEqual(res.status_code, 204)
+        self.assertEqual(res.body, b'')
+        fd = io.BytesIO()
+        res.write(fd)
+        response = fd.getvalue()
+        self.assertIn(b'HTTP/1.0 204 N/A\r\n', response)
+        self.assertIn(b'Content-Length: 0\r\n', response)
+        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertTrue(response.endswith(b'\r\n\r\n'))
+
     def test_create_from_other(self):
         res = Response(123)
         self.assertEqual(res.status_code, 200)

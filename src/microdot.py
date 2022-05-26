@@ -373,6 +373,9 @@ class Response():
     send_file_buffer_size = 1024
 
     def __init__(self, body='', status_code=200, headers=None, reason=None):
+        if body is None and status_code == 200:
+            body = ''
+            status_code = 204
         self.status_code = status_code
         self.headers = headers.copy() if headers else {}
         self.reason = reason
