@@ -1,5 +1,15 @@
 # Microdot change log
 
+**Release 0.9.0** - 2022-06-04
+
+- Streaming responses [#44](https://github.com/miguelgrinberg/microdot/issues/44) ([commit](https://github.com/miguelgrinberg/microdot/commit/d71665fd388c92a50198faf0d761235f0138797a))
+- Return 204 when view function returns None ([commit](https://github.com/miguelgrinberg/microdot/commit/71009b49781ce356155df661a66dc98170f35d63))
+- ASGI support ([commit](https://github.com/miguelgrinberg/microdot/commit/7e8ecb199717dd90c6cb374cb0d24b54dd6ea33e))
+- WSGI support ([commit](https://github.com/miguelgrinberg/microdot/commit/1ae51ccdf75991a2958b06f7a3439d64f92f1b69))
+- Documentation updates ([commit](https://github.com/miguelgrinberg/microdot/commit/bcbad516751f1ea9928f4a6d0e8843a4334b885a))
+- Add Python 3.10 to build ([commit](https://github.com/miguelgrinberg/microdot/commit/5b5eb907d83d94dde544b266e6659071e4d47ee1))
+- Run linter on examples ([commit](https://github.com/miguelgrinberg/microdot/commit/c18ccccb8e0744d8670433aeeba068c5654f32df))
+
 **Release 0.8.2** - 2022-04-20
 
 - Remove debugging print statement [#38](https://github.com/miguelgrinberg/microdot/issues/38) ([commit](https://github.com/miguelgrinberg/microdot/commit/0f278321c8bd65c5cb67425eb837e6581cbb0054)) (thanks **Mark Blakeney**!)
