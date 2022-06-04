@@ -1,4 +1,4 @@
-import logging
+import asyncio
 import os
 import signal
 from microdot_asyncio import *  # noqa: F401, F403
@@ -88,11 +88,24 @@ class Microdot(BaseMicrodot):
                     'status': res.status_code,
                     'headers': [(name, value)
                                 for name, value in res.headers.items()]})
-        body_iter = res.body_iter().__aiter__()
-        body = b''
-        try:
-            body += await body_iter.__anext__()
+
+        cancelled = False
+
+        async def cancel_monitor():
+            nonlocal cancelled
+
             while True:
+                event = await receive()
+                if event['type'] == 'http.disconnect':  # pragma: no branch
+                    cancelled = True
+                    break
+
+        asyncio.ensure_future(cancel_monitor())
+
+        body_iter = res.body_iter().__aiter__()
+        try:
+            body = await body_iter.__anext__()
+            while not cancelled:  # pragma: no branch
                 next_body = await body_iter.__anext__()
                 await send({'type': 'http.response.body',
                             'body': body,
@@ -113,14 +126,12 @@ class Microdot(BaseMicrodot):
     def run(self, host='0.0.0.0', port=5000, debug=False,
             **options):  # pragma: no cover
         try:
-            from waitress import serve
+            import uvicorn
         except ImportError:  # pragma: no cover
-            raise RuntimeError('The run() method requires Waitress to be '
-                               'installed (i.e. run "pip install waitress").')
+            raise RuntimeError('The run() method requires uvicorn to be '
+                               'installed (i.e. run "pip install uvicorn").')
 
         self.debug = debug
-        if debug:
-            logger = logging.getLogger('waitress')
-            logger.setLevel(logging.INFO)
-
-        serve(self, host=host, port=port, **options)
+        if 'log_level' not in options:
+            options['log_level'] = 'info' if debug else 'error'
+        uvicorn.run(self, host=host, port=port, **options)

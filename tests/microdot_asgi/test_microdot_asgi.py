@@ -2,6 +2,11 @@ import unittest
 import sys
 
 try:
+    import asyncio
+except ImportError:
+    pass
+
+try:
     from unittest import mock
 except ImportError:
     mock = None
@@ -51,11 +56,22 @@ class TestMicrodotASGI(unittest.TestCase):
             'http_version': '1.1',
         }
 
+        event_index = 0
+
         async def receive():
+            nonlocal event_index
+
+            if event_index == 0:
+                event_index = 1
+                return {
+                    'type': 'http.request',
+                    'body': b'body',
+                    'more_body': False,
+                }
+
+            await asyncio.sleep(0.1)
             return {
-                'type': 'http.request',
-                'body': b'body',
-                'more_body': False,
+                'type': 'http.disconnect',
             }
 
         async def send(packet):
@@ -95,11 +111,22 @@ class TestMicrodotASGI(unittest.TestCase):
             'http_version': '1.1',
         }
 
+        event_index = 0
+
         async def receive():
+            nonlocal event_index
+
+            if event_index == 0:
+                event_index = 1
+                return {
+                    'type': 'http.request',
+                    'body': b'body',
+                    'more_body': False,
+                }
+
+            await asyncio.sleep(0.1)
             return {
-                'type': 'http.request',
-                'body': b'body',
-                'more_body': False,
+                'type': 'http.disconnect',
             }
 
         async def send(packet):
