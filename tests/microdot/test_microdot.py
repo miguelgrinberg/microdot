@@ -286,3 +286,21 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n501'))
+
+    def test_streaming(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            def stream():
+                yield 'foo'
+                yield b'bar'
+            return stream()
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nfoobar'))

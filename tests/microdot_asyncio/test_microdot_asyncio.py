@@ -264,3 +264,33 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n501'))
+
+    def test_streaming(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            class stream():
+                def __init__(self):
+                    self.i = 0
+                    self.data = ['foo', b'bar']
+
+                def __aiter__(self):
+                    return self
+
+                async def __anext__(self):
+                    if self.i >= len(self.data):
+                        raise StopAsyncIteration
+                    data = self.data[self.i]
+                    self.i += 1
+                    return data
+
+            return stream()
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nfoobar'))

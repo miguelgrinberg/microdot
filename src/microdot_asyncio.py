@@ -133,10 +133,21 @@ class Response(BaseResponse):
         await stream.awrite(b'\r\n')
 
         # body
-        async for body in self.body_iter():
-            await stream.awrite(body)
+        try:
+            async for body in self.body_iter():
+                if isinstance(body, str):
+                    body = body.encode()
+                await stream.awrite(body)
+        except OSError as exc:  # pragma: no cover
+            if exc.errno == 32 or exc.args[0] == 'Connection lost':
+                pass
+            else:
+                raise
 
     def body_iter(self):
+        if hasattr(self.body, '__anext__'):
+            return self.body
+
         response = self
 
         class iter:
@@ -284,7 +295,13 @@ class Microdot(BaseMicrodot):
 
         res = await self.dispatch_request(req)
         await res.write(writer)
-        await writer.aclose()
+        try:
+            await writer.aclose()
+        except OSError as exc:  # pragma: no cover
+            if exc.errno == 32:  # errno.EPIPE
+                pass
+            else:
+                raise
         if self.debug and req:  # pragma: no cover
             print('{method} {path} {status_code}'.format(
                 method=req.method, path=req.path,

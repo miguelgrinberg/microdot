@@ -385,7 +385,7 @@ class Response():
         elif isinstance(body, str):
             self.body = body.encode()
         else:
-            # this applies to bytes or file-like objects
+            # this applies to bytes, file-like objects or generators
             self.body = body
 
     def set_cookie(self, cookie, value, path=None, domain=None, expires=None,
@@ -445,8 +445,19 @@ class Response():
         stream.write(b'\r\n')
 
         # body
-        for body in self.body_iter():
-            stream.write(body)
+        can_flush = hasattr(stream, 'flush')
+        try:
+            for body in self.body_iter():
+                if isinstance(body, str):
+                    body = body.encode()
+                stream.write(body)
+                if can_flush:  # pragma: no cover
+                    stream.flush()
+        except OSError as exc:  # pragma: no cover
+            if exc.errno == 32:  # errno.EPIPE
+                pass
+            else:
+                raise
 
     def body_iter(self):
         if self.body:
@@ -459,6 +470,8 @@ class Response():
                         break
                 if hasattr(self.body, 'close'):  # pragma: no cover
                     self.body.close()
+            elif hasattr(self.body, '__next__'):
+                yield from self.body
             else:
                 yield self.body
 
@@ -803,7 +816,7 @@ class Microdot():
             try:
                 sock, addr = self.server.accept()
             except OSError as exc:  # pragma: no cover
-                if exc.args[0] == errno.ECONNABORTED:
+                if exc.errno == errno.ECONNABORTED:
                     break
                 else:
                     raise
@@ -847,7 +860,13 @@ class Microdot():
             print_exception(exc)
         res = self.dispatch_request(req)
         res.write(stream)
-        stream.close()
+        try:
+            stream.close()
+        except OSError as exc:  # pragma: no cover
+            if exc.errno == 32:  # errno.EPIPE
+                pass
+            else:
+                raise
         if stream != sock:  # pragma: no cover
             sock.close()
         if self.shutdown_requested:  # pragma: no cover
