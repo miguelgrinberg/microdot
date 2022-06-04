@@ -1,4 +1,4 @@
-from microdot_wsgi import Microdot, Response
+from microdot_wsgi import Microdot
 
 app = Microdot()
 
@@ -30,4 +30,7 @@ def shutdown(request):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    print('''Use a WSGI web server to run this applicaton.
+Example:
+    gunicorn hello_wsgi:app
+''')

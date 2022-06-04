@@ -1,4 +1,4 @@
-from microdot import Microdot, Response
+from microdot import Microdot
 
 app = Microdot()
 

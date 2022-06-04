@@ -1,8 +1,4 @@
-try:
-    import uasyncio as asyncio
-except ImportError:
-    import asyncio
-from microdot_asgi import Microdot, Response
+from microdot_asgi import Microdot
 
 app = Microdot()
 
@@ -34,4 +30,7 @@ async def shutdown(request):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    print('''Use an ASGI web server to run this applicaton.
+Example:
+    uvicorn hello_asgi:app
+''')

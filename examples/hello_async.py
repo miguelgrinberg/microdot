@@ -1,8 +1,4 @@
-try:
-    import uasyncio as asyncio
-except ImportError:
-    import asyncio
-from microdot_asyncio import Microdot, Response
+from microdot_asyncio import Microdot
 
 app = Microdot()
 
