@@ -1,4 +1,3 @@
-import logging
 import os
 import signal
 from microdot import *  # noqa: F401, F403
@@ -7,7 +6,12 @@ from microdot import Request
 
 
 class Microdot(BaseMicrodot):
+    def __init__(self):
+        super().__init__()
+        self.embedded_server = False
+
     def wsgi_app(self, environ, start_response):
+        """A WSGI application callable."""
         path = environ.get('SCRIPT_NAME', '') + environ.get('PATH_INFO', '')
         if 'QUERY_STRING' in environ and environ['QUERY_STRING']:
             path += '?' + environ['QUERY_STRING']
@@ -39,20 +43,17 @@ class Microdot(BaseMicrodot):
         return self.wsgi_app(environ, start_response)
 
     def shutdown(self):
-        pid = os.getpgrp() if hasattr(os, 'getpgrp') else os.getpid()
-        os.kill(pid, signal.SIGTERM)
+        if self.embedded_server:  # pragma: no cover
+            super().shutdown()
+        else:
+            pid = os.getpgrp() if hasattr(os, 'getpgrp') else os.getpid()
+            os.kill(pid, signal.SIGTERM)
 
     def run(self, host='0.0.0.0', port=5000, debug=False,
             **options):  # pragma: no cover
-        try:
-            from waitress import serve
-        except ImportError:  # pragma: no cover
-            raise RuntimeError('The run() method requires Waitress to be '
-                               'installed (i.e. run "pip install waitress").')
-
-        self.debug = debug
-        if debug:
-            logger = logging.getLogger('waitress')
-            logger.setLevel(logging.INFO)
-
-        serve(self, host=host, port=port, **options)
+        """Normally you would not start the server by invoking this method.
+        Instead, start your chosen WSGI web server and pass the ``Microdot``
+        instance as the WSGI callable.
+        """
+        self.embedded_server = True
+        super().run(host=host, port=port, debug=debug, **options)

@@ -352,7 +352,10 @@ class Response():
     """An HTTP response class.
 
     :param body: The body of the response. If a dictionary or list is given,
-                 a JSON formatter is used to generate the body.
+                 a JSON formatter is used to generate the body. If a file-like
+                 object or a generator is given, a streaming response is used.
+                 If a string is given, it is encoded from UTF-8. Else, the
+                 body should be a byte sequence.
     :param status_code: The numeric HTTP status code of the response. The
                         default is 200.
     :param headers: A dictionary of headers to include in the response.

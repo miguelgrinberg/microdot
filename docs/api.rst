@@ -60,3 +60,31 @@ and coroutines.
    :inherited-members:
    :members:
 
+``microdot_wsgi`` module
+------------------------
+
+The ``microdot_wsgi`` module provides an extended ``Microdot`` class that
+implements the WSGI protocol and can be used with a complaint WSGI web server
+such as `Gunicorn <https://gunicorn.org/>`_ or
+`uWSGI <https://uwsgi-docs.readthedocs.io/en/latest/>`_.
+
+``Microdot`` class
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: microdot_wsgi.Microdot
+   :members:
+   :exclude-members: shutdown, run
+
+``microdot_asgi`` module
+------------------------
+
+The ``microdot_asgi`` module provides an extended ``Microdot`` class that
+implements the ASGI protocol and can be used with a complaint ASGI server such
+as `Uvicorn <https://www.uvicorn.org/>`_.
+
+``Microdot`` class
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: microdot_asgi.Microdot
+   :members:
+   :exclude-members: shutdown, run

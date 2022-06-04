@@ -44,7 +44,12 @@ class _BodyStream:  # pragma: no cover
 
 
 class Microdot(BaseMicrodot):
+    def __init__(self):
+        super().__init__()
+        self.embedded_server = False
+
     async def asgi_app(self, scope, receive, send):
+        """An ASGI application."""
         if scope['type'] != 'http':  # pragma: no cover
             return
         path = scope['path']
@@ -120,18 +125,17 @@ class Microdot(BaseMicrodot):
         return await self.asgi_app(scope, receive, send)
 
     def shutdown(self):
-        pid = os.getpgrp() if hasattr(os, 'getpgrp') else os.getpid()
-        os.kill(pid, signal.SIGTERM)
+        if self.embedded_server:  # pragma: no cover
+            super().shutdown()
+        else:
+            pid = os.getpgrp() if hasattr(os, 'getpgrp') else os.getpid()
+            os.kill(pid, signal.SIGTERM)
 
     def run(self, host='0.0.0.0', port=5000, debug=False,
             **options):  # pragma: no cover
-        try:
-            import uvicorn
-        except ImportError:  # pragma: no cover
-            raise RuntimeError('The run() method requires uvicorn to be '
-                               'installed (i.e. run "pip install uvicorn").')
-
-        self.debug = debug
-        if 'log_level' not in options:
-            options['log_level'] = 'info' if debug else 'error'
-        uvicorn.run(self, host=host, port=port, **options)
+        """Normally you would not start the server by invoking this method.
+        Instead, start your chosen ASGI web server and pass the ``Microdot``
+        instance as the ASGI application.
+        """
+        self.embedded_server = True
+        super().run(host=host, port=port, debug=debug, **options)
