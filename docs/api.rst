@@ -64,9 +64,11 @@ and coroutines.
 ------------------------
 
 The ``microdot_wsgi`` module provides an extended ``Microdot`` class that
-implements the WSGI protocol and can be used with a complaint WSGI web server
+implements the WSGI protocol and can be used with a compliant WSGI web server
 such as `Gunicorn <https://gunicorn.org/>`_ or
-`uWSGI <https://uwsgi-docs.readthedocs.io/en/latest/>`_.
+`uWSGI <https://uwsgi-docs.readthedocs.io/en/latest/>`_. Since there are
+no WSGI web servers available for MicroPython, this support is currently
+limited to standard Python.
 
 ``Microdot`` class
 ~~~~~~~~~~~~~~~~~~
@@ -79,8 +81,10 @@ such as `Gunicorn <https://gunicorn.org/>`_ or
 ------------------------
 
 The ``microdot_asgi`` module provides an extended ``Microdot`` class that
-implements the ASGI protocol and can be used with a complaint ASGI server such
-as `Uvicorn <https://www.uvicorn.org/>`_.
+implements the ASGI protocol and can be used with a compliant ASGI server such
+as `Uvicorn <https://www.uvicorn.org/>`_. Since there are no ASGI web servers
+available for MicroPython, this support is currently limited to standard
+Python.
 
 ``Microdot`` class
 ~~~~~~~~~~~~~~~~~~
