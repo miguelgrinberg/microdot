@@ -7,3 +7,5 @@ from tests.microdot.test_microdot import TestMicrodot
 from tests.microdot_asyncio.test_request_asyncio import TestRequestAsync
 from tests.microdot_asyncio.test_response_asyncio import TestResponseAsync
 from tests.microdot_asyncio.test_microdot_asyncio import TestMicrodotAsync
+
+from tests.microdot_utemplate.test_utemplate import TestUTemplate

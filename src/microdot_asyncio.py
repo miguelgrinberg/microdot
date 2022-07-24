@@ -149,6 +149,7 @@ class Response(BaseResponse):
 
     def body_iter(self):
         if hasattr(self.body, '__anext__'):
+            # response body is an async generator
             return self.body
 
         response = self
@@ -156,20 +157,28 @@ class Response(BaseResponse):
         class iter:
             def __aiter__(self):
                 if response.body:
-                    self.i = 0
+                    self.i = 0  # need to determine type of response.body
                 else:
-                    self.i = -1
+                    self.i = -1  # no response body
                 return self
 
             async def __anext__(self):
                 if self.i == -1:
                     raise StopAsyncIteration
                 if self.i == 0:
-                    if not hasattr(response.body, 'read'):
-                        self.i = -1
-                        return response.body
+                    if hasattr(response.body, 'read'):
+                        self.i = 2  # response body is a file-like object
+                    elif hasattr(response.body, '__next__'):
+                        self.i = 1  # response body is a sync generator
+                        return next(response.body)
                     else:
-                        self.i = 1
+                        self.i = -1  # response body is a plain string
+                        return response.body
+                elif self.i == 1:
+                    try:
+                        return next(response.body)
+                    except StopIteration:
+                        raise StopAsyncIteration
                 buf = response.body.read(response.send_file_buffer_size)
                 if _iscoroutine(buf):  # pragma: no cover
                     buf = await buf

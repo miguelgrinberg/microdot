@@ -374,6 +374,7 @@ class Response():
         'txt': 'text/plain',
     }
     send_file_buffer_size = 1024
+    default_content_type = 'text/plain'
 
     def __init__(self, body='', status_code=200, headers=None, reason=None):
         if body is None and status_code == 200:
@@ -428,7 +429,7 @@ class Response():
                 'Content-Length' not in self.headers:
             self.headers['Content-Length'] = str(len(self.body))
         if 'Content-Type' not in self.headers:
-            self.headers['Content-Type'] = 'text/plain'
+            self.headers['Content-Type'] = self.default_content_type
 
     def write(self, stream):
         self.complete()
