@@ -23,7 +23,3 @@ def render_template(template, *args, **kwargs):
         init_templates()
     render = _loader.load(template)
     return render(*args, **kwargs)
-
-
-def render_template_string(template, *args, **kwargs):
-    return ''.join(render_template(template, *args, **kwargs))

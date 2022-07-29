@@ -3,23 +3,26 @@ try:
 except ImportError:
     import asyncio
 
+import sys
 import unittest
 from microdot import Microdot, Request
 from microdot_asyncio import Microdot as MicrodotAsync, Request as RequestAsync
-from microdot_utemplate import render_template, init_templates
+from microdot_jinja import render_template, init_templates
 from tests.mock_socket import get_request_fd, get_async_request_fd
 
-init_templates('tests/microdot_utemplate/templates')
+init_templates('tests/microdot_jinja/templates')
 
 
 def _run(coro):
     return asyncio.get_event_loop().run_until_complete(coro)
 
 
+@unittest.skipIf(sys.implementation.name == 'micropython',
+                 'not supported under MicroPython')
 class TestUTemplate(unittest.TestCase):
     def test_render_template(self):
-        s = list(render_template('hello.txt', name='foo'))
-        self.assertEqual(s, ['Hello, ', 'foo', '!\n'])
+        s = render_template('hello.txt', name='foo')
+        self.assertEqual(s, 'Hello, foo!')
 
     def test_render_template_in_app(self):
         app = Microdot()
@@ -31,7 +34,7 @@ class TestUTemplate(unittest.TestCase):
         req = Request.create(app, get_request_fd('GET', '/'), 'addr')
         res = app.dispatch_request(req)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(list(res.body_iter()), ['Hello, ', 'foo', '!\n'])
+        self.assertEqual(list(res.body_iter()), [b'Hello, foo!'])
 
     def test_render_template_in_app_async(self):
         app = MicrodotAsync()
@@ -52,4 +55,4 @@ class TestUTemplate(unittest.TestCase):
             return result
 
         result = _run(get_result())
-        self.assertEqual(result, ['Hello, ', 'foo', '!\n'])
+        self.assertEqual(result, [b'Hello, foo!'])
