@@ -543,6 +543,7 @@ class Response():
 
 class URLPattern():
     def __init__(self, url_pattern):
+        self.url_pattern = url_pattern
         self.pattern = ''
         self.args = []
         use_regex = False
@@ -797,6 +798,23 @@ class Microdot():
             self.error_handlers[status_code_or_exception_class] = f
             return f
         return decorated
+
+    def mount(self, subapp, url_prefix=''):
+        """Mount a sub-application, optionally under the given URL prefix.
+
+        :param subapp: The sub-application to mount.
+        :param url_prefix: The URL prefix to mount the application under.
+        """
+        for methods, pattern, handler in subapp.url_map:
+            self.url_map.append(
+                (methods, URLPattern(url_prefix + pattern.url_pattern),
+                 handler))
+        for handler in subapp.before_request_handlers:
+            self.before_request_handlers.append(handler)
+        for handler in subapp.after_request_handlers:
+            self.after_request_handlers.append(handler)
+        for status_code, handler in subapp.error_handlers.items():
+            self.error_handlers[status_code] = handler
 
     def run(self, host='0.0.0.0', port=5000, debug=False):
         """Start the web server. This function does not normally return, as

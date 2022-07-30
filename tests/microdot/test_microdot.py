@@ -309,3 +309,41 @@ class TestMicrodot(unittest.TestCase):
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nfoobar'))
+
+    def test_mount(self):
+        subapp = Microdot()
+
+        @subapp.before_request
+        def before(req):
+            req.g.before = 'before'
+
+        @subapp.after_request
+        def after(req, res):
+            return res.body + b':after'
+
+        @subapp.errorhandler(404)
+        def not_found(req):
+            return '404', 404
+
+        @subapp.route('/app')
+        def index(req):
+            return req.g.before + ':foo'
+
+        app = Microdot()
+        app.mount(subapp, url_prefix='/sub')
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/app')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 404 N/A\r\n'))
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n404'))
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/sub/app')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nbefore:foo:after'))
