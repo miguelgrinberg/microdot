@@ -74,6 +74,14 @@ class TestRequest(unittest.TestCase):
         self.assertTrue(req.form is form)
 
         fd = get_request_fd('GET', '/foo', headers={
+            'Content-Type': 'application/x-www-form-urlencoded'},
+            body='')
+        req = Request.create('app', fd, 'addr')
+        form = req.form
+        self.assertEqual(form, MultiDict({}))
+        self.assertTrue(req.form is form)
+
+        fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'},
             body='foo=bar&abc=def&x=%2f%%')
         req = Request.create('app', fd, 'addr')

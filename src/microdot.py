@@ -291,8 +291,9 @@ class Request():
 
     def _parse_urlencoded(self, urlencoded):
         data = MultiDict()
-        for k, v in [pair.split('=', 1) for pair in urlencoded.split('&')]:
-            data[urldecode(k)] = urldecode(v)
+        if urlencoded:
+            for k, v in [pair.split('=', 1) for pair in urlencoded.split('&')]:
+                data[urldecode(k)] = urldecode(v)
         return data
 
     @property
