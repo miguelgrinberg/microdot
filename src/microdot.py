@@ -256,6 +256,7 @@ class Request():
         self._json = None
         self._form = None
         self.g = Request.G()
+        self.after_request_handlers = []
 
     @staticmethod
     def create(app, client_stream, client_addr):
@@ -339,6 +340,28 @@ class Request():
                 return None
             self._form = self._parse_urlencoded(self.body.decode())
         return self._form
+
+    def after_request(self, f):
+        """Register a request-specific function to run after the request is
+        handled. Request-specific after request handlers run at the very end,
+        after the application's own after request handlers. The function must
+        take two arguments, the request and response objects. The return value
+        of the function must be the updated response object.
+
+        Example::
+
+            @app.route('/')
+            def index(request):
+                # register a request-specific after request handler
+                @req.after_request
+                def func(request, response):
+                    # ...
+                    return response
+
+                return 'Hello, World!'
+        """
+        self.after_request_handlers.append(f)
+        return f
 
     @staticmethod
     def _safe_readline(stream):
@@ -740,9 +763,10 @@ class Microdot():
 
         Example::
 
-            @app.before_request
+            @app.after_request
             def func(request, response):
                 # ...
+                return response
         """
         self.after_request_handlers.append(f)
         return f
@@ -903,6 +927,8 @@ class Microdot():
                         elif not isinstance(res, Response):
                             res = Response(res)
                         for handler in self.after_request_handlers:
+                            res = handler(req, res) or res
+                        for handler in req.after_request_handlers:
                             res = handler(req, res) or res
                     elif 404 in self.error_handlers:
                         res = self.error_handlers[404](req)

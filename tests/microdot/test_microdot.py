@@ -117,6 +117,10 @@ class TestMicrodot(unittest.TestCase):
         @app.before_request
         def before_request(req):
             if req.path == '/bar':
+                @req.after_request
+                def after_request(req, res):
+                    res.headers['X-Two'] = '2'
+                    return res
                 return 'bar', 202
             req.g.message = 'baz'
 
@@ -143,6 +147,7 @@ class TestMicrodot(unittest.TestCase):
         app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 202 N/A\r\n'))
         self.assertIn(b'X-One: 1\r\n', fd.response)
+        self.assertIn(b'X-Two: 2\r\n', fd.response)
         self.assertIn(b'Set-Cookie: foo=bar\r\n', fd.response)
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
