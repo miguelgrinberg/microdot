@@ -169,27 +169,7 @@ class MultiDict(dict):
 
 
 class Request():
-    """An HTTP request class.
-
-    :var app: The application instance to which this request belongs.
-    :var client_addr: The address of the client, as a tuple (host, port).
-    :var method: The HTTP method of the request.
-    :var path: The path portion of the URL.
-    :var query_string: The query string portion of the URL.
-    :var args: The parsed query string, as a :class:`MultiDict` object.
-    :var headers: A dictionary with the headers included in the request.
-    :var cookies: A dictionary with the cookies included in the request.
-    :var content_length: The parsed ``Content-Length`` header.
-    :var content_type: The parsed ``Content-Type`` header.
-    :var stream: The input stream, containing the request body.
-    :var body: The body of the request, as bytes.
-    :var json: The parsed JSON body, as a dictionary or list, or ``None`` if
-               the request does not have a JSON body.
-    :var form: The parsed form submission body, as a :class:`MultiDict` object,
-               or ``None`` if the request does not have a form submission.
-    :var g: A general purpose container for applications to store data during
-            the life of the request.
-    """
+    """An HTTP request."""
     #: Specify the maximum payload size that is accepted. Requests with larger
     #: payloads will be rejected with a 413 status code. Applications can
     #: change this maximum as necessary.
@@ -224,21 +204,36 @@ class Request():
 
     def __init__(self, app, client_addr, method, url, http_version, headers,
                  body=None, stream=None):
+        #: The application instance to which this request belongs.
         self.app = app
+        #: The address of the client, as a tuple (host, port).
         self.client_addr = client_addr
+        #: The HTTP method of the request.
         self.method = method
+        #: The path portion of the URL.
         self.path = url
+        #: The query string portion of the URL.
+        self.query_string = None
+        #: The parsed query string, as a
+        #: :class:`MultiDict <microdot.MultiDict>` object.
+        self.args = {}
+        #: A dictionary with the headers included in the request.
+        self.headers = headers
+        #: A dictionary with the cookies included in the request.
+        self.cookies = {}
+        #: The parsed ``Content-Length`` header.
+        self.content_length = 0
+        #: The parsed ``Content-Type`` header.
+        self.content_type = None
+        #: A general purpose container for applications to store data during
+        #: the life of the request.
+        self.g = Request.G()
+
         self.http_version = http_version
         if '?' in self.path:
             self.path, self.query_string = self.path.split('?', 1)
             self.args = self._parse_urlencoded(self.query_string)
-        else:
-            self.query_string = None
-            self.args = {}
-        self.headers = headers
-        self.cookies = {}
-        self.content_length = 0
-        self.content_type = None
+
         for header, value in self.headers.items():
             header = header.lower()
             if header == 'content-length':
@@ -249,13 +244,13 @@ class Request():
                 for cookie in value.split(';'):
                     name, value = cookie.strip().split('=', 1)
                     self.cookies[name] = value
+
         self._body = body
         self.body_used = False
         self._stream = stream
         self.stream_used = False
         self._json = None
         self._form = None
-        self.g = Request.G()
         self.after_request_handlers = []
 
     @staticmethod
@@ -298,6 +293,7 @@ class Request():
 
     @property
     def body(self):
+        """The body of the request, as bytes."""
         if self.stream_used:
             raise RuntimeError('Cannot use both stream and body')
         if self._body is None:
@@ -315,6 +311,7 @@ class Request():
 
     @property
     def stream(self):
+        """The input stream, containing the request body."""
         if self.body_used:
             raise RuntimeError('Cannot use both stream and body')
         self.stream_used = True
@@ -322,6 +319,8 @@ class Request():
 
     @property
     def json(self):
+        """The parsed JSON body, or ``None`` if the request does not have a
+        JSON body."""
         if self._json is None:
             if self.content_type is None:
                 return None
@@ -333,6 +332,9 @@ class Request():
 
     @property
     def form(self):
+        """The parsed form submission body, as a
+        :class:`MultiDict <microdot.MultiDict>` object, or ``None`` if the
+        request does not have a form submission."""
         if self._form is None:
             if self.content_type is None:
                 return None
@@ -398,6 +400,9 @@ class Response():
         'txt': 'text/plain',
     }
     send_file_buffer_size = 1024
+
+    #: The content type to use for responses that do not explicitly define a
+    #: ``Content-Type`` header.
     default_content_type = 'text/plain'
 
     def __init__(self, body='', status_code=200, headers=None, reason=None):
