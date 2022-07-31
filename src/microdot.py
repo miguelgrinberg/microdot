@@ -944,7 +944,14 @@ class Microdot():
                         if res is None:
                             res = f(req, **req.url_args)
                         if isinstance(res, tuple):
-                            res = Response(*res)
+                            body = res[0]
+                            if isinstance(res[1], int):
+                                status_code = res[1]
+                                headers = res[2] if len(res) > 2 else {}
+                            else:
+                                status_code = 200
+                                headers = res[1]
+                            res = Response(body, status_code, headers)
                         elif not isinstance(res, Response):
                             res = Response(res)
                         for handler in self.after_request_handlers:

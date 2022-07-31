@@ -111,6 +111,57 @@ class TestMicrodot(unittest.TestCase):
             self.assertTrue(fd.response.endswith(
                 b'\r\n\r\n' + method.encode()))
 
+    def test_tuple_responses(self):
+        app = Microdot()
+
+        @app.route('/body')
+        def one(req):
+            return 'one'
+
+        @app.route('/body-status')
+        def two(req):
+            return 'two', 202
+
+        @app.route('/body-headers')
+        def three(req):
+            return '<p>three</p>', {'Content-Type': 'text/html'}
+
+        @app.route('/body-status-headers')
+        def four(req):
+            return '<p>four</p>', 202, {'Content-Type': 'text/html'}
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/body')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\none'))
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/body-status')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 202 N/A\r\n'))
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\ntwo'))
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/body-headers')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Type: text/html\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n<p>three</p>'))
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/body-status-headers')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 202 N/A\r\n'))
+        self.assertIn(b'Content-Type: text/html\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n<p>four</p>'))
+
     def test_before_after_request(self):
         app = Microdot()
 
