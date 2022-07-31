@@ -58,7 +58,7 @@ class Request(BaseRequest):
         """
         # request line
         line = (await Request._safe_readline(client_stream)).strip().decode()
-        if not line:  # pragma: no cover
+        if not line:
             return None
         method, url, http_version = line.split()
         http_version = http_version.split('/', 1)[1]
@@ -331,7 +331,7 @@ class Microdot(BaseMicrodot):
                 f = self.find_route(req)
                 try:
                     res = None
-                    if f:
+                    if callable(f):
                         for handler in self.before_request_handlers:
                             res = await self._invoke_handler(handler, req)
                             if res:
@@ -346,11 +346,11 @@ class Microdot(BaseMicrodot):
                         for handler in self.after_request_handlers:
                             res = await self._invoke_handler(
                                 handler, req, res) or res
-                    elif 404 in self.error_handlers:
+                    elif f in self.error_handlers:
                         res = await self._invoke_handler(
-                            self.error_handlers[404], req)
+                            self.error_handlers[f], req)
                     else:
-                        res = 'Not found', 404
+                        res = 'Not found', f
                 except Exception as exc:
                     print_exception(exc)
                     res = None
@@ -367,7 +367,10 @@ class Microdot(BaseMicrodot):
                         else:
                             res = 'Internal server error', 500
         else:
-            res = 'Bad request', 400
+            if 400 in self.error_handlers:
+                res = await self._invoke_handler(self.error_handlers[400], req)
+            else:
+                res = 'Bad request', 400
         if isinstance(res, tuple):
             res = Response(*res)
         elif not isinstance(res, Response):

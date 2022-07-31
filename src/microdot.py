@@ -527,7 +527,7 @@ class Response():
                              automatically from the file extension.
 
         Security note: The filename is assumed to be trusted. Never pass
-        filenames provided by the user before validating and sanitizing them
+        filenames provided by the user without validating and sanitizing them
         first.
         """
         if content_type is None:
@@ -885,13 +885,15 @@ class Microdot():
         self.shutdown_requested = True
 
     def find_route(self, req):
-        f = None
+        f = 404
         for route_methods, route_pattern, route_handler in self.url_map:
-            if req.method in route_methods:
-                req.url_args = route_pattern.match(req.path)
-                if req.url_args is not None:
+            req.url_args = route_pattern.match(req.path)
+            if req.url_args is not None:
+                if req.method in route_methods:
                     f = route_handler
                     break
+                else:
+                    f = 405
         return f
 
     def handle_request(self, sock, addr):
@@ -934,7 +936,7 @@ class Microdot():
                 f = self.find_route(req)
                 try:
                     res = None
-                    if f:
+                    if callable(f):
                         for handler in self.before_request_handlers:
                             res = handler(req)
                             if res:
@@ -949,10 +951,10 @@ class Microdot():
                             res = handler(req, res) or res
                         for handler in req.after_request_handlers:
                             res = handler(req, res) or res
-                    elif 404 in self.error_handlers:
-                        res = self.error_handlers[404](req)
+                    elif f in self.error_handlers:
+                        res = self.error_handlers[f](req)
                     else:
-                        res = 'Not found', 404
+                        res = 'Not found', f
                 except Exception as exc:
                     print_exception(exc)
                     res = None
@@ -967,7 +969,11 @@ class Microdot():
                         else:
                             res = 'Internal server error', 500
         else:
-            res = 'Bad request', 400
+            if 400 in self.error_handlers:
+                res = self.error_handlers[400](req)
+            else:
+                res = 'Bad request', 400
+
         if isinstance(res, tuple):
             res = Response(*res)
         elif not isinstance(res, Response):

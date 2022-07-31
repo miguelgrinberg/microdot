@@ -137,6 +137,36 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nbaz'))
 
+    def test_400(self):
+        app = Microdot()
+
+        mock_socket.clear_requests()
+        fd = mock_socket.FakeStream(b'\n')
+        mock_socket._requests.append(fd)
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 400 N/A\r\n'))
+        self.assertIn(b'Content-Length: 11\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nBad request'))
+
+    def test_400_handler(self):
+        app = Microdot()
+
+        @app.errorhandler(400)
+        async def handle_404(req):
+            return '400'
+
+        mock_socket.clear_requests()
+        fd = mock_socket.FakeStream(b'\n')
+        mock_socket._requests.append(fd)
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Length: 3\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n400'))
+
     def test_404(self):
         app = Microdot()
 
@@ -172,6 +202,42 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n404'))
+
+    def test_405(self):
+        app = Microdot()
+
+        @app.route('/foo')
+        def index(req):
+            return 'foo'
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('POST', '/foo')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 405 N/A\r\n'))
+        self.assertIn(b'Content-Length: 9\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nNot found'))
+
+    def test_405_handler(self):
+        app = Microdot()
+
+        @app.route('/foo')
+        def index(req):
+            return 'foo'
+
+        @app.errorhandler(405)
+        async def handle_405(req):
+            return '405'
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('POST', '/foo')
+        self._add_shutdown(app)
+        app.run()
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Length: 3\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n405'))
 
     def test_413(self):
         app = Microdot()
