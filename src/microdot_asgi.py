@@ -89,10 +89,17 @@ class Microdot(BaseMicrodot):
         res = await self.dispatch_request(req)
         res.complete()
 
+        header_list = []
+        for name, value in res.headers.items():
+            if not isinstance(value, list):
+                header_list.append((name, value))
+            else:
+                for v in value:
+                    header_list.append((name, v))
+
         await send({'type': 'http.response.start',
                     'status': res.status_code,
-                    'headers': [(name, value)
-                                for name, value in res.headers.items()]})
+                    'headers': header_list})
 
         cancelled = False
 

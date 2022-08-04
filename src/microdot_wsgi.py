@@ -34,9 +34,14 @@ class Microdot(BaseMicrodot):
         res.complete()
 
         reason = res.reason or ('OK' if res.status_code == 200 else 'N/A')
-        start_response(
-            str(res.status_code) + ' ' + reason,
-            [(name, value) for name, value in res.headers.items()])
+        header_list = []
+        for name, value in res.headers.items():
+            if not isinstance(value, list):
+                header_list.append((name, value))
+            else:
+                for v in value:
+                    header_list.append((name, v))
+        start_response(str(res.status_code) + ' ' + reason, header_list)
         return res.body_iter()
 
     def __call__(self, environ, start_response):

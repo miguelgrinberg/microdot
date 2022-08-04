@@ -32,6 +32,11 @@ class TestMicrodotWSGI(unittest.TestCase):
             self.assertEqual(req.body, b'body')
             return 'response'
 
+        @app.after_request
+        def after_request(req, resp):
+            resp.set_cookie('foo', 'foo')
+            resp.set_cookie('bar', 'bar', http_only=True)
+
         environ = {
             'SCRIPT_NAME': '/foo',
             'PATH_INFO': '/bar',
@@ -48,9 +53,13 @@ class TestMicrodotWSGI(unittest.TestCase):
 
         def start_response(status, headers):
             self.assertEqual(status, '200 OK')
-            self.assertEqual(
-                headers,
-                [('Content-Length', '8'), ('Content-Type', 'text/plain')])
+            expected_headers = [('Content-Length', '8'),
+                                ('Content-Type', 'text/plain'),
+                                ('Set-Cookie', 'foo=foo'),
+                                ('Set-Cookie', 'bar=bar; HttpOnly')]
+            self.assertEqual(len(headers), len(expected_headers))
+            for header in expected_headers:
+                self.assertIn(header, headers)
 
         r = app(environ, start_response)
         self.assertEqual(next(r), b'response')

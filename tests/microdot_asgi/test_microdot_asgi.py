@@ -44,6 +44,11 @@ class TestMicrodotASGI(unittest.TestCase):
 
             return Response(body=R(), headers={'Content-Length': '8'})
 
+        @app.after_request
+        def after_request(req, res):
+            res.set_cookie('foo', 'foo')
+            res.set_cookie('bar', 'bar', http_only=True)
+
         scope = {
             'type': 'http',
             'path': '/foo/bar',
@@ -77,9 +82,13 @@ class TestMicrodotASGI(unittest.TestCase):
         async def send(packet):
             if packet['type'] == 'http.response.start':
                 self.assertEqual(packet['status'], 200)
-                self.assertEqual(
-                    packet['headers'],
-                    [('Content-Length', '8'), ('Content-Type', 'text/plain')])
+                expected_headers = [('Content-Length', '8'),
+                                    ('Content-Type', 'text/plain'),
+                                    ('Set-Cookie', 'foo=foo'),
+                                    ('Set-Cookie', 'bar=bar; HttpOnly')]
+                self.assertEqual(len(packet['headers']), len(expected_headers))
+                for header in expected_headers:
+                    self.assertIn(header, packet['headers'])
             elif packet['type'] == 'http.response.body':
                 self.assertIn(packet['body'],
                               [b're', b'sp', b'on', b'se', b''])
