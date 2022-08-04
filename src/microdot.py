@@ -429,7 +429,8 @@ class Response():
         :param value: The cookie's value.
         :param path: The cookie's path.
         :param domain: The cookie's domain.
-        :param expires: The cookie expiration time, as a ``datetime`` object.
+        :param expires: The cookie expiration time, as a ``datetime`` object
+                        or a correctly formatted string.
         :param max_age: The cookie's ``Max-Age`` value.
         :param secure: The cookie's ``secure`` flag.
         :param http_only: The cookie's ``HttpOnly`` flag.
@@ -440,8 +441,11 @@ class Response():
         if domain:
             http_cookie += '; Domain=' + domain
         if expires:
-            http_cookie += '; Expires=' + expires.strftime(
-                "%a, %d %b %Y %H:%M:%S GMT")
+            if isinstance(expires, str):
+                http_cookie += '; Expires=' + expires
+            else:
+                http_cookie += '; Expires=' + expires.strftime(
+                    '%a, %d %b %Y %H:%M:%S GMT')
         if max_age:
             http_cookie += '; Max-Age=' + str(max_age)
         if secure:

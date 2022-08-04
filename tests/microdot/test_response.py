@@ -153,7 +153,8 @@ class TestResponse(unittest.TestCase):
         res.set_cookie('foo3', 'bar3', domain='example.com:1234')
         res.set_cookie('foo4', 'bar4',
                        expires=datetime(2019, 11, 5, 2, 23, 54))
-        res.set_cookie('foo5', 'bar5', max_age=123)
+        res.set_cookie('foo5', 'bar5', max_age=123,
+                       expires='Thu, 01 Jan 1970 00:00:00 GMT')
         res.set_cookie('foo6', 'bar6', secure=True, http_only=True)
         res.set_cookie('foo7', 'bar7', path='/foo', domain='example.com:1234',
                        expires=datetime(2019, 11, 5, 2, 23, 54), max_age=123,
@@ -163,7 +164,7 @@ class TestResponse(unittest.TestCase):
             'foo2=bar2; Path=/',
             'foo3=bar3; Domain=example.com:1234',
             'foo4=bar4; Expires=Tue, 05 Nov 2019 02:23:54 GMT',
-            'foo5=bar5; Max-Age=123',
+            'foo5=bar5; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=123',
             'foo6=bar6; Secure; HttpOnly',
             'foo7=bar7; Path=/foo; Domain=example.com:1234; '
             'Expires=Tue, 05 Nov 2019 02:23:54 GMT; Max-Age=123; Secure; '
