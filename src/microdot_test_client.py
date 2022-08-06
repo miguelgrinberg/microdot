@@ -5,34 +5,57 @@ from microdot import Request
 
 class TestResponse:
     """A response object issued by the Microdot test client."""
-    def __init__(self, res):
+    def __init__(self):
         #: The numeric status code returned by the server.
-        self.status_code = res.status_code
+        self.status_code = None
         #: The text reason associated with the status response, such as
-        #: ``'OK'`` or ``'NOT FOUND'``.
-        self.reason = res.reason
+        #: ``'OK'`` or ``'NOT FOUND'``. Set to ``None`` unless the application
+        #: explicitly sets it on the response object.
+        self.reason = None
         #: A dictionary with the response headers.
-        self.headers = res.headers
+        self.headers = None
         #: The body of the response, as a bytes object.
+        self.body = None
+        #: The body of the response, decoded to a UTF-8 string. Set to
+        #: ``None`` if the response cannot be represented as UTF-8 text.
+        self.text = None
+        #: The body of the JSON response, decoded to a dictionary or list. Set
+        #: ``Note`` if the response does not have a JSON payload.
+        self.json = None
+
+    def _initialize_response(self, res):
+        self.status_code = res.status_code
+        self.reason = res.reason
+        self.headers = res.headers
+
+    def _initialize_body(self, res):
         self.body = b''
         for body in res.body_iter():
             if isinstance(body, str):
                 body = body.encode()
             self.body += body
+
+    def _process_text_body(self):
         try:
-            #: The body of the response, decoded to a UTF-8 string. Set to
-            #: ``None`` if the response cannot be represented as UTF-8 text.
             self.text = self.body.decode()
         except ValueError:
-            self.text = None
-        #: The body of the JSON response, decoded to a dictionary or list. Set
-        #: ``Note`` if the response does not have a JSON payload.
-        self.json = None
+            pass
+
+    def _process_json_body(self):
         for name, value in self.headers.items():  # pragma: no branch
             if name.lower() == 'content-type':
                 if value.lower() == 'application/json':
                     self.json = json.loads(self.text)
                 break
+
+    @classmethod
+    def create(cls, res):
+        test_res = cls()
+        test_res._initialize_response(res)
+        test_res._initialize_body(res)
+        test_res._process_text_body()
+        test_res._process_json_body()
+        return test_res
 
 
 class TestClient:
@@ -63,9 +86,7 @@ class TestClient:
         self.app = app
         self.cookies = cookies or {}
 
-    def request(self, method, path, headers=None, body=None):
-        if headers is None:  # pragma: no branch
-            headers = {}
+    def _process_body(self, body, headers):
         if body is None:
             body = b''
         elif isinstance(body, (dict, list)):
@@ -78,6 +99,11 @@ class TestClient:
         if body and 'Content-Length' not in headers and \
                 'content-length' not in headers:
             headers['Content-Length'] = str(len(body))
+        if 'Host' not in headers:  # pragma: no branch
+            headers['Host'] = 'example.com:1234'
+        return body, headers
+
+    def _process_cookies(self, headers):
         cookies = ''
         for name, value in self.cookies.items():
             if cookies:
@@ -88,20 +114,18 @@ class TestClient:
                 headers['Cookie'] += '; ' + cookies
             else:
                 headers['Cookie'] = cookies
+        return cookies, headers
+
+    def _render_request(self, method, path, headers, body):
         request_bytes = '{method} {path} HTTP/1.0\n'.format(
             method=method, path=path)
-        if 'Host' not in headers:  # pragma: no branch
-            headers['Host'] = 'example.com:1234'
         for header, value in headers.items():
             request_bytes += '{header}: {value}\n'.format(
                 header=header, value=value)
         request_bytes = request_bytes.encode() + b'\n' + body
+        return request_bytes
 
-        req = Request.create(self.app, BytesIO(request_bytes),
-                             ('127.0.0.1', 1234))
-        res = self.app.dispatch_request(req)
-        res.complete()
-
+    def _update_cookies(self, res):
         for name, value in res.headers.items():
             if name.lower() == 'set-cookie':
                 for cookie in value:
@@ -122,7 +146,20 @@ class TestClient:
                             del self.cookies[cookie_name]
                     else:
                         self.cookies[cookie_name] = cookie_options[0]
-        return TestResponse(res)
+
+    def request(self, method, path, headers=None, body=None):
+        headers = headers or {}
+        body, headers = self._process_body(body, headers)
+        cookies, headers = self._process_cookies(headers)
+        request_bytes = self._render_request(method, path, headers, body)
+
+        req = Request.create(self.app, BytesIO(request_bytes),
+                             ('127.0.0.1', 1234))
+        res = self.app.dispatch_request(req)
+        res.complete()
+
+        self._update_cookies(res)
+        return TestResponse.create(res)
 
     def get(self, path, headers=None):
         """Send a GET request to the application.

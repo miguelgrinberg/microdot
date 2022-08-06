@@ -5,18 +5,17 @@ from microdot_test_client import TestClient
 from tests import mock_socket
 
 
-def mock_create_thread(f, *args, **kwargs):
-    f(*args, **kwargs)
-
-
 class TestMicrodot(unittest.TestCase):
-    def _mock_socket(self):
+    def _mock(self):
+        def mock_create_thread(f, *args, **kwargs):
+            f(*args, **kwargs)
+
         self.original_socket = sys.modules['microdot'].socket
         self.original_create_thread = sys.modules['microdot'].create_thread
         sys.modules['microdot'].socket = mock_socket
         sys.modules['microdot'].create_thread = mock_create_thread
 
-    def _unmock_socket(self):
+    def _unmock(self):
         sys.modules['microdot'].socket = self.original_socket
         sys.modules['microdot'].create_thread = self.original_create_thread
 
@@ -39,6 +38,7 @@ class TestMicrodot(unittest.TestCase):
         res = client.get('/')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Length'], '3')
         self.assertEqual(res.text, 'foo')
         self.assertEqual(res.body, b'foo')
         self.assertEqual(res.json, None)
@@ -62,7 +62,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.text, 'bar')
 
     def test_empty_request(self):
-        self._mock_socket()
+        self._mock()
 
         app = Microdot()
 
@@ -76,7 +76,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nBad request'))
 
-        self._unmock_socket()
+        self._unmock()
 
     def test_method_decorators(self):
         app = Microdot()
@@ -265,7 +265,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.text, 'baz')
 
     def test_400(self):
-        self._mock_socket()
+        self._mock()
 
         app = Microdot()
 
@@ -279,10 +279,10 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nBad request'))
 
-        self._unmock_socket()
+        self._unmock()
 
     def test_400_handler(self):
-        self._mock_socket()
+        self._mock()
 
         app = Microdot()
 
@@ -300,7 +300,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n400'))
 
-        self._unmock_socket()
+        self._unmock()
 
     def test_404(self):
         app = Microdot()

@@ -138,7 +138,7 @@ class Response(BaseResponse):
         # body
         try:
             async for body in self.body_iter():
-                if isinstance(body, str):
+                if isinstance(body, str):  # pragma: no cover
                     body = body.encode()
                 await stream.awrite(body)
         except OSError as exc:  # pragma: no cover
@@ -340,12 +340,21 @@ class Microdot(BaseMicrodot):
                             res = await self._invoke_handler(
                                 f, req, **req.url_args)
                         if isinstance(res, tuple):
-                            res = Response(*res)
+                            body = res[0]
+                            if isinstance(res[1], int):
+                                status_code = res[1]
+                                headers = res[2] if len(res) > 2 else {}
+                            else:
+                                status_code = 200
+                                headers = res[1]
+                            res = Response(body, status_code, headers)
                         elif not isinstance(res, Response):
                             res = Response(res)
                         for handler in self.after_request_handlers:
                             res = await self._invoke_handler(
                                 handler, req, res) or res
+                        for handler in req.after_request_handlers:
+                            res = await handler(req, res) or res
                     elif f in self.error_handlers:
                         res = await self._invoke_handler(
                             self.error_handlers[f], req)
