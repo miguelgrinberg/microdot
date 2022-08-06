@@ -4,11 +4,22 @@ secret_key = None
 
 
 def set_session_secret_key(key):
+    """Set the secret key for signing user sessions.
+
+    :param key: The secret key, as a string or bytes object.
+    """
     global secret_key
     secret_key = key
 
 
 def get_session(request):
+    """Retrieve the user session.
+
+    :param request: The client request.
+
+    The return value is a dictionary with the data stored in the user's
+    session, or ``{}`` if the session data is not available or invalid.
+    """
     global secret_key
     if not secret_key:
         raise ValueError('The session secret key is not configured')
@@ -24,6 +35,14 @@ def get_session(request):
 
 
 def update_session(request, session):
+    """Update the user session.
+
+    :param request: The client request.
+    :param session: A dictionary with the update session data for the user.
+
+    Calling this function adds a cookie with the updated session to the request
+    currently being processed.
+    """
     if not secret_key:
         raise ValueError('The session secret key is not configured')
 
@@ -36,6 +55,13 @@ def update_session(request, session):
 
 
 def delete_session(request):
+    """Remove the user session.
+
+    :param request: The client request.
+
+    Calling this function adds a cookie removal header to the request currently
+    being processed.
+    """
     @request.after_request
     def _delete_session(request, response):
         response.set_cookie('session', '', http_only=True,
@@ -44,6 +70,19 @@ def delete_session(request):
 
 
 def with_session(f):
+    """Decorator that passes the user session to the route handler.
+
+    The session dictionary is passed to the decorated function as an argument
+    after the request object. Example::
+
+        @app.route('/')
+        @with_session
+        def index(request, session):
+            return 'Hello, World!'
+
+    Note that the decorator does not save the session. To update the session,
+    call the :func:`update_session <microdot_session.update_session>` function.
+    """
     def wrapper(request, *args, **kwargs):
         return f(request, get_session(request), *args, **kwargs)
 

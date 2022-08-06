@@ -67,6 +67,9 @@ Running with CPython
    * - Required external dependencies
      - | None
 
+   * - Examples
+     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello.py>`_
+
 When using CPython, you can start the web server by running the script that
 defines and runs the application instance::
 
@@ -88,6 +91,10 @@ Running with MicroPython
 
    * - Required external dependencies
      - | None
+
+   * - Examples
+     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello.py>`_
+       | `gpio.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/gpio.py>`_
 
 When using MicroPython, you can upload a *main.py* file containing the web
 server code to your device along with *microdot.py*. MicroPython will
@@ -618,8 +625,8 @@ Example::
         return {'hello': 'world'}
 
 .. note::
-   JSON responses are sent with the ``Content-Type`` header set to
-   ``application/json``.
+   A ``Content-Type`` header set to ``application/json`` is automatically added
+   to the response.
 
 Redirects
 ^^^^^^^^^
@@ -694,9 +701,9 @@ default content type::
 Setting Cookies
 ^^^^^^^^^^^^^^^
 
-Many web application rely on cookies to maintain client state between requests.
-Cookies can be set with the ``Set-Cookie`` header in the response, but since
-this is such a common practice, Microdot provides the
+Many web applications rely on cookies to maintain client state between
+requests. Cookies can be set with the ``Set-Cookie`` header in the response,
+but since this is such a common practice, Microdot provides the
 :func:`set_cookie() <microdot.Response.set_cookie>` method in the response
 object to add a properly formatted cookie header to the response.
 
@@ -719,7 +726,7 @@ Another option is to create a response object directly in the route function::
 
     @app.get('/')
     def index(request):
-        response = Response('Hello, World!'))
+        response = Response('Hello, World!')
         response.set_cookie('name', 'value')
         return response
 

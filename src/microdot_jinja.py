@@ -18,6 +18,15 @@ def init_templates(template_dir='templates'):
 
 
 def render_template(template, *args, **kwargs):
+    """Render a template.
+
+    :param template: The filename of the template to render, relative to the
+                     configured template directory.
+    :param args: Positional arguments to be passed to the render engine.
+    :param kwargs: Keyword arguments to be passed to the render engine.
+
+    The return value is a string with the rendered template.
+    """
     if _jinja_env is None:  # pragma: no cover
         init_templates()
     template = _jinja_env.get_template(template)
