@@ -94,6 +94,22 @@ Maintaing Secure User Sessions
                       `hashlib <https://github.com/miguelgrinberg/micropython-lib/blob/ujwt-module/python-stdlib/hashlib>`_,
                       `warnings <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/warnings/warnings.py>`_
 
+Test Client
+~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
+       | `microdot_test_client.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_test_client.py>`_
+
+   * - Required external dependencies
+     - | None
+
 Deploying on a Production Web Server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

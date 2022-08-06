@@ -727,5 +727,5 @@ Another option is to create a response object directly in the route function::
    Standard cookies do not offer sufficient privacy and security controls, so
    never store sensitive information in them unless you are adding additional
    protection mechanisms such as encryption or cryptographic signing. The
-   :ref:`session <Maintaing Secure User Sessions>` extension implements signed cookies that prevent tampering
-   by malicious actors.
+   :ref:`session <Maintaing Secure User Sessions>` extension implements signed
+   cookies that prevent tampering by malicious actors.

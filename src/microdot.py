@@ -485,7 +485,7 @@ class Response():
         can_flush = hasattr(stream, 'flush')
         try:
             for body in self.body_iter():
-                if isinstance(body, str):
+                if isinstance(body, str):  # pragma: no cover
                     body = body.encode()
                 stream.write(body)
                 if can_flush:  # pragma: no cover

@@ -10,7 +10,7 @@ from microdot_asyncio import Microdot as MicrodotAsync, Request as RequestAsync
 from microdot_jinja import render_template, init_templates
 from tests.mock_socket import get_request_fd, get_async_request_fd
 
-init_templates('tests/microdot_jinja/templates')
+init_templates('tests/templates')
 
 
 def _run(coro):
@@ -21,7 +21,7 @@ def _run(coro):
                  'not supported under MicroPython')
 class TestUTemplate(unittest.TestCase):
     def test_render_template(self):
-        s = render_template('hello.txt', name='foo')
+        s = render_template('hello.jinja.txt', name='foo')
         self.assertEqual(s, 'Hello, foo!')
 
     def test_render_template_in_app(self):
@@ -29,7 +29,7 @@ class TestUTemplate(unittest.TestCase):
 
         @app.route('/')
         def index(req):
-            return render_template('hello.txt', name='foo')
+            return render_template('hello.jinja.txt', name='foo')
 
         req = Request.create(app, get_request_fd('GET', '/'), 'addr')
         res = app.dispatch_request(req)
@@ -41,7 +41,7 @@ class TestUTemplate(unittest.TestCase):
 
         @app.route('/')
         async def index(req):
-            return render_template('hello.txt', name='foo')
+            return render_template('hello.jinja.txt', name='foo')
 
         req = _run(RequestAsync.create(
             app, get_async_request_fd('GET', '/'), 'addr'))

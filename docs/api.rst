@@ -60,6 +60,24 @@ and coroutines.
    :inherited-members:
    :members:
 
+``microdot_test_client`` module
+-------------------------------
+
+The ``microdot_test_client`` module defines a test client that can be used to
+create automated tests for the Microdot server.
+
+``TestClient`` class
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: microdot_test_client.TestClient
+   :members:
+
+``TestResponse`` class
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: microdot_test_client.TestResponse
+   :members:
+
 ``microdot_wsgi`` module
 ------------------------
 
