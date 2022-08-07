@@ -27,21 +27,12 @@ try:  # pragma: no cover
         # use the threading module
         threading.Thread(target=f, args=args, kwargs=kwargs).start()
 except ImportError:  # pragma: no cover
-    try:
-        import _thread
+    def create_thread(f, *args, **kwargs):
+        # no threads available, call function synchronously
+        f(*args, **kwargs)
 
-        def create_thread(f, *args, **kwargs):
-            # use MicroPython's _thread module
-            def run():
-                f(*args, **kwargs)
+    concurrency_mode = 'sync'
 
-            _thread.start_new_thread(run, ())
-    except ImportError:
-        def create_thread(f, *args, **kwargs):
-            # no threads available, call function synchronously
-            f(*args, **kwargs)
-
-        concurrency_mode = 'sync'
 try:
     import ujson as json
 except ImportError:
