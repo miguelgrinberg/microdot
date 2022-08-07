@@ -51,3 +51,12 @@ jobs:
       - run: pip install tox tox-gh-actions codecov
       - run: tox
       - run: codecov
+  benchmark:
+    name: benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: python -m pip install --upgrade pip wheel
+      - run: pip install tox tox-gh-actions
+      - run: tox -ebenchmark
