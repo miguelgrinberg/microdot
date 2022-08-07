@@ -1,5 +1,30 @@
 # Microdot change log
 
+**Release 1.0.0** - 2022-08-07
+
+- User sessions with signed JWTs ([commit](https://github.com/miguelgrinberg/microdot/commit/355ffefcb2697b30d03359d35283835901f375d6))
+- Mount sub-applications ([commit](https://github.com/miguelgrinberg/microdot/commit/cd5b35d86f2bdd2924234d19943b06dbad6db7c0))
+- Request-specific `after_request` handlers ([commit](https://github.com/miguelgrinberg/microdot/commit/120abe45ecee3ef215c2201337fcb399d5602d59))
+- Render templates with uTemplate ([commit](https://github.com/miguelgrinberg/microdot/commit/54c13295827548a9258a9af914d199f06d8ae5cd))
+- Render templates with Jinja ([commit](https://github.com/miguelgrinberg/microdot/commit/7686b2ae38fb980de0de33c1585f430af11e1cdf))
+- Test client ([commit](https://github.com/miguelgrinberg/microdot/commit/199d23f2c72356072a32fa7bdc85b094c8a63766))
+- Async test client ([commit](https://github.com/miguelgrinberg/microdot/commit/3bcdf4d496630672ed702677b1e22e5364b2b95a))
+- Example that serves static files from a directory ([commit](https://github.com/miguelgrinberg/microdot/commit/a3d7772b8a8e49526f895d10af52a4c0568922b2))
+- Allow routes to only return a body and headers ([commit](https://github.com/miguelgrinberg/microdot/commit/16f3775fa26ea08600898f6a244d5baabea32813))
+- Improved handling of 400 and 405 errors ([commit](https://github.com/miguelgrinberg/microdot/commit/8177b9c7f1c1dfedcd10dcd1562caf6e442d941f))
+- Support responses with more than one cookie in WSGI and ASGI extensions ([commit](https://github.com/miguelgrinberg/microdot/commit/e8d16cf3f90270c5cd3fb13168c5cc983708989c))
+- Cookie expiration can also be given as a string ([commit](https://github.com/miguelgrinberg/microdot/commit/3a54984b674148b6e590eb989de18c1ff0aa9217))
+- Accept POST request with empty body ([commit](https://github.com/miguelgrinberg/microdot/commit/bf3aff6c35982c7dc4a42ae5415933b252cebc0d))
+- Add missing asgi module to package ([commit](https://github.com/miguelgrinberg/microdot/commit/7f1e546067d2222fa1499af69a6a697e5b7188be))
+- Memory usage comparison and benchmark ([commit](https://github.com/miguelgrinberg/microdot/commit/d090bbf8e2b7ce07c802b06de7ebb29de68d788d))
+- Do not use `_thread` for multithreading ([commit](https://github.com/miguelgrinberg/microdot/commit/998c1970586bf5298b6f749460ab88496e429612))
+- Getting Started documentation chapter ([commit](https://github.com/miguelgrinberg/microdot/commit/037024320f08e294601d7b4e206b309dc77b1d90))
+- Concurrency section added to the documentation ([commit](https://github.com/miguelgrinberg/microdot/commit/2f496db50b3d3629c68178b5915454cf1d87bc89))
+- Documentation for all official extensions ([commit](https://github.com/miguelgrinberg/microdot/commit/09dc3ef7aa8e37c64f6ee919e4603c53b05bc156))
+- Remove legacy `microdot-asyncio` package files ([commit](https://github.com/miguelgrinberg/microdot/commit/f1a93ec35e2e758015360b753cb9b07dbf4e96d1))
+- Added MicroPython libraries required by user sessions ([commit](https://github.com/miguelgrinberg/microdot/commit/c9e148bd04aa70df2d8cc8db766eb52fa87cda31))
+- Reorganized vendored MicroPython libraries ([commit](https://github.com/miguelgrinberg/microdot/commit/7df74b05374cfc398fcdeb280e93ec3f46047c2a))
+
 **Release 0.9.0** - 2022-06-04
 
 - Streaming responses [#44](https://github.com/miguelgrinberg/microdot/issues/44) ([commit](https://github.com/miguelgrinberg/microdot/commit/d71665fd388c92a50198faf0d761235f0138797a))
