@@ -736,3 +736,19 @@ Another option is to create a response object directly in the route function::
    protection mechanisms such as encryption or cryptographic signing. The
    :ref:`session <Maintaing Secure User Sessions>` extension implements signed
    cookies that prevent tampering by malicious actors.
+
+Concurrency
+~~~~~~~~~~~
+
+By default, Microdot runs in synchronous (single-threaded) mode. However, if
+the ``threading`` module is available, each request will be started on a
+separate thread and requests will be handled concurrently.
+
+Be aware that most microcontroller boards support a very limited form of
+multi-threading that is not appropriate for concurrent request handling. For
+that reason, use of the `threading <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/threading/threading.py>`_
+module on microcontroller platforms is not recommended.
+
+The :ref:`micropython_asyncio <Asynchronous Support with Asyncio>` extension
+provides a more robust concurrency option that is supported even on low-end
+MicroPython boards.

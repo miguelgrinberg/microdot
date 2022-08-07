@@ -5,8 +5,8 @@ Microdot is a highly extensible web application framework. The extensions
 described in this section are maintained as part of the Microdot project and
 can be obtained from the same source code repository.
 
-Asynchronous Support with ``asyncio``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Asynchronous Support with Asyncio
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :align: left
