@@ -4,7 +4,6 @@ import hmac
 import json
 from time import time
 
-
 def _to_b64url(data):
     return (
         binascii.b2a_base64(data)
@@ -32,13 +31,13 @@ class exceptions:
     class InvalidSignatureError(PyJWTError):
         pass
 
-    class ExpiredTokenError(PyJWTError):
+    class ExpiredSignatureError(PyJWTError):
         pass
 
 
 def encode(payload, key, algorithm="HS256"):
     if algorithm != "HS256":
-        raise exceptions.InvalidAlgorithmError()
+        raise exceptions.InvalidAlgorithmError
 
     if isinstance(key, str):
         key = key.encode()
@@ -50,30 +49,30 @@ def encode(payload, key, algorithm="HS256"):
 
 def decode(token, key, algorithms=["HS256"]):
     if "HS256" not in algorithms:
-        raise exceptions.InvalidAlgorithmError()
+        raise exceptions.InvalidAlgorithmError
 
     parts = token.encode().split(b".")
     if len(parts) != 3:
-        raise exceptions.InvalidTokenError()
+        raise exceptions.InvalidTokenError
 
     try:
         header = json.loads(_from_b64url(parts[0]).decode())
         payload = json.loads(_from_b64url(parts[1]).decode())
         signature = _from_b64url(parts[2])
     except Exception:
-        raise exceptions.InvalidTokenError()
+        raise exceptions.InvalidTokenError
 
     if header["alg"] not in algorithms or header["alg"] != "HS256":
-        raise exceptions.InvalidAlgorithmError()
+        raise exceptions.InvalidAlgorithmError
 
     if isinstance(key, str):
         key = key.encode()
     calculated_signature = hmac.new(key, parts[0] + b"." + parts[1], hashlib.sha256).digest()
     if signature != calculated_signature:
-        raise exceptions.InvalidSignatureError()
+        raise exceptions.InvalidSignatureError
 
     if "exp" in payload:
         if time() > payload["exp"]:
-            raise exceptions.ExpiredTokenError()
+            raise exceptions.ExpiredSignatureError
 
     return payload

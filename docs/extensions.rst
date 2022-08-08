@@ -152,10 +152,8 @@ Maintaing Secure User Sessions
 
    * - Required external dependencies
      - | CPython: `PyJWT <https://pyjwt.readthedocs.io/>`_
-       | MicroPython: `jwt.py <https://github.com/miguelgrinberg/microdot/blob/main/libs/micropython/jwt.py>`_,
-                      `hmac <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/hmac/hmac.py>`_,
-                      `hashlib <https://github.com/miguelgrinberg/microdot/tree/main/libs/micropython/hashlib>`_,
-                      `warnings <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/warnings/warnings.py>`_
+       | MicroPython: `jwt.py <https://github.com/micropython/micropython-lib/blob/master/python-ecosys/pyjwt/jwt.py>`_,
+                      `hmac <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/hmac/hmac.py>`_
 
    * - Examples
      - | `login.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/login.py>`_
