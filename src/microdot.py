@@ -594,6 +594,15 @@ class URLPattern():
         return args
 
 
+class HTTPException(Exception):
+    def __init__(self, status_code, reason=None):
+        self.status_code = status_code
+        self.reason = reason or str(status_code) + ' error'
+
+    def __repr__(self):  # pragma: no cover
+        return 'HTTPException: {}'.format(self.status_code)
+
+
 class Microdot():
     """An HTTP application class.
 
@@ -816,6 +825,28 @@ class Microdot():
         for status_code, handler in subapp.error_handlers.items():
             self.error_handlers[status_code] = handler
 
+    @staticmethod
+    def abort(status_code, reason=None):
+        """Abort the current request and return an error response with the
+        given status code.
+
+        :param status_code: The numeric status code of the response.
+        :param reason: The reason for the response, which is included in the
+                       response body.
+
+        Example::
+
+            from microdot import abort
+
+            @app.route('/users/<int:id>')
+            def get_user(id):
+                user = get_user_by_id(id)
+                if user is None:
+                    abort(404)
+                return user.to_dict()
+        """
+        raise HTTPException(status_code, reason)
+
     def run(self, host='0.0.0.0', port=5000, debug=False):
         """Start the web server. This function does not normally return, as
         the server enters an endless listening loop. The :func:`shutdown`
@@ -962,6 +993,12 @@ class Microdot():
                         res = self.error_handlers[f](req)
                     else:
                         res = 'Not found', f
+                except HTTPException as exc:
+                    print_exception(exc)
+                    if exc.status_code in self.error_handlers:
+                        res = self.error_handlers[exc.status_code](req)
+                    else:
+                        res = exc.reason, exc.status_code
                 except Exception as exc:
                     print_exception(exc)
                     res = None
@@ -988,5 +1025,6 @@ class Microdot():
         return res
 
 
+abort = Microdot.abort
 redirect = Response.redirect
 send_file = Response.send_file

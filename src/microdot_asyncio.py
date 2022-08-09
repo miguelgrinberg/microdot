@@ -20,6 +20,7 @@ from microdot import Microdot as BaseMicrodot
 from microdot import print_exception
 from microdot import Request as BaseRequest
 from microdot import Response as BaseResponse
+from microdot import HTTPException
 
 
 def _iscoroutine(coro):
@@ -360,6 +361,12 @@ class Microdot(BaseMicrodot):
                             self.error_handlers[f], req)
                     else:
                         res = 'Not found', f
+                except HTTPException as exc:
+                    print_exception(exc)
+                    if exc.status_code in self.error_handlers:
+                        res = self.error_handlers[exc.status_code](req)
+                    else:
+                        res = exc.reason, exc.status_code
                 except Exception as exc:
                     print_exception(exc)
                     res = None
@@ -393,5 +400,6 @@ class Microdot(BaseMicrodot):
         return ret
 
 
+abort = Microdot.abort
 redirect = Response.redirect
 send_file = Response.send_file

@@ -1,6 +1,6 @@
 import sys
 import unittest
-from microdot import Microdot, Response
+from microdot import Microdot, Response, abort
 from microdot_test_client import TestClient
 from tests import mock_socket
 
@@ -438,6 +438,38 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.status_code, 501)
         self.assertEqual(res.headers['Content-Type'], 'text/plain')
         self.assertEqual(res.text, '501')
+
+    def test_abort(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            abort(406, 'Not acceptable')
+            return 'foo'
+
+        client = TestClient(app)
+        res = client.get('/')
+        self.assertEqual(res.status_code, 406)
+        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.text, 'Not acceptable')
+
+    def test_abort_handler(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            abort(406)
+            return 'foo'
+
+        @app.errorhandler(406)
+        def handle_406(req):
+            return '406', 406
+
+        client = TestClient(app)
+        res = client.get('/')
+        self.assertEqual(res.status_code, 406)
+        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.text, '406')
 
     def test_json_response(self):
         app = Microdot()

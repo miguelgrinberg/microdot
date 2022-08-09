@@ -4,7 +4,7 @@ except ImportError:
     import asyncio
 import sys
 import unittest
-from microdot_asyncio import Microdot, Response
+from microdot_asyncio import Microdot, Response, abort
 from microdot_asyncio_test_client import TestClient
 from tests import mock_asyncio, mock_socket
 
@@ -471,6 +471,38 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertEqual(res.status_code, 501)
         self.assertEqual(res.headers['Content-Type'], 'text/plain')
         self.assertEqual(res.text, '501')
+
+    def test_abort(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            abort(406, 'Not acceptable')
+            return 'foo'
+
+        client = TestClient(app)
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 406)
+        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.text, 'Not acceptable')
+
+    def test_abort_handler(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            abort(406)
+            return 'foo'
+
+        @app.errorhandler(406)
+        def handle_500(req):
+            return '406', 406
+
+        client = TestClient(app)
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 406)
+        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.text, '406')
 
     def test_json_response(self):
         app = Microdot()
