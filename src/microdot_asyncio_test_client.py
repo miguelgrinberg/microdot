@@ -1,4 +1,4 @@
-from microdot_asyncio import Request, _AsyncBytesIO
+from microdot_asyncio import Request, Response, _AsyncBytesIO
 from microdot_test_client import TestClient as BaseTestClient, \
     TestResponse as BaseTestResponse
 
@@ -54,8 +54,10 @@ class TestClient(BaseTestClient):
         request_bytes = self._render_request(method, path, headers, body)
 
         req = await Request.create(self.app, _AsyncBytesIO(request_bytes),
-                                   ('127.0.0.1', 1234))
+                                   _AsyncBytesIO(b''), ('127.0.0.1', 1234))
         res = await self.app.dispatch_request(req)
+        if res == Response.already_handled:
+            return None
         res.complete()
 
         self._update_cookies(res)

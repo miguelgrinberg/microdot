@@ -27,7 +27,8 @@ class Microdot(BaseMicrodot):
             path,
             environ['SERVER_PROTOCOL'],
             headers,
-            stream=environ['wsgi.input'])
+            stream=environ['wsgi.input'],
+            sock=environ.get('gunicorn.socket'))
         req.environ = environ
 
         res = self.dispatch_request(req)

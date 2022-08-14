@@ -194,7 +194,7 @@ class Request():
         pass
 
     def __init__(self, app, client_addr, method, url, http_version, headers,
-                 body=None, stream=None):
+                 body=None, stream=None, sock=None):
         #: The application instance to which this request belongs.
         self.app = app
         #: The address of the client, as a tuple (host, port).
@@ -240,18 +240,21 @@ class Request():
         self.body_used = False
         self._stream = stream
         self.stream_used = False
+        self.sock = sock
         self._json = None
         self._form = None
         self.after_request_handlers = []
 
     @staticmethod
-    def create(app, client_stream, client_addr):
+    def create(app, client_stream, client_addr, client_sock=None):
         """Create a request object.
+
 
         :param app: The Microdot application instance.
         :param client_stream: An input stream from where the request data can
                               be read.
         :param client_addr: The address of the client, as a tuple.
+        :param client_sock: The socket from where the request data can be read.
 
         This method returns a newly created ``Request`` object.
         """
@@ -273,7 +276,7 @@ class Request():
             headers[header] = value
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       stream=client_stream)
+                       stream=client_stream, sock=client_sock)
 
     def _parse_urlencoded(self, urlencoded):
         data = MultiDict()
@@ -395,6 +398,10 @@ class Response():
     #: The content type to use for responses that do not explicitly define a
     #: ``Content-Type`` header.
     default_content_type = 'text/plain'
+
+    #: Special response used to signal that a response does not need to be
+    #: written to the client. Used to exit WebSocket connections cleanly.
+    already_handled = None
 
     def __init__(self, body='', status_code=200, headers=None, reason=None):
         if body is None and status_code == 200:
@@ -935,11 +942,12 @@ class Microdot():
 
         req = None
         try:
-            req = Request.create(self, stream, addr)
+            req = Request.create(self, stream, addr, sock)
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
         res = self.dispatch_request(req)
-        res.write(stream)
+        if res != Response.already_handled:  # pragma: no branch
+            res.write(stream)
         try:
             stream.close()
         except OSError as exc:  # pragma: no cover
@@ -1026,5 +1034,6 @@ class Microdot():
 
 
 abort = Microdot.abort
+Response.already_handled = Response()
 redirect = Response.redirect
 send_file = Response.send_file

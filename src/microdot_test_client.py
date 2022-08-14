@@ -1,6 +1,6 @@
 from io import BytesIO
 import json
-from microdot import Request
+from microdot import Request, Response
 
 
 class TestResponse:
@@ -156,6 +156,8 @@ class TestClient:
         req = Request.create(self.app, BytesIO(request_bytes),
                              ('127.0.0.1', 1234))
         res = self.app.dispatch_request(req)
+        if res == Response.already_handled:
+            return None
         res.complete()
 
         self._update_cookies(res)

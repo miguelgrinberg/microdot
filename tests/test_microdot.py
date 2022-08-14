@@ -526,6 +526,17 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.headers['Content-Type'], 'text/plain')
         self.assertEqual(res.text, 'foobar')
 
+    def test_already_handled_response(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            return Response.already_handled
+
+        client = TestClient(app)
+        res = client.get('/')
+        self.assertEqual(res, None)
+
     def test_mount(self):
         subapp = Microdot()
 

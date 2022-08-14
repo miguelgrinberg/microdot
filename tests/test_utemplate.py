@@ -41,7 +41,7 @@ class TestUTemplate(unittest.TestCase):
             return render_template('hello.utemplate.txt', name='foo')
 
         req = _run(RequestAsync.create(
-            app, get_async_request_fd('GET', '/'), 'addr'))
+            app, get_async_request_fd('GET', '/'), 'writer', 'addr'))
         res = _run(app.dispatch_request(req))
         self.assertEqual(res.status_code, 200)
 

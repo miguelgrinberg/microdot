@@ -16,7 +16,7 @@ def _run(coro):
 class TestRequestAsync(unittest.TestCase):
     def test_create_request(self):
         fd = get_async_request_fd('GET', '/foo')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertEqual(req.app, 'app')
         self.assertEqual(req.client_addr, 'addr')
         self.assertEqual(req.method, 'GET')
@@ -37,7 +37,7 @@ class TestRequestAsync(unittest.TestCase):
             'Content-Type': 'application/json',
             'Cookie': 'foo=bar;abc=def',
             'Content-Length': '3'}, body='aaa')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertEqual(req.headers, {
             'Host': 'example.com:1234',
             'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ class TestRequestAsync(unittest.TestCase):
 
     def test_args(self):
         fd = get_async_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertEqual(req.query_string, 'foo=bar&abc=def&x=%2f%%')
         self.assertEqual(req.args, MultiDict(
             {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
@@ -58,26 +58,26 @@ class TestRequestAsync(unittest.TestCase):
     def test_json(self):
         fd = get_async_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'}, body='{"foo":"bar"}')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         json = req.json
         self.assertEqual(json, {'foo': 'bar'})
         self.assertTrue(req.json is json)
 
         fd = get_async_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'}, body='[1, "2"]')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertEqual(req.json, [1, '2'])
 
         fd = get_async_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/xml'}, body='[1, "2"]')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertIsNone(req.json)
 
     def test_form(self):
         fd = get_async_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/x-www-form-urlencoded'},
             body='foo=bar&abc=def&x=%2f%%')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         form = req.form
         self.assertEqual(form, MultiDict(
             {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
@@ -86,7 +86,7 @@ class TestRequestAsync(unittest.TestCase):
         fd = get_async_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'},
             body='foo=bar&abc=def&x=%2f%%')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertIsNone(req.form)
 
     def test_large_line(self):
@@ -97,7 +97,7 @@ class TestRequestAsync(unittest.TestCase):
             'Content-Type': 'application/x-www-form-urlencoded'},
             body='foo=bar&abc=def&x=y')
         with self.assertRaises(ValueError):
-            _run(Request.create('app', fd, 'addr'))
+            _run(Request.create('app', fd, 'writer', 'addr'))
 
         Request.max_readline = saved_max_readline
 
@@ -106,7 +106,7 @@ class TestRequestAsync(unittest.TestCase):
             'Content-Type': 'application/x-www-form-urlencoded',
             'Content-Length': '19'},
             body='foo=bar&abc=def&x=y')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertEqual(req.body, b'foo=bar&abc=def&x=y')
         data = _run(req.stream.read())
         self.assertEqual(data, b'foo=bar&abc=def&x=y')
@@ -121,7 +121,7 @@ class TestRequestAsync(unittest.TestCase):
             'Content-Type': 'application/x-www-form-urlencoded',
             'Content-Length': '19'},
             body='foo=bar&abc=def&x=y')
-        req = _run(Request.create('app', fd, 'addr'))
+        req = _run(Request.create('app', fd, 'writer', 'addr'))
         self.assertEqual(req.body, b'')
         data = _run(req.stream.read())
         self.assertEqual(data, b'foo=bar&abc=def&x=y')
