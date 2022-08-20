@@ -58,10 +58,11 @@ class WebSocket:
         d.update(b'258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
         return binascii.b2a_base64(d.digest())[:-1]
 
-    def _parse_frame_header(self, header):
+    @classmethod
+    def _parse_frame_header(cls, header):
         fin = header[0] & 0x80
         opcode = header[0] & 0x0f
-        if fin == 0 or opcode == self.CONT:
+        if fin == 0 or opcode == cls.CONT:
             self.close()
             raise OSError(32, 'Continuation frames not supported')
         has_mask = header[1] & 0x80
@@ -85,10 +86,11 @@ class WebSocket:
             return None, None
         return None, payload
 
-    def _encode_websocket_frame(self, opcode, payload):
+    @classmethod
+    def _encode_websocket_frame(cls, opcode, payload):
         frame = bytearray()
         frame.append(0x80 | opcode)
-        if opcode == self.TEXT:
+        if opcode == cls.TEXT:
             payload = payload.encode()
         if len(payload) < 126:
             frame.append(len(payload))
@@ -144,7 +146,7 @@ def websocket_upgrade(request):
     return ws
 
 
-def websocket(f):
+def with_websocket(f):
     """Decorator to make a route a WebSocket endpoint.
 
     This decorator is used to define a route that accepts websocket

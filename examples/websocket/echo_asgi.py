@@ -1,11 +1,11 @@
 from microdot_asgi import Microdot
-from microdot_asgi_websocket import websocket
+from microdot_asgi_websocket import with_websocket
 
 app = Microdot()
 
 
 @app.route('/echo')
-@websocket
+@with_websocket
 async def echo(request, ws):
     while True:
         data = await ws.receive()
