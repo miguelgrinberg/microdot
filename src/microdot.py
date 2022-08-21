@@ -489,7 +489,7 @@ class Response():
                 if can_flush:  # pragma: no cover
                     stream.flush()
         except OSError as exc:  # pragma: no cover
-            if exc.errno == 32:  # errno.EPIPE
+            if exc.errno in [32, 104]:  # errno.EPIPE and errno.ECONNRESET
                 pass
             else:
                 raise
@@ -951,7 +951,7 @@ class Microdot():
         try:
             stream.close()
         except OSError as exc:  # pragma: no cover
-            if exc.errno == 32:  # errno.EPIPE
+            if exc.errno in [32, 104]:  # errno.EPIPE and errno.ECONNRESET
                 pass
             else:
                 raise

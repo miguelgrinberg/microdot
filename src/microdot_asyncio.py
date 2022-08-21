@@ -153,7 +153,7 @@ class Response(BaseResponse):
                     body = body.encode()
                 await stream.awrite(body)
         except OSError as exc:  # pragma: no cover
-            if exc.errno == 32 or exc.args[0] == 'Connection lost':
+            if exc.errno in [32, 104] or exc.args[0] == 'Connection lost':
                 pass
             else:
                 raise
@@ -322,7 +322,7 @@ class Microdot(BaseMicrodot):
         try:
             await writer.aclose()
         except OSError as exc:  # pragma: no cover
-            if exc.errno == 32:  # errno.EPIPE
+            if exc.errno in [32, 104]:  # errno.EPIPE and errno.ECONNRESET
                 pass
             else:
                 raise
