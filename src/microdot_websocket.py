@@ -39,7 +39,7 @@ class WebSocket:
         self.request.sock.send(frame)
 
     def close(self):
-        if not self.closed:
+        if not self.closed:  # pragma: no branch
             self.closed = True
             self.send(b'', self.CLOSE)
 
@@ -96,21 +96,18 @@ class WebSocket:
             frame.append(len(payload))
         elif len(payload) < (1 << 16):
             frame.append(126)
-            frame.extend(payload.length.to_bytes(2, 'big'))
+            frame.extend(len(payload).to_bytes(2, 'big'))
         else:
             frame.append(127)
-            frame.extend(payload.length.to_bytes(8, 'big'))
+            frame.extend(len(payload).to_bytes(8, 'big'))
         frame.extend(payload)
         return frame
 
     def _read_frame(self):
         header = self.request.sock.recv(2)
         fin, opcode, has_mask, length = self._parse_frame_header(header)
-        if length == -2:
-            length = self.request.sock.recv(2)
-            length = int.from_bytes(length, 'big')
-        elif length == -8:
-            length = self.request.sock.recv(8)
+        if length < 0:
+            length = self.request.sock.recv(-length)
             length = int.from_bytes(length, 'big')
         if has_mask:
             mask = self.request.sock.recv(4)
@@ -165,7 +162,7 @@ def with_websocket(f):
         try:
             f(request, ws, *args, **kwargs)
         except OSError as exc:
-            if exc.errno != 32 and exc.errno != 54:
+            if exc.errno not in [32, 54, 104]:  # pragma: no cover
                 raise
         ws.close()
         return ''

@@ -1,2 +1,3 @@
 [run]
-omit=src/utemplate/*
+omit=
+    src/microdot_websocket_alt.py

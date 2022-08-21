@@ -3,7 +3,7 @@ import json
 from microdot import Request, Response
 try:
     from microdot_websocket import WebSocket
-except:
+except:  # pragma: no cover
     WebSocket = None
 
 
@@ -256,16 +256,14 @@ class TestClient:
                         self.closed = True
                         raise OSError(32, 'Websocket connection closed')
                     return
-                return WebSocket._encode_websocket_frame(
-                    WebSocket.TEXT if isinstance(data, str) else
-                    WebSocket.BINARY, data)
+                opcode = WebSocket.TEXT if isinstance(data, str) \
+                    else WebSocket.BINARY
+                return WebSocket._encode_websocket_frame(opcode, data)
 
             def recv(self, n):
                 self.started = True
                 if not self.buffer:
                     self.buffer = self._next()
-                    if not self.buffer:
-                        return
                 data = self.buffer[:n]
                 self.buffer = self.buffer[n:]
                 return data
@@ -273,10 +271,8 @@ class TestClient:
             def send(self, data):
                 if self.started:
                     h = WebSocket._parse_frame_header(data[0:2])
-                    if h[3] == 126:
-                        data = data[4:]
-                    elif h[3] == 127:
-                        data = data[10:]
+                    if h[3] < 0:
+                        data = data[2 - h[3]:]
                     else:
                         data = data[2:]
                     if h[1] == WebSocket.TEXT:

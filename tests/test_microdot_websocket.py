@@ -21,6 +21,10 @@ class TestMicrodotWebSocket(unittest.TestCase):
             self.assertEqual(data, 'hello')
             data = yield b'bye'
             self.assertEqual(data, b'bye')
+            data = yield b'*' * 300
+            self.assertEqual(data, b'*' * 300)
+            data = yield b'+' * 65537
+            self.assertEqual(data, b'+' * 65537)
 
         client = TestClient(app)
         res = client.websocket('/echo', ws)
