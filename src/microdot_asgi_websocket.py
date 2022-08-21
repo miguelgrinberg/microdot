@@ -60,7 +60,7 @@ async def websocket_upgrade(request):
     return ws
 
 
-def websocket(f):
+def with_websocket(f):
     """Decorator to make a route a WebSocket endpoint.
 
     This decorator is used to define a route that accepts websocket
@@ -68,7 +68,7 @@ def websocket(f):
     argument that it can use to send and receive messages::
 
         @app.route('/echo')
-        @websocket
+        @with_websocket
         def echo(request, ws):
             while True:
                 message = ws.recv()

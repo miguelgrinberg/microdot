@@ -46,7 +46,7 @@ class WebSocket:
     def _handshake_response(self):
         for header, value in self.request.headers.items():
             h = header.lower()
-            if h == 'connection' and not value.lower().startswith('upgrade'):
+            if h == 'connection' and not 'upgrade' in value.lower():
                 return abort(400)
             elif h == 'upgrade' and not value.lower() == 'websocket':
                 return abort(400)
