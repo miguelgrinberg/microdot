@@ -132,28 +132,28 @@ class Response(BaseResponse):
     async def write(self, stream):
         self.complete()
 
-        # status code
-        reason = self.reason if self.reason is not None else \
-            ('OK' if self.status_code == 200 else 'N/A')
-        await stream.awrite('HTTP/1.0 {status_code} {reason}\r\n'.format(
-            status_code=self.status_code, reason=reason).encode())
-
-        # headers
-        for header, value in self.headers.items():
-            values = value if isinstance(value, list) else [value]
-            for value in values:
-                await stream.awrite('{header}: {value}\r\n'.format(
-                    header=header, value=value).encode())
-        await stream.awrite(b'\r\n')
-
-        # body
         try:
+            # status code
+            reason = self.reason if self.reason is not None else \
+                ('OK' if self.status_code == 200 else 'N/A')
+            await stream.awrite('HTTP/1.0 {status_code} {reason}\r\n'.format(
+                status_code=self.status_code, reason=reason).encode())
+
+            # headers
+            for header, value in self.headers.items():
+                values = value if isinstance(value, list) else [value]
+                for value in values:
+                    await stream.awrite('{header}: {value}\r\n'.format(
+                        header=header, value=value).encode())
+            await stream.awrite(b'\r\n')
+
+            # body
             async for body in self.body_iter():
                 if isinstance(body, str):  # pragma: no cover
                     body = body.encode()
                 await stream.awrite(body)
         except OSError as exc:  # pragma: no cover
-            if exc.errno in [32, 104] or exc.args[0] == 'Connection lost':
+            if exc.errno in [32, 54, 104] or exc.args[0] == 'Connection lost':
                 pass
             else:
                 raise
@@ -322,7 +322,7 @@ class Microdot(BaseMicrodot):
         try:
             await writer.aclose()
         except OSError as exc:  # pragma: no cover
-            if exc.errno in [32, 104]:  # errno.EPIPE and errno.ECONNRESET
+            if exc.errno in [32, 54, 104]:  # errno.EPIPE and errno.ECONNRESET
                 pass
             else:
                 raise

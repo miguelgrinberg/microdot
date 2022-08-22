@@ -34,6 +34,8 @@ class WebSocket(BaseWebSocket):
 
     async def _read_frame(self):
         header = await self.request.sock[0].read(2)
+        if len(header) != 2:  # pragma: no cover
+            raise OSError(32, 'Websocket connection closed')
         fin, opcode, has_mask, length = self._parse_frame_header(header)
         if length == -2:
             length = await self.request.sock[0].read(2)
@@ -94,7 +96,7 @@ def with_websocket(f):
         try:
             await f(request, ws, *args, **kwargs)
         except OSError as exc:
-            if exc.errno != 32 and exc.errno != 54:
+            if exc.errno not in [32, 54, 104]:
                 raise
         await ws.close()
         return ''

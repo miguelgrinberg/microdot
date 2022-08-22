@@ -105,6 +105,8 @@ class WebSocket:
 
     def _read_frame(self):
         header = self.request.sock.recv(2)
+        if len(header) != 2:  # pragma: no cover
+            raise OSError(32, 'Websocket connection closed')
         fin, opcode, has_mask, length = self._parse_frame_header(header)
         if length < 0:
             length = self.request.sock.recv(-length)

@@ -2,7 +2,6 @@ import unittest
 from microdot import Microdot
 from microdot_websocket import with_websocket
 from microdot_test_client import TestClient
-from tests import mock_socket
 
 
 class TestMicrodotWebSocket(unittest.TestCase):
