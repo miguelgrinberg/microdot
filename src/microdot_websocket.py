@@ -163,9 +163,9 @@ def with_websocket(f):
         ws = websocket_upgrade(request)
         try:
             f(request, ws, *args, **kwargs)
+            ws.close()
         except OSError as exc:
             if exc.errno not in [32, 54, 104]:  # pragma: no cover
                 raise
-        ws.close()
         return ''
     return wrapper

@@ -95,9 +95,9 @@ def with_websocket(f):
         ws = await websocket_upgrade(request)
         try:
             await f(request, ws, *args, **kwargs)
+            await ws.close()
         except OSError as exc:
             if exc.errno not in [32, 54, 104]:
                 raise
-        await ws.close()
         return ''
     return wrapper
