@@ -21,6 +21,7 @@ from microdot import print_exception
 from microdot import Request as BaseRequest
 from microdot import Response as BaseResponse
 from microdot import HTTPException
+from microdot import MUTED_SOCKET_ERRORS
 
 
 def _iscoroutine(coro):
@@ -153,7 +154,8 @@ class Response(BaseResponse):
                     body = body.encode()
                 await stream.awrite(body)
         except OSError as exc:  # pragma: no cover
-            if exc.errno in [32, 54, 104] or exc.args[0] == 'Connection lost':
+            if exc.errno in MUTED_SOCKET_ERRORS or \
+                    exc.args[0] == 'Connection lost':
                 pass
             else:
                 raise
@@ -322,7 +324,7 @@ class Microdot(BaseMicrodot):
         try:
             await writer.aclose()
         except OSError as exc:  # pragma: no cover
-            if exc.errno in [32, 54, 104]:  # errno.EPIPE and errno.ECONNRESET
+            if exc.errno in MUTED_SOCKET_ERRORS:
                 pass
             else:
                 raise

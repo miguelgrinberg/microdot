@@ -51,6 +51,13 @@ except ImportError:
     except ImportError:  # pragma: no cover
         socket = None
 
+MUTED_SOCKET_ERRORS = [
+    32,  # Broken pipe
+    54,  # Connection reset by peer
+    104,  # Connection reset by peer
+    128,  # Operation on closed socket
+]
+
 
 def urldecode(string):
     string = string.replace('+', ' ')
@@ -254,7 +261,7 @@ class Request():
         :param client_stream: An input stream from where the request data can
                               be read.
         :param client_addr: The address of the client, as a tuple.
-        :param client_sock: The socket from where the request data can be read.
+        :param client_sock: The low-level socket associated with the request.
 
         This method returns a newly created ``Request`` object.
         """
@@ -489,7 +496,7 @@ class Response():
                 if can_flush:  # pragma: no cover
                     stream.flush()
         except OSError as exc:  # pragma: no cover
-            if exc.errno in [32, 104]:  # errno.EPIPE and errno.ECONNRESET
+            if exc.errno in MUTED_SOCKET_ERRORS:
                 pass
             else:
                 raise
@@ -951,7 +958,7 @@ class Microdot():
         try:
             stream.close()
         except OSError as exc:  # pragma: no cover
-            if exc.errno in [32, 104]:  # errno.EPIPE and errno.ECONNRESET
+            if exc.errno in MUTED_SOCKET_ERRORS:
                 pass
             else:
                 raise
