@@ -68,7 +68,7 @@ Running with CPython
      - | None
 
    * - Examples
-     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello.py>`_
+     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello.py>`_
 
 When using CPython, you can start the web server by running the script that
 defines and runs the application instance::
@@ -93,8 +93,8 @@ Running with MicroPython
      - | None
 
    * - Examples
-     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello.py>`_
-       | `gpio.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/gpio.py>`_
+     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello.py>`_
+       | `gpio.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/gpio/gpio.py>`_
 
 When using MicroPython, you can upload a *main.py* file containing the web
 server code to your device along with *microdot.py*. MicroPython will
