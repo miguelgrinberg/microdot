@@ -3,7 +3,7 @@ from microdot_test_client import TestClient as BaseTestClient, \
     TestResponse as BaseTestResponse
 try:
     from microdot_asyncio_websocket import WebSocket
-except:  # pragma: no cover
+except:  # pragma: no cover  # noqa: E722
     WebSocket = None
 
 
@@ -57,9 +57,9 @@ class TestClient(BaseTestClient):
         cookies, headers = self._process_cookies(headers)
         request_bytes = self._render_request(method, path, headers, body)
         if sock:
-            reader = sock[0] 
+            reader = sock[0]
             reader.buffer = request_bytes
-            writer = sock[1] 
+            writer = sock[1]
         else:
             reader = _AsyncBytesIO(request_bytes)
             writer = _AsyncBytesIO(b'')

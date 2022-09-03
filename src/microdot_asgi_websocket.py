@@ -30,7 +30,7 @@ class WebSocket(BaseWebSocket):
             self.closed = True
             try:
                 await self.request.sock[1]({'type': 'websocket.close'})
-            except:
+            except:  # noqa E722
                 pass
 
 

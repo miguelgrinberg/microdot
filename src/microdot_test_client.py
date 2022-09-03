@@ -3,7 +3,7 @@ import json
 from microdot import Request, Response
 try:
     from microdot_websocket import WebSocket
-except:  # pragma: no cover
+except:  # pragma: no cover  # noqa: E722
     WebSocket = None
 
 

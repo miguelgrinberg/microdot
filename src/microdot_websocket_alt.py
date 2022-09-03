@@ -50,13 +50,13 @@ class WebSocket:
         for header, value in self.request.headers.items():
             h = header.lower()
             if h == 'connection' and not value.lower().startswith('upgrade'):
-                return abort(400)
+                return self.request.app.abort(400)
             elif h == 'upgrade' and not value.lower() == 'websocket':
-                return abort(400)
+                return self.request.app.abort(400)
             elif h == 'sec-websocket-key':
                 websocket_key = value
         if not websocket_key:
-            return abort(400)
+            return self.request.app.abort(400)
         d = hashlib.sha1(websocket_key.encode())
         d.update(b'258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
         return binascii.b2a_base64(d.digest())[:-1]

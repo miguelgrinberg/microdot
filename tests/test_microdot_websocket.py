@@ -71,4 +71,3 @@ class TestMicrodotWebSocket(unittest.TestCase):
                          (WebSocket.PONG, b'foo'))
         self.assertEqual(ws._process_websocket_frame(WebSocket.PONG, b'foo'),
                          (None, None))
-

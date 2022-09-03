@@ -51,7 +51,7 @@ class WebSocket:
             h = header.lower()
             if h == 'connection':
                 connection = True
-                if not 'upgrade' in value.lower():
+                if 'upgrade' not in value.lower():
                     return self.request.app.abort(400)
             elif h == 'upgrade':
                 upgrade = True
@@ -70,7 +70,6 @@ class WebSocket:
         fin = header[0] & 0x80
         opcode = header[0] & 0x0f
         if fin == 0 or opcode == cls.CONT:  # pragma: no cover
-            self.close()
             raise OSError(32, 'Continuation frames not supported')
         has_mask = header[1] & 0x80
         length = header[1] & 0x7f
