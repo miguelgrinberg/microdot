@@ -59,13 +59,13 @@ async def websocket_upgrade(request):
     verified. The function returns the websocket object::
 
         @app.route('/echo')
-        def echo(request):
+        async def echo(request):
             if not authenticate_user(request):
                 abort(401)
-            ws = websocket_upgrade(request)
+            ws = await websocket_upgrade(request)
             while True:
-                message = ws.recv()
-                ws.send(message)
+                message = await ws.receive()
+                await ws.send(message)
     """
     ws = WebSocket(request)
     await ws.handshake()
@@ -86,10 +86,10 @@ def with_websocket(f):
 
         @app.route('/echo')
         @with_websocket
-        def echo(request, ws):
+        async def echo(request, ws):
             while True:
-                message = ws.recv()
-                ws.send(message)
+                message = await ws.receive()
+                await ws.send(message)
     """
     async def wrapper(request, *args, **kwargs):
         ws = await websocket_upgrade(request)

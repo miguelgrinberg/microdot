@@ -1,8 +1,8 @@
-from microdot_asyncio import Response, abort  # pragma: no cover
-from microdot_websocket import WebSocket as BaseWebSocket  # pragma: no cover
+from microdot_asyncio import Response, abort
+from microdot_websocket import WebSocket as BaseWebSocket
 
 
-class WebSocket(BaseWebSocket):  # pragma: no cover
+class WebSocket(BaseWebSocket):
     async def handshake(self):
         connect = await self.request.sock[0]()
         if connect['type'] != 'websocket.connect':
@@ -34,7 +34,7 @@ class WebSocket(BaseWebSocket):  # pragma: no cover
                 pass
 
 
-async def websocket_upgrade(request):  # pragma: no cover
+async def websocket_upgrade(request):
     """Upgrade a request handler to a websocket connection.
 
     This function can be called directly inside a route function to process a
@@ -42,13 +42,13 @@ async def websocket_upgrade(request):  # pragma: no cover
     verified. The function returns the websocket object::
 
         @app.route('/echo')
-        def echo(request):
-            if not authenticate_user(request):
+        async def echo(request):
+            if not (await authenticate_user(request)):
                 abort(401)
-            ws = websocket_upgrade(request)
+            ws = await websocket_upgrade(request)
             while True:
-                message = ws.recv()
-                ws.send(message)
+                message = await ws.receive()
+                await ws.send(message)
     """
     ws = WebSocket(request)
     await ws.handshake()
@@ -60,7 +60,7 @@ async def websocket_upgrade(request):  # pragma: no cover
     return ws
 
 
-def with_websocket(f):  # pragma: no cover
+def with_websocket(f):
     """Decorator to make a route a WebSocket endpoint.
 
     This decorator is used to define a route that accepts websocket
@@ -69,10 +69,10 @@ def with_websocket(f):  # pragma: no cover
 
         @app.route('/echo')
         @with_websocket
-        def echo(request, ws):
+        async def echo(request, ws):
             while True:
-                message = ws.recv()
-                ws.send(message)
+                message = await ws.receive()
+                await ws.send(message)
     """
     async def wrapper(request, *args, **kwargs):
         ws = await websocket_upgrade(request)

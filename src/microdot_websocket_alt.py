@@ -75,7 +75,7 @@ def websocket_upgrade(request):
                 abort(401)
             ws = websocket_upgrade(request)
             while True:
-                message = ws.recv()
+                message = ws.receive()
                 ws.send(message)
     """
     ws = WebSocket(request)
@@ -99,7 +99,7 @@ def with_websocket(f):
         @with_websocket
         def echo(request, ws):
             while True:
-                message = ws.recv()
+                message = ws.receive()
                 ws.send(message)
     """
     def wrapper(request, *args, **kwargs):

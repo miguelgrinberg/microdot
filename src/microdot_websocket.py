@@ -86,7 +86,6 @@ class WebSocket:
         elif opcode == self.BINARY:
             pass
         elif opcode == self.CLOSE:
-            self.close()
             raise OSError(32, 'Websocket connection closed')
         elif opcode == self.PING:
             return self.PONG, payload
@@ -140,7 +139,7 @@ def websocket_upgrade(request):
                 abort(401)
             ws = websocket_upgrade(request)
             while True:
-                message = ws.recv()
+                message = ws.receive()
                 ws.send(message)
     """
     ws = WebSocket(request)
@@ -161,10 +160,10 @@ def with_websocket(f):
     argument that it can use to send and receive messages::
 
         @app.route('/echo')
-        @websocket
+        @with_websocket
         def echo(request, ws):
             while True:
-                message = ws.recv()
+                message = ws.receive()
                 ws.send(message)
     """
     def wrapper(request, *args, **kwargs):
