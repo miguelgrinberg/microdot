@@ -1,6 +1,10 @@
 from io import BytesIO
 import json
-from microdot import Request
+from microdot import Request, Response
+try:
+    from microdot_websocket import WebSocket
+except:  # pragma: no cover  # noqa: E722
+    WebSocket = None
 
 
 class TestResponse:
@@ -82,6 +86,8 @@ class TestClient:
             assert res.status_code == 200
             assert res.text == 'Hello, World!'
     """
+    __test__ = False  # remove this class from pytest's test collection
+
     def __init__(self, app, cookies=None):
         self.app = app
         self.cookies = cookies or {}
@@ -147,15 +153,17 @@ class TestClient:
                     else:
                         self.cookies[cookie_name] = cookie_options[0]
 
-    def request(self, method, path, headers=None, body=None):
+    def request(self, method, path, headers=None, body=None, sock=None):
         headers = headers or {}
         body, headers = self._process_body(body, headers)
         cookies, headers = self._process_cookies(headers)
         request_bytes = self._render_request(method, path, headers, body)
 
         req = Request.create(self.app, BytesIO(request_bytes),
-                             ('127.0.0.1', 1234))
+                             ('127.0.0.1', 1234), client_sock=sock)
         res = self.app.dispatch_request(req)
+        if res == Response.already_handled:
+            return None
         res.complete()
 
         self._update_cookies(res)
@@ -224,3 +232,59 @@ class TestClient:
         :class:`TestResponse <microdot_test_client.TestResponse>` object.
         """
         return self.request('DELETE', path, headers=headers)
+
+    def websocket(self, path, client, headers=None):
+        """Send a websocket connection request to the application.
+
+        :param path: The request URL.
+        :param client: A generator function that yields client messages.
+        :param headers: A dictionary of headers to send with the request.
+        """
+        gen = client()
+
+        class FakeWebSocket:
+            def __init__(self):
+                self.started = False
+                self.closed = False
+                self.buffer = b''
+
+            def _next(self, data=None):
+                try:
+                    data = gen.send(data)
+                except StopIteration:
+                    if self.closed:  # pragma: no cover
+                        return
+                    self.closed = True
+                    raise OSError(32, 'Websocket connection closed')
+                opcode = WebSocket.TEXT if isinstance(data, str) \
+                    else WebSocket.BINARY
+                return WebSocket._encode_websocket_frame(opcode, data)
+
+            def recv(self, n):
+                self.started = True
+                if not self.buffer:
+                    self.buffer = self._next()
+                data = self.buffer[:n]
+                self.buffer = self.buffer[n:]
+                return data
+
+            def send(self, data):
+                if self.started:
+                    h = WebSocket._parse_frame_header(data[0:2])
+                    if h[3] < 0:
+                        data = data[2 - h[3]:]
+                    else:
+                        data = data[2:]
+                    if h[1] == WebSocket.TEXT:
+                        data = data.decode()
+                    self.buffer = self._next(data)
+
+        ws_headers = {
+            'Upgrade': 'websocket',
+            'Connection': 'Upgrade',
+            'Sec-WebSocket-Version': '13',
+            'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==',
+        }
+        ws_headers.update(headers or {})
+        return self.request('GET', path, headers=ws_headers,
+                            sock=FakeWebSocket())

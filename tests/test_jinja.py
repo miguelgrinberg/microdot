@@ -19,7 +19,7 @@ def _run(coro):
 
 @unittest.skipIf(sys.implementation.name == 'micropython',
                  'not supported under MicroPython')
-class TestUTemplate(unittest.TestCase):
+class TestJinja(unittest.TestCase):
     def test_render_template(self):
         s = render_template('hello.jinja.txt', name='foo')
         self.assertEqual(s, 'Hello, foo!')
@@ -44,7 +44,7 @@ class TestUTemplate(unittest.TestCase):
             return render_template('hello.jinja.txt', name='foo')
 
         req = _run(RequestAsync.create(
-            app, get_async_request_fd('GET', '/'), 'addr'))
+            app, get_async_request_fd('GET', '/'), 'writer', 'addr'))
         res = _run(app.dispatch_request(req))
         self.assertEqual(res.status_code, 200)
 

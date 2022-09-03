@@ -570,3 +570,14 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/plain')
         self.assertEqual(res.text, 'foobar')
+
+    def test_already_handled_response(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            return Response.already_handled
+
+        client = TestClient(app)
+        res = self._run(client.get('/'))
+        self.assertEqual(res, None)

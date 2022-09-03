@@ -21,6 +21,7 @@ from microdot import print_exception
 from microdot import Request as BaseRequest
 from microdot import Response as BaseResponse
 from microdot import HTTPException
+from microdot import MUTED_SOCKET_ERRORS
 
 
 def _iscoroutine(coro):
@@ -43,22 +44,30 @@ class _AsyncBytesIO:
     async def readuntil(self, separator=b'\n'):  # pragma: no cover
         return self.stream.readuntil(separator=separator)
 
+    async def awrite(self, data):  # pragma: no cover
+        return self.stream.write(data)
+
+    async def aclose(self):  # pragma: no cover
+        pass
+
 
 class Request(BaseRequest):
     @staticmethod
-    async def create(app, client_stream, client_addr):
+    async def create(app, client_reader, client_writer, client_addr):
         """Create a request object.
 
         :param app: The Microdot application instance.
-        :param client_stream: An input stream from where the request data can
+        :param client_reader: An input stream from where the request data can
                               be read.
+        :param client_writer: An output stream where the response data can be
+                              written.
         :param client_addr: The address of the client, as a tuple.
 
         This method is a coroutine. It returns a newly created ``Request``
         object.
         """
         # request line
-        line = (await Request._safe_readline(client_stream)).strip().decode()
+        line = (await Request._safe_readline(client_reader)).strip().decode()
         if not line:
             return None
         method, url, http_version = line.split()
@@ -69,7 +78,7 @@ class Request(BaseRequest):
         content_length = 0
         while True:
             line = (await Request._safe_readline(
-                client_stream)).strip().decode()
+                client_reader)).strip().decode()
             if line == '':
                 break
             header, value = line.split(':', 1)
@@ -81,14 +90,15 @@ class Request(BaseRequest):
         # body
         body = b''
         if content_length and content_length <= Request.max_body_length:
-            body = await client_stream.readexactly(content_length)
+            body = await client_reader.readexactly(content_length)
             stream = None
         else:
             body = b''
-            stream = client_stream
+            stream = client_reader
 
         return Request(app, client_addr, method, url, http_version, headers,
-                       body=body, stream=stream)
+                       body=body, stream=stream,
+                       sock=(client_reader, client_writer))
 
     @property
     def stream(self):
@@ -119,31 +129,33 @@ class Response(BaseResponse):
                    default is "OK" for responses with a 200 status code and
                    "N/A" for any other status codes.
     """
+
     async def write(self, stream):
         self.complete()
 
-        # status code
-        reason = self.reason if self.reason is not None else \
-            ('OK' if self.status_code == 200 else 'N/A')
-        await stream.awrite('HTTP/1.0 {status_code} {reason}\r\n'.format(
-            status_code=self.status_code, reason=reason).encode())
-
-        # headers
-        for header, value in self.headers.items():
-            values = value if isinstance(value, list) else [value]
-            for value in values:
-                await stream.awrite('{header}: {value}\r\n'.format(
-                    header=header, value=value).encode())
-        await stream.awrite(b'\r\n')
-
-        # body
         try:
+            # status code
+            reason = self.reason if self.reason is not None else \
+                ('OK' if self.status_code == 200 else 'N/A')
+            await stream.awrite('HTTP/1.0 {status_code} {reason}\r\n'.format(
+                status_code=self.status_code, reason=reason).encode())
+
+            # headers
+            for header, value in self.headers.items():
+                values = value if isinstance(value, list) else [value]
+                for value in values:
+                    await stream.awrite('{header}: {value}\r\n'.format(
+                        header=header, value=value).encode())
+            await stream.awrite(b'\r\n')
+
+            # body
             async for body in self.body_iter():
                 if isinstance(body, str):  # pragma: no cover
                     body = body.encode()
                 await stream.awrite(body)
         except OSError as exc:  # pragma: no cover
-            if exc.errno == 32 or exc.args[0] == 'Connection lost':
+            if exc.errno in MUTED_SOCKET_ERRORS or \
+                    exc.args[0] == 'Connection lost':
                 pass
             else:
                 raise
@@ -301,17 +313,18 @@ class Microdot(BaseMicrodot):
     async def handle_request(self, reader, writer):
         req = None
         try:
-            req = await Request.create(self, reader,
+            req = await Request.create(self, reader, writer,
                                        writer.get_extra_info('peername'))
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
 
         res = await self.dispatch_request(req)
-        await res.write(writer)
+        if res != Response.already_handled:  # pragma: no branch
+            await res.write(writer)
         try:
             await writer.aclose()
         except OSError as exc:  # pragma: no cover
-            if exc.errno == 32:  # errno.EPIPE
+            if exc.errno in MUTED_SOCKET_ERRORS:
                 pass
             else:
                 raise
@@ -401,5 +414,6 @@ class Microdot(BaseMicrodot):
 
 
 abort = Microdot.abort
+Response.already_handled = Response()
 redirect = Response.redirect
 send_file = Response.send_file

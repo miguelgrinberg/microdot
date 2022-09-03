@@ -208,6 +208,80 @@ Example::
         delete_session(req)
         return redirect('/')
 
+WebSocket Support
+~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
+       | `microdot_websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_websocket.py>`_
+
+   * - Required external dependencies
+     - | None
+
+   * - Examples
+     - | `echo.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo.py>`_
+       | `echo_wsgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo_wsgi.py>`_
+
+The WebSocket extension provides a way for the application to handle WebSocket
+requests. The :func:`websocket <microdot_websocket.with_websocket>` decorator
+is used to mark a route handler as a WebSocket handler. The handler receives
+a WebSocket object as a second argument. The WebSocket object provides
+``send()`` and ``receive()`` methods to send and receive messages respectively.
+
+Example::
+
+        @app.route('/echo')
+        @with_websocket
+        def echo(request, ws):
+            while True:
+                message = ws.receive()
+                ws.send(message)
+
+.. note::
+   An unsupported *microsoft_websocket_alt.py* module, with the same
+   interface, is also provided. This module uses the native WebSocket support
+   in MicroPython that powers the WebREPL, and may provide slightly better
+   performance for MicroPython low-end boards. This module is not compatible
+   with CPython.
+
+Asynchronous WebSocket
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
+       | `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio.py>`_
+       | `microdot_websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_websocket.py>`_
+       | `microdot_asyncio_websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio_websocket.py>`_
+
+   * - Required external dependencies
+     - | CPython: None
+       | MicroPython: `uasyncio <https://github.com/micropython/micropython/tree/master/extmod/uasyncio>`_
+
+   * - Examples
+     - | `echo_async.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo_async.py>`_
+
+This extension has the same interface as the synchronous WebSocket extension,
+but the ``receive()`` and ``send()`` methods are asynchronous.
+
+.. note::
+   An unsupported *microsoft_asgi_websocket.py* module, with the same
+   interface, is also provided. This module must be used instead of
+   *microsoft_asyncio_websocket.py* when the ASGI support is used. The
+   `echo_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo_asgi.py>`_
+   example shows how to use this module.
+
 Test Client
 ~~~~~~~~~~~
 

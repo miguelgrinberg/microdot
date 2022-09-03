@@ -50,7 +50,7 @@ class Microdot(BaseMicrodot):
 
     async def asgi_app(self, scope, receive, send):
         """An ASGI application."""
-        if scope['type'] != 'http':  # pragma: no cover
+        if scope['type'] not in ['http', 'websocket']:  # pragma: no cover
             return
         path = scope['path']
         if 'query_string' in scope and scope['query_string']:
@@ -62,7 +62,6 @@ class Microdot(BaseMicrodot):
             if key.lower() == 'content-length':
                 content_length = int(value)
 
-        body = b''
         if content_length and content_length <= Request.max_body_length:
             body = b''
             more = True
@@ -78,12 +77,13 @@ class Microdot(BaseMicrodot):
         req = Request(
             self,
             (scope['client'][0], scope['client'][1]),
-            scope['method'],
+            scope.get('method', 'GET'),
             path,
             'HTTP/' + scope['http_version'],
             headers,
             body=body,
-            stream=stream)
+            stream=stream,
+            sock=(receive, send))
         req.asgi_scope = scope
 
         res = await self.dispatch_request(req)
@@ -96,6 +96,9 @@ class Microdot(BaseMicrodot):
             else:
                 for v in value:
                     header_list.append((name, v))
+
+        if scope['type'] != 'http':  # pragma: no cover
+            return
 
         await send({'type': 'http.response.start',
                     'status': res.status_code,
