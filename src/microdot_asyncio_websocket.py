@@ -16,9 +16,9 @@ class WebSocket(BaseWebSocket):
         while True:
             opcode, payload = await self._read_frame()
             send_opcode, data = self._process_websocket_frame(opcode, payload)
-            if send_opcode:
+            if send_opcode:  # pragma: no cover
                 await self.send(send_opcode, data)
-            elif data:
+            elif data:  # pragma: no branch
                 return data
 
     async def send(self, data, opcode=None):
@@ -28,7 +28,7 @@ class WebSocket(BaseWebSocket):
         await self.request.sock[1].awrite(frame)
 
     async def close(self):
-        if not self.closed:
+        if not self.closed:  # pragma: no cover
             self.closed = True
             await self.send(b'', self.CLOSE)
 
@@ -43,10 +43,10 @@ class WebSocket(BaseWebSocket):
         elif length == -8:
             length = await self.request.sock[0].read(8)
             length = int.from_bytes(length, 'big')
-        if has_mask:
+        if has_mask:  # pragma: no cover
             mask = await self.request.sock[0].read(4)
         payload = await self.request.sock[0].read(length)
-        if has_mask:
+        if has_mask:  # pragma: no cover
             payload = bytes(x ^ mask[i % 4] for i, x in enumerate(payload))
         return opcode, payload
 
@@ -95,9 +95,9 @@ def with_websocket(f):
         ws = await websocket_upgrade(request)
         try:
             await f(request, ws, *args, **kwargs)
-            await ws.close()
+            await ws.close()  # pragma: no cover
         except OSError as exc:
-            if exc.errno not in [32, 54, 104]:
+            if exc.errno not in [32, 54, 104]:  # pragma: no cover
                 raise
         return ''
     return wrapper

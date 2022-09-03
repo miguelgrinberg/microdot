@@ -252,10 +252,10 @@ class TestClient:
                 try:
                     data = gen.send(data)
                 except StopIteration:
-                    if not self.closed:
-                        self.closed = True
-                        raise OSError(32, 'Websocket connection closed')
-                    return
+                    if self.closed:  # pragma: no cover
+                        return
+                    self.closed = True
+                    raise OSError(32, 'Websocket connection closed')
                 opcode = WebSocket.TEXT if isinstance(data, str) \
                     else WebSocket.BINARY
                 return WebSocket._encode_websocket_frame(opcode, data)

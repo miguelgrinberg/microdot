@@ -27,9 +27,9 @@ class WebSocket:
         while True:
             opcode, payload = self._read_frame()
             send_opcode, data = self._process_websocket_frame(opcode, payload)
-            if send_opcode:
+            if send_opcode:  # pragma: no cover
                 self.send(send_opcode, data)
-            elif data:
+            elif data:  # pragma: no branch
                 return data
 
     def send(self, data, opcode=None):
@@ -39,21 +39,28 @@ class WebSocket:
         self.request.sock.send(frame)
 
     def close(self):
-        if not self.closed:  # pragma: no branch
+        if not self.closed:  # pragma: no cover
             self.closed = True
             self.send(b'', self.CLOSE)
 
     def _handshake_response(self):
+        connection = False
+        upgrade = False
+        websocket_key = None
         for header, value in self.request.headers.items():
             h = header.lower()
-            if h == 'connection' and not 'upgrade' in value.lower():
-                return abort(400)
-            elif h == 'upgrade' and not value.lower() == 'websocket':
-                return abort(400)
+            if h == 'connection':
+                connection = True
+                if not 'upgrade' in value.lower():
+                    return self.request.app.abort(400)
+            elif h == 'upgrade':
+                upgrade = True
+                if not value.lower() == 'websocket':
+                    return self.request.app.abort(400)
             elif h == 'sec-websocket-key':
                 websocket_key = value
-        if not websocket_key:
-            return abort(400)
+        if not connection or not upgrade or not websocket_key:
+            return self.request.app.abort(400)
         d = hashlib.sha1(websocket_key.encode())
         d.update(b'258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
         return binascii.b2a_base64(d.digest())[:-1]
@@ -62,7 +69,7 @@ class WebSocket:
     def _parse_frame_header(cls, header):
         fin = header[0] & 0x80
         opcode = header[0] & 0x0f
-        if fin == 0 or opcode == cls.CONT:
+        if fin == 0 or opcode == cls.CONT:  # pragma: no cover
             self.close()
             raise OSError(32, 'Continuation frames not supported')
         has_mask = header[1] & 0x80
@@ -79,10 +86,11 @@ class WebSocket:
         elif opcode == self.BINARY:
             pass
         elif opcode == self.CLOSE:
+            self.close()
             raise OSError(32, 'Websocket connection closed')
         elif opcode == self.PING:
             return self.PONG, payload
-        elif opcode == self.PONG:
+        elif opcode == self.PONG:  # pragma: no branch
             return None, None
         return None, payload
 
@@ -111,10 +119,10 @@ class WebSocket:
         if length < 0:
             length = self.request.sock.recv(-length)
             length = int.from_bytes(length, 'big')
-        if has_mask:
+        if has_mask:  # pragma: no cover
             mask = self.request.sock.recv(4)
         payload = self.request.sock.recv(length)
-        if has_mask:
+        if has_mask:  # pragma: no cover
             payload = bytes(x ^ mask[i % 4] for i, x in enumerate(payload))
         return opcode, payload
 
@@ -163,7 +171,7 @@ def with_websocket(f):
         ws = websocket_upgrade(request)
         try:
             f(request, ws, *args, **kwargs)
-            ws.close()
+            ws.close()  # pragma: no cover
         except OSError as exc:
             if exc.errno not in [32, 54, 104]:  # pragma: no cover
                 raise

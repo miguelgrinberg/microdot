@@ -1,8 +1,8 @@
-from microdot_asyncio import Response, abort
-from microdot_websocket import WebSocket as BaseWebSocket
+from microdot_asyncio import Response, abort  # pragma: no cover
+from microdot_websocket import WebSocket as BaseWebSocket  # pragma: no cover
 
 
-class WebSocket(BaseWebSocket):
+class WebSocket(BaseWebSocket):  # pragma: no cover
     async def handshake(self):
         connect = await self.request.sock[0]()
         if connect['type'] != 'websocket.connect':
@@ -34,7 +34,7 @@ class WebSocket(BaseWebSocket):
                 pass
 
 
-async def websocket_upgrade(request):
+async def websocket_upgrade(request):  # pragma: no cover
     """Upgrade a request handler to a websocket connection.
 
     This function can be called directly inside a route function to process a
@@ -60,7 +60,7 @@ async def websocket_upgrade(request):
     return ws
 
 
-def with_websocket(f):
+def with_websocket(f):  # pragma: no cover
     """Decorator to make a route a WebSocket endpoint.
 
     This decorator is used to define a route that accepts websocket
