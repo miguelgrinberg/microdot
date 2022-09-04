@@ -861,7 +861,7 @@ class Microdot():
         """
         raise HTTPException(status_code, reason)
 
-    def run(self, host='0.0.0.0', port=5000, debug=False):
+    def run(self, host='0.0.0.0', port=5000, debug=False, ssl=None):
         """Start the web server. This function does not normally return, as
         the server enters an endless listening loop. The :func:`shutdown`
         function provides a method for terminating the server gracefully.
@@ -877,6 +877,8 @@ class Microdot():
                      port 5000.
         :param debug: If ``True``, the server logs debugging information. The
                       default is ``False``.
+        :param ssl: An ``SSLContext`` instance or ``None`` if the server should
+                    not use TLS. The default is ``None``.
 
         Example::
 
@@ -903,6 +905,9 @@ class Microdot():
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind(addr)
         self.server.listen(5)
+
+        if ssl:
+            self.server = ssl.wrap_socket(self.server, server_side=True)
 
         while not self.shutdown_requested:
             try:

@@ -570,3 +570,27 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/plain')
         self.assertEqual(res.text, 'before:foo:after')
+
+    def test_ssl(self):
+        self._mock()
+
+        app = Microdot()
+
+        @app.route('/foo')
+        def foo(req):
+            return 'bar'
+
+        class FakeSSL:
+            def wrap_socket(self, sock, **kwargs):
+                return sock
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('GET', '/foo')
+        self._add_shutdown(app)
+        app.run(ssl=FakeSSL())
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Length: 3\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nbar'))
+
+        self._unmock()

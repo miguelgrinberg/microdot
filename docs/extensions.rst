@@ -282,6 +282,51 @@ but the ``receive()`` and ``send()`` methods are asynchronous.
    `echo_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo_asgi.py>`_
    example shows how to use this module.
 
+HTTPS Support
+~~~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
+       | `microdot_ssl.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_ssl.py>`_
+
+   * - Examples
+     - | `hello_tls.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/tls/hello_tls.py>`_
+       | `hello_asyncio_tls.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/tls/hello_asyncio_tls.py>`_
+
+The ``run()`` function accepts an optional ``ssl`` argument, through which an
+initialized ``SSLContext`` object can be passed. MicroPython does not currently
+have a ``SSLContext`` implementation, so the ``microdot_ssl`` module provides
+a basic implementation that can be used to create a context.
+
+Example::
+
+    from microdot import Microdot
+    from microdot_ssl import create_ssl_context
+
+    app = Microdot()
+
+    @app.route('/')
+    def index(req):
+        return 'Hello, World!'
+
+    sslctx = create_ssl_context('cert.der', 'key.der')
+    app.run(port=4443, debug=True, ssl=sslctx)
+
+.. note::
+   The ``microdot_ssl`` module is only needed for MicroPython. When used under
+   CPython, this module creates a standard ``SSLContext`` instance.
+
+.. note::
+   The ``uasyncio`` library for MicroPython does not currently support TLS, so
+   this feature is not available for asynchronous applications on that
+   platform. The ``asyncio`` library for CPython is fully supported.
+
 Test Client
 ~~~~~~~~~~~
 

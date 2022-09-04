@@ -207,7 +207,8 @@ class Response(BaseResponse):
 
 
 class Microdot(BaseMicrodot):
-    async def start_server(self, host='0.0.0.0', port=5000, debug=False):
+    async def start_server(self, host='0.0.0.0', port=5000, debug=False,
+                           ssl=None):
         """Start the Microdot web server as a coroutine. This coroutine does
         not normally return, as the server enters an endless listening loop.
         The :func:`shutdown` function provides a method for terminating the
@@ -224,6 +225,8 @@ class Microdot(BaseMicrodot):
                      port 5000.
         :param debug: If ``True``, the server logs debugging information. The
                       default is ``False``.
+        :param ssl: An ``SSLContext`` instance or ``None`` if the server should
+                    not use TLS. The default is ``None``.
 
         This method is a coroutine.
 
@@ -266,7 +269,12 @@ class Microdot(BaseMicrodot):
             print('Starting async server on {host}:{port}...'.format(
                 host=host, port=port))
 
-        self.server = await asyncio.start_server(serve, host, port)
+        try:
+            self.server = await asyncio.start_server(serve, host, port,
+                                                     ssl=ssl)
+        except TypeError:
+            self.server = await asyncio.start_server(serve, host, port)
+
         while True:
             try:
                 await self.server.wait_closed()
@@ -276,7 +284,7 @@ class Microdot(BaseMicrodot):
                 # wait a bit and try again
                 await asyncio.sleep(0.1)
 
-    def run(self, host='0.0.0.0', port=5000, debug=False):
+    def run(self, host='0.0.0.0', port=5000, debug=False, ssl=None):
         """Start the web server. This function does not normally return, as
         the server enters an endless listening loop. The :func:`shutdown`
         function provides a method for terminating the server gracefully.
@@ -292,6 +300,8 @@ class Microdot(BaseMicrodot):
                      port 5000.
         :param debug: If ``True``, the server logs debugging information. The
                       default is ``False``.
+        :param ssl: An ``SSLContext`` instance or ``None`` if the server should
+                    not use TLS. The default is ``None``.
 
         Example::
 
@@ -305,7 +315,8 @@ class Microdot(BaseMicrodot):
 
             app.run(debug=True)
         """
-        asyncio.run(self.start_server(host=host, port=port, debug=debug))
+        asyncio.run(self.start_server(host=host, port=port, debug=debug,
+                                      ssl=ssl))
 
     def shutdown(self):
         self.server.close()
