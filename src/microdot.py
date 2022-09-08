@@ -916,8 +916,11 @@ class Microdot():
                 if exc.errno == errno.ECONNABORTED:
                     break
                 else:
-                    raise
-            create_thread(self.handle_request, sock, addr)
+                    print_exception(exc)
+            except Exception as exc:  # pragma: no cover
+                print_exception(exc)
+            else:
+                create_thread(self.handle_request, sock, addr)
 
     def shutdown(self):
         """Request a server shutdown. The server will then exit its request
@@ -953,12 +956,13 @@ class Microdot():
             stream = sock
 
         req = None
+        res = None
         try:
             req = Request.create(self, stream, addr, sock)
+            res = self.dispatch_request(req)
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
-        res = self.dispatch_request(req)
-        if res != Response.already_handled:  # pragma: no branch
+        if res and res != Response.already_handled:  # pragma: no branch
             res.write(stream)
         try:
             stream.close()

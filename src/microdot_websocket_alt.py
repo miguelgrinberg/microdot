@@ -22,10 +22,10 @@ class WebSocket:
 
     def handshake(self):
         response = self._handshake_response()
-        self.request.sock.send(b'HTTP/1.1 101 Switching Protocols\r\n')
-        self.request.sock.send(b'Upgrade: websocket\r\n')
-        self.request.sock.send(b'Connection: Upgrade\r\n')
-        self.request.sock.send(
+        self.request.sock.write(b'HTTP/1.1 101 Switching Protocols\r\n')
+        self.request.sock.write(b'Upgrade: websocket\r\n')
+        self.request.sock.write(b'Connection: Upgrade\r\n')
+        self.request.sock.write(
             b'Sec-WebSocket-Accept: ' + response + b'\r\n\r\n')
 
     def receive(self):
