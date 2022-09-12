@@ -15,6 +15,6 @@ To convert the resulting PEM files to DER format for MicroPython, use these
 commands:
 
 ```bash
-openssl x509 -in localhost.pem -out localhost.der -outform DER
-openssl rsa -in localhost-key.pem -out localhost-key.der -outform DER
+openssl x509 -in cert.pem -out cert.der -outform DER
+openssl rsa -in key.pem -out key.der -outform DER
 ```
