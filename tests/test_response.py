@@ -238,14 +238,17 @@ class TestResponse(unittest.TestCase):
     def test_default_content_type(self):
         original_content_type = Response.default_content_type
         res = Response('foo')
+        res.complete()
         self.assertEqual(res.headers['Content-Type'],
                          'text/plain; charset=UTF-8')
         Response.default_content_type = 'text/html'
         res = Response('foo')
+        res.complete()
         self.assertEqual(res.headers['Content-Type'],
                          'text/html; charset=UTF-8')
         Response.default_content_type = 'text/html; charset=ISO-8859-1'
         res = Response('foo')
+        res.complete()
         self.assertEqual(res.headers['Content-Type'],
                          'text/html; charset=ISO-8859-1')
         Response.default_content_type = original_content_type

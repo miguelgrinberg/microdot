@@ -21,7 +21,7 @@ class TestResponse(BaseTestResponse):
 
     async def _initialize_body(self, res):
         self.body = b''
-        async for body in res.body_iter():
+        async for body in res.body_iter():  # pragma: no branch
             if isinstance(body, str):
                 body = body.encode()
             self.body += body
