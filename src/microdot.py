@@ -986,15 +986,17 @@ class Microdot():
             res = self.dispatch_request(req)
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
-        if res and res != Response.already_handled:  # pragma: no branch
-            res.write(stream)
         try:
+            if res and res != Response.already_handled:  # pragma: no branch
+                res.write(stream)
             stream.close()
         except OSError as exc:  # pragma: no cover
             if exc.errno in MUTED_SOCKET_ERRORS:
                 pass
             else:
-                raise
+                print_exception(exc)
+        except Exception as exc:  # pragma: no cover
+            print_exception(exc)
         if stream != sock:  # pragma: no cover
             sock.close()
         if self.shutdown_requested:  # pragma: no cover
