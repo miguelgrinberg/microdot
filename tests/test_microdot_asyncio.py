@@ -50,7 +50,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.headers['Content-Length'], '3')
         self.assertEqual(res.text, 'foo')
         self.assertEqual(res.body, b'foo')
@@ -58,7 +59,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.get('/async'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.headers['Content-Length'], '9')
         self.assertEqual(res.text, 'foo-async')
         self.assertEqual(res.body, b'foo-async')
@@ -83,7 +85,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.post('/'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.headers['Content-Length'], '3')
         self.assertEqual(res.text, 'bar')
         self.assertEqual(res.body, b'bar')
@@ -91,7 +94,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.post('/async'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.headers['Content-Length'], '9')
         self.assertEqual(res.text, 'bar-async')
         self.assertEqual(res.body, b'bar-async')
@@ -107,7 +111,8 @@ class TestMicrodotAsync(unittest.TestCase):
         app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 400 N/A\r\n'))
         self.assertIn(b'Content-Length: 11\r\n', fd.response)
-        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nBad request'))
 
     def test_method_decorators(self):
@@ -139,7 +144,8 @@ class TestMicrodotAsync(unittest.TestCase):
             res = self._run(getattr(
                 client, method.lower())('/' + method.lower()))
             self.assertEqual(res.status_code, 200)
-            self.assertEqual(res.headers['Content-Type'], 'text/plain')
+            self.assertEqual(res.headers['Content-Type'],
+                             'text/plain; charset=UTF-8')
             self.assertEqual(res.text, method)
 
     def test_headers(self):
@@ -152,7 +158,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.get('/', headers={'X-Foo': 'bar'}))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'bar')
 
     def test_cookies(self):
@@ -166,7 +173,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app, cookies={'one': '1', 'two': '2'})
         res = self._run(client.get('/', headers={'Cookie': 'three=3'}))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '123')
 
     def test_binary_payload(self):
@@ -179,7 +187,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.post('/', body=b'foo'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'foo')
 
     def test_json_payload(self):
@@ -198,12 +207,14 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.post('/dict', body={'foo': 'bar'}))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'bar')
 
         res = self._run(client.post('/list', body=['foo', 'bar']))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'foo')
 
     def test_tuple_responses(self):
@@ -223,18 +234,21 @@ class TestMicrodotAsync(unittest.TestCase):
 
         @app.route('/body-status-headers')
         def four(req):
-            return '<p>four</p>', 202, {'Content-Type': 'text/html'}
+            return '<p>four</p>', 202, \
+                {'Content-Type': 'text/html; charset=UTF-8'}
 
         client = TestClient(app)
 
         res = self._run(client.get('/body'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'one')
 
         res = self._run(client.get('/body-status'))
         self.assertEqual(res.status_code, 202)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'two')
 
         res = self._run(client.get('/body-headers'))
@@ -244,7 +258,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.get('/body-status-headers'))
         self.assertEqual(res.status_code, 202)
-        self.assertEqual(res.headers['Content-Type'], 'text/html')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/html; charset=UTF-8')
         self.assertEqual(res.text, '<p>four</p>')
 
     def test_before_after_request(self):
@@ -281,7 +296,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.get('/bar'))
         self.assertEqual(res.status_code, 202)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.headers['Set-Cookie'], ['foo=bar'])
         self.assertEqual(res.headers['X-One'], '1')
         self.assertEqual(res.headers['X-Two'], '2')
@@ -290,7 +306,8 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.get('/baz'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.headers['Set-Cookie'], ['foo=bar'])
         self.assertEqual(res.headers['X-One'], '1')
         self.assertFalse('X-Two' in res.headers)
@@ -309,7 +326,8 @@ class TestMicrodotAsync(unittest.TestCase):
         app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 400 N/A\r\n'))
         self.assertIn(b'Content-Length: 11\r\n', fd.response)
-        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\nBad request'))
 
         self._unmock()
@@ -330,7 +348,8 @@ class TestMicrodotAsync(unittest.TestCase):
         app.run()
         self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
         self.assertIn(b'Content-Length: 3\r\n', fd.response)
-        self.assertIn(b'Content-Type: text/plain\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n400'))
 
         self._unmock()
@@ -345,7 +364,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.post('/foo'))
         self.assertEqual(res.status_code, 404)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'Not found')
 
     def test_404_handler(self):
@@ -362,7 +382,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.post('/foo'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '404')
 
     def test_405(self):
@@ -375,7 +396,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.post('/foo'))
         self.assertEqual(res.status_code, 405)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'Not found')
 
     def test_405_handler(self):
@@ -392,7 +414,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.patch('/foo'))
         self.assertEqual(res.status_code, 405)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '405')
 
     def test_413(self):
@@ -405,7 +428,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.post('/foo', body='x' * 17000))
         self.assertEqual(res.status_code, 413)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'Payload too large')
 
     def test_413_handler(self):
@@ -422,7 +446,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.post('/foo', body='x' * 17000))
         self.assertEqual(res.status_code, 400)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '413')
 
     def test_500(self):
@@ -435,7 +460,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 500)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'Internal server error')
 
     def test_500_handler(self):
@@ -452,7 +478,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 501)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '501')
 
     def test_exception_handler(self):
@@ -469,7 +496,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 501)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '501')
 
     def test_abort(self):
@@ -483,7 +511,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 406)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'Not acceptable')
 
     def test_abort_handler(self):
@@ -501,7 +530,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 406)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '406')
 
     def test_json_response(self):
@@ -519,12 +549,14 @@ class TestMicrodotAsync(unittest.TestCase):
 
         res = self._run(client.get('/dict'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'application/json')
+        self.assertEqual(res.headers['Content-Type'],
+                         'application/json; charset=UTF-8')
         self.assertEqual(res.json, {'foo': 'bar'})
 
         res = self._run(client.get('/list'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'application/json')
+        self.assertEqual(res.headers['Content-Type'],
+                         'application/json; charset=UTF-8')
         self.assertEqual(res.json, ['foo', 'bar'])
 
     def test_binary_response(self):
@@ -568,7 +600,8 @@ class TestMicrodotAsync(unittest.TestCase):
         client = TestClient(app)
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'foobar')
 
     def test_already_handled_response(self):

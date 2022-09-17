@@ -54,7 +54,7 @@ class TestMicrodotWSGI(unittest.TestCase):
         def start_response(status, headers):
             self.assertEqual(status, '200 OK')
             expected_headers = [('Content-Length', '8'),
-                                ('Content-Type', 'text/plain'),
+                                ('Content-Type', 'text/plain; charset=UTF-8'),
                                 ('Set-Cookie', 'foo=foo'),
                                 ('Set-Cookie', 'bar=bar; HttpOnly')]
             self.assertEqual(len(headers), len(expected_headers))

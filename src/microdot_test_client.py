@@ -48,7 +48,7 @@ class TestResponse:
     def _process_json_body(self):
         for name, value in self.headers.items():  # pragma: no branch
             if name.lower() == 'content-type':
-                if value.lower() == 'application/json':
+                if value.lower().split(';')[0] == 'application/json':
                     self.json = json.loads(self.text)
                 break
 

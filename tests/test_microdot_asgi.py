@@ -82,10 +82,12 @@ class TestMicrodotASGI(unittest.TestCase):
         async def send(packet):
             if packet['type'] == 'http.response.start':
                 self.assertEqual(packet['status'], 200)
-                expected_headers = [('Content-Length', '8'),
-                                    ('Content-Type', 'text/plain'),
-                                    ('Set-Cookie', 'foo=foo'),
-                                    ('Set-Cookie', 'bar=bar; HttpOnly')]
+                expected_headers = [
+                    ('Content-Length', '8'),
+                    ('Content-Type', 'text/plain; charset=UTF-8'),
+                    ('Set-Cookie', 'foo=foo'),
+                    ('Set-Cookie', 'bar=bar; HttpOnly')
+                ]
                 self.assertEqual(len(packet['headers']), len(expected_headers))
                 for header in expected_headers:
                     self.assertIn(header, packet['headers'])

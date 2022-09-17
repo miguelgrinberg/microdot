@@ -20,7 +20,7 @@ class TestResponse(unittest.TestCase):
         response = fd.getvalue()
         self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
         self.assertIn(b'Content-Length: 3\r\n', response)
-        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
         self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_from_string_with_content_length(self):
@@ -33,7 +33,7 @@ class TestResponse(unittest.TestCase):
         response = fd.getvalue()
         self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
         self.assertIn(b'Content-Length: 2\r\n', response)
-        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
         self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_from_bytes(self):
@@ -46,7 +46,7 @@ class TestResponse(unittest.TestCase):
         response = fd.getvalue()
         self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
         self.assertIn(b'Content-Length: 3\r\n', response)
-        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
         self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_empty(self):
@@ -60,32 +60,36 @@ class TestResponse(unittest.TestCase):
         self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
         self.assertIn(b'X-Foo: Bar\r\n', response)
         self.assertIn(b'Content-Length: 0\r\n', response)
-        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
         self.assertTrue(response.endswith(b'\r\n\r\n'))
 
     def test_create_json(self):
         res = Response({'foo': 'bar'})
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers, {'Content-Type': 'application/json'})
+        self.assertEqual(res.headers,
+                         {'Content-Type': 'application/json; charset=UTF-8'})
         self.assertEqual(res.body, b'{"foo": "bar"}')
         fd = io.BytesIO()
         res.write(fd)
         response = fd.getvalue()
         self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
         self.assertIn(b'Content-Length: 14\r\n', response)
-        self.assertIn(b'Content-Type: application/json\r\n', response)
+        self.assertIn(b'Content-Type: application/json; charset=UTF-8\r\n',
+                      response)
         self.assertTrue(response.endswith(b'\r\n\r\n{"foo": "bar"}'))
 
         res = Response([1, '2'])
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers, {'Content-Type': 'application/json'})
+        self.assertEqual(res.headers,
+                         {'Content-Type': 'application/json; charset=UTF-8'})
         self.assertEqual(res.body, b'[1, "2"]')
         fd = io.BytesIO()
         res.write(fd)
         response = fd.getvalue()
         self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
         self.assertIn(b'Content-Length: 8\r\n', response)
-        self.assertIn(b'Content-Type: application/json\r\n', response)
+        self.assertIn(b'Content-Type: application/json; charset=UTF-8\r\n',
+                      response)
         self.assertTrue(response.endswith(b'\r\n\r\n[1, "2"]'))
 
     def test_create_from_none(self):
@@ -97,7 +101,7 @@ class TestResponse(unittest.TestCase):
         response = fd.getvalue()
         self.assertIn(b'HTTP/1.0 204 N/A\r\n', response)
         self.assertIn(b'Content-Length: 0\r\n', response)
-        self.assertIn(b'Content-Type: text/plain\r\n', response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
         self.assertTrue(response.endswith(b'\r\n\r\n'))
 
     def test_create_from_other(self):
@@ -230,3 +234,18 @@ class TestResponse(unittest.TestCase):
             response,
             b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
         Response.send_file_buffer_size = original_buffer_size
+
+    def test_default_content_type(self):
+        original_content_type = Response.default_content_type
+        res = Response('foo')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        Response.default_content_type = 'text/html'
+        res = Response('foo')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/html; charset=UTF-8')
+        Response.default_content_type = 'text/html; charset=ISO-8859-1'
+        res = Response('foo')
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/html; charset=ISO-8859-1')
+        Response.default_content_type = original_content_type

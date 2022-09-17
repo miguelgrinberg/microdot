@@ -59,11 +59,11 @@ MUTED_SOCKET_ERRORS = [
 ]
 
 
-def urldecode(string):
-    string = string.replace('+', ' ')
-    parts = string.split('%')
+def urldecode_str(s):
+    s = s.replace('+', ' ')
+    parts = s.split('%')
     if len(parts) == 1:
-        return string
+        return s
     result = [parts[0]]
     for item in parts[1:]:
         if item == '':
@@ -73,6 +73,22 @@ def urldecode(string):
             result.append(chr(int(code, 16)))
             result.append(item[2:])
     return ''.join(result)
+
+
+def urldecode_bytes(s):
+    s = s.replace(b'+', b' ')
+    parts = s.split(b'%')
+    if len(parts) == 1:
+        return s.decode()
+    result = [parts[0]]
+    for item in parts[1:]:
+        if item == b'':
+            result.append(b'%')
+        else:
+            code = item[:2]
+            result.append(bytes([int(code, 16)]))
+            result.append(item[2:])
+    return b''.join(result).decode()
 
 
 class MultiDict(dict):
@@ -287,9 +303,15 @@ class Request():
 
     def _parse_urlencoded(self, urlencoded):
         data = MultiDict()
-        if urlencoded:
-            for k, v in [pair.split('=', 1) for pair in urlencoded.split('&')]:
-                data[urldecode(k)] = urldecode(v)
+        if len(urlencoded) > 0:
+            if isinstance(urlencoded, str):
+                for k, v in [pair.split('=', 1)
+                             for pair in urlencoded.split('&')]:
+                    data[urldecode_str(k)] = urldecode_str(v)
+            elif isinstance(urlencoded, bytes):  # pragma: no branch
+                for k, v in [pair.split(b'=', 1)
+                             for pair in urlencoded.split(b'&')]:
+                    data[urldecode_bytes(k)] = urldecode_bytes(v)
         return data
 
     @property
@@ -342,7 +364,7 @@ class Request():
             mime_type = self.content_type.split(';')[0]
             if mime_type != 'application/x-www-form-urlencoded':
                 return None
-            self._form = self._parse_urlencoded(self.body.decode())
+            self._form = self._parse_urlencoded(self.body)
         return self._form
 
     def after_request(self, f):
@@ -419,7 +441,7 @@ class Response():
         self.reason = reason
         if isinstance(body, (dict, list)):
             self.body = json.dumps(body).encode()
-            self.headers['Content-Type'] = 'application/json'
+            self.headers['Content-Type'] = 'application/json; charset=UTF-8'
         elif isinstance(body, str):
             self.body = body.encode()
         else:
@@ -468,6 +490,8 @@ class Response():
             self.headers['Content-Length'] = str(len(self.body))
         if 'Content-Type' not in self.headers:
             self.headers['Content-Type'] = self.default_content_type
+            if 'charset=' not in self.headers['Content-Type']:
+                self.headers['Content-Type'] += '; charset=UTF-8'
 
     def write(self, stream):
         self.complete()
