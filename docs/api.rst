@@ -49,6 +49,30 @@ API Reference
 .. automodule:: microdot_session
    :members:
 
+``microdot_websocket`` module
+------------------------------
+
+.. automodule:: microdot_websocket
+   :members:
+
+``microdot_asyncio_websocket`` module
+-------------------------------------
+
+.. automodule:: microdot_asyncio_websocket
+   :members:
+
+``microdot_asgi_websocket`` module
+-------------------------------------
+
+.. automodule:: microdot_asgi_websocket
+   :members:
+
+``microdot_ssl`` module
+-----------------------
+
+.. automodule:: microdot_ssl
+   :members:
+
 ``microdot_test_client`` module
 -------------------------------
 
