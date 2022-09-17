@@ -1,5 +1,17 @@
 # Microdot change log
 
+**Release 1.1.0** - 2022-09-17
+
+- Websocket support [#55](https://github.com/miguelgrinberg/microdot/issues/55) ([commit](https://github.com/miguelgrinberg/microdot/commit/2399c29c8a45289f009f47fd66438452da93cdab))
+- SSL/TLS support ([commit #1](https://github.com/miguelgrinberg/microdot/commit/b61f51f2434465b7a0ee197aabf46e8f99f6e8ad) [commit #2](https://github.com/miguelgrinberg/microdot/commit/fe750feb0373b41cb022521a6a3edf1973847a74))
+- Add `abort()` function ([commit](https://github.com/miguelgrinberg/microdot/commit/3c125c43d2e037ce64138e22c1ff4186ea107471))
+- Charset handling in Content-Type headers [#60](https://github.com/miguelgrinberg/microdot/issues/60) ([commit](https://github.com/miguelgrinberg/microdot/commit/75725795b45d275deaee133204e400e8fbb3de70))
+- Recover from errors writing the response ([commit](https://github.com/miguelgrinberg/microdot/commit/dc7a041ebd30f38b9f6b22c4bbcd61993c43944e))
+- Reorganized examples into subdirectories ([commit](https://github.com/miguelgrinberg/microdot/commit/a01fc9c3f070e21e705b8f12ceb8288b0f304569))
+- Update tests to use MicroPython 1.19 ([commit](https://github.com/miguelgrinberg/microdot/commit/42b6d6979381d9cd8ccc6ab6e079f12ec5987b80))
+- Update MicroPython libraries used by tests ([commit](https://github.com/miguelgrinberg/microdot/commit/e767426228eeacd58886bccb5046049e994c0479))
+- Fix links to hello and gpio examples in documentation [#53](https://github.com/miguelgrinberg/microdot/issues/53) ([commit](https://github.com/miguelgrinberg/microdot/commit/ec0f9ba855cca7dd35cddad40c4cb7eb17d8842a)) (thanks **Sterling G. Baird**!)
+
 **Release 1.0.0** - 2022-08-07
 
 - User sessions with signed JWTs ([commit](https://github.com/miguelgrinberg/microdot/commit/355ffefcb2697b30d03359d35283835901f375d6))
