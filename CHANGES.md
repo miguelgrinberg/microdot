@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 1.1.1** - 2022-09-18
+
+- Make WebSocket internals consistent between TLS and non-TLS [#61](https://github.com/miguelgrinberg/microdot/issues/61) ([commit](https://github.com/miguelgrinberg/microdot/commit/5693b812ceb2c0d51ec3c991adf6894a87e6fcc7))
+
 **Release 1.1.0** - 2022-09-17
 
 - Websocket support [#55](https://github.com/miguelgrinberg/microdot/issues/55) ([commit](https://github.com/miguelgrinberg/microdot/commit/2399c29c8a45289f009f47fd66438452da93cdab))
