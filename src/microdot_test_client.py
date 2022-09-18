@@ -260,7 +260,7 @@ class TestClient:
                     else WebSocket.BINARY
                 return WebSocket._encode_websocket_frame(opcode, data)
 
-            def read(self, n):
+            def recv(self, n):
                 self.started = True
                 if not self.buffer:
                     self.buffer = self._next()
@@ -268,7 +268,7 @@ class TestClient:
                 self.buffer = self.buffer[n:]
                 return data
 
-            def write(self, data):
+            def send(self, data):
                 if self.started:
                     h = WebSocket._parse_frame_header(data[0:2])
                     if h[3] < 0:
