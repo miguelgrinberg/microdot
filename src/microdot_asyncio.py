@@ -386,7 +386,6 @@ class Microdot(BaseMicrodot):
                     else:
                         res = 'Not found', f
                 except HTTPException as exc:
-                    print_exception(exc)
                     if exc.status_code in self.error_handlers:
                         res = self.error_handlers[exc.status_code](req)
                     else:
