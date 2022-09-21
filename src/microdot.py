@@ -91,6 +91,47 @@ def urldecode_bytes(s):
     return b''.join(result).decode()
 
 
+class NoCaseDict(dict):
+    """A subclass of dictionary that holds case-insensitive keys.
+
+    :param initial_dict: an initial dictionary of key/value pairs to
+                         initialize this object with.
+
+    Example::
+
+        >>> d = NoCaseDict()
+        >>> d['Content-Type'] = 'text/html'
+        >>> print(d['Content-Type'])
+        text/html
+        >>> print(d['content-type'])
+        text/html
+        >>> print(d['CONTENT-TYPE'])
+        text/html
+        >>> del d['cOnTeNt-TyPe']
+        >>> print(d)
+        {}
+    """
+
+    def __init__(self, initial_dict=None):
+        super().__init__(initial_dict or {})
+        self.keymap = {k.lower(): k for k in self.keys() if k.lower() != k}
+
+    def __setitem__(self, key, value):
+        key = self.keymap.get(key.lower(), key)
+        if key.lower() != key:
+            self.keymap[key.lower()] = key
+        super().__setitem__(key, value)
+
+    def __getitem__(self, key):
+        return super().__getitem__(self.keymap.get(key.lower(), key))
+
+    def __delitem__(self, key):
+        super().__delitem__(self.keymap.get(key.lower(), key))
+
+    def __contains__(self, key):
+        return self.keymap.get(key.lower(), key) in self.keys()
+
+
 class MultiDict(dict):
     """A subclass of dictionary that can hold multiple values for the same
     key. It is used to hold key/value pairs decoded from query strings and
@@ -248,16 +289,14 @@ class Request():
             self.path, self.query_string = self.path.split('?', 1)
             self.args = self._parse_urlencoded(self.query_string)
 
-        for header, value in self.headers.items():
-            header = header.lower()
-            if header == 'content-length':
-                self.content_length = int(value)
-            elif header == 'content-type':
-                self.content_type = value
-            elif header == 'cookie':
-                for cookie in value.split(';'):
-                    name, value = cookie.strip().split('=', 1)
-                    self.cookies[name] = value
+        if 'Content-Length' in self.headers:
+            self.content_length = int(self.headers['Content-Length'])
+        if 'Content-Type' in self.headers:
+            self.content_type = self.headers['Content-Type']
+        if 'Cookie' in self.headers:
+            for cookie in self.headers['Cookie'].split(';'):
+                name, value = cookie.strip().split('=', 1)
+                self.cookies[name] = value
 
         self._body = body
         self.body_used = False
@@ -289,7 +328,7 @@ class Request():
         http_version = http_version.split('/', 1)[1]
 
         # headers
-        headers = {}
+        headers = NoCaseDict()
         while True:
             line = Request._safe_readline(client_stream).strip().decode()
             if line == '':
@@ -437,7 +476,7 @@ class Response():
             body = ''
             status_code = 204
         self.status_code = status_code
-        self.headers = headers.copy() if headers else {}
+        self.headers = NoCaseDict(headers or {})
         self.reason = reason
         if isinstance(body, (dict, list)):
             self.body = json.dumps(body).encode()

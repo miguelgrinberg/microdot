@@ -4,6 +4,7 @@ import signal
 from microdot_asyncio import *  # noqa: F401, F403
 from microdot_asyncio import Microdot as BaseMicrodot
 from microdot_asyncio import Request
+from microdot import NoCaseDict
 
 
 class _BodyStream:  # pragma: no cover
@@ -55,7 +56,7 @@ class Microdot(BaseMicrodot):
         path = scope['path']
         if 'query_string' in scope and scope['query_string']:
             path += '?' + scope['query_string'].decode()
-        headers = {}
+        headers = NoCaseDict()
         content_length = 0
         for key, value in scope.get('headers', []):
             headers[key] = value

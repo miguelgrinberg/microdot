@@ -1,6 +1,6 @@
 from io import BytesIO
 import json
-from microdot import Request, Response
+from microdot import Request, Response, NoCaseDict
 try:
     from microdot_websocket import WebSocket
 except:  # pragma: no cover  # noqa: E722
@@ -46,11 +46,10 @@ class TestResponse:
             pass
 
     def _process_json_body(self):
-        for name, value in self.headers.items():  # pragma: no branch
-            if name.lower() == 'content-type':
-                if value.lower().split(';')[0] == 'application/json':
-                    self.json = json.loads(self.text)
-                break
+        if 'Content-Type' in self.headers:  # pragma: no branch
+            content_type = self.headers['Content-Type']
+            if content_type.split(';')[0] == 'application/json':
+                self.json = json.loads(self.text)
 
     @classmethod
     def create(cls, res):
@@ -97,13 +96,11 @@ class TestClient:
             body = b''
         elif isinstance(body, (dict, list)):
             body = json.dumps(body).encode()
-            if 'Content-Type' not in headers and \
-                    'content-type' not in headers:  # pragma: no cover
+            if 'Content-Type' not in headers:  # pragma: no cover
                 headers['Content-Type'] = 'application/json'
         elif isinstance(body, str):
             body = body.encode()
-        if body and 'Content-Length' not in headers and \
-                'content-length' not in headers:
+        if body and 'Content-Length' not in headers:
             headers['Content-Length'] = str(len(body))
         if 'Host' not in headers:  # pragma: no branch
             headers['Host'] = 'example.com:1234'
@@ -132,29 +129,28 @@ class TestClient:
         return request_bytes
 
     def _update_cookies(self, res):
-        for name, value in res.headers.items():
-            if name.lower() == 'set-cookie':
-                for cookie in value:
-                    cookie_name, cookie_value = cookie.split('=', 1)
-                    cookie_options = cookie_value.split(';')
-                    delete = False
-                    for option in cookie_options[1:]:
-                        if option.strip().lower().startswith('expires='):
-                            _, e = option.strip().split('=', 1)
-                            # this is a very limited parser for cookie expiry
-                            # that only detects a cookie deletion request when
-                            # the date is 1/1/1970
-                            if '1 jan 1970' in e.lower():  # pragma: no branch
-                                delete = True
-                                break
-                    if delete:
-                        if cookie_name in self.cookies:  # pragma: no branch
-                            del self.cookies[cookie_name]
-                    else:
-                        self.cookies[cookie_name] = cookie_options[0]
+        cookies = res.headers.get('Set-Cookie', [])
+        for cookie in cookies:
+            cookie_name, cookie_value = cookie.split('=', 1)
+            cookie_options = cookie_value.split(';')
+            delete = False
+            for option in cookie_options[1:]:
+                if option.strip().lower().startswith('expires='):
+                    _, e = option.strip().split('=', 1)
+                    # this is a very limited parser for cookie expiry
+                    # that only detects a cookie deletion request when
+                    # the date is 1/1/1970
+                    if '1 jan 1970' in e.lower():  # pragma: no branch
+                        delete = True
+                        break
+            if delete:
+                if cookie_name in self.cookies:  # pragma: no branch
+                    del self.cookies[cookie_name]
+            else:
+                self.cookies[cookie_name] = cookie_options[0]
 
     def request(self, method, path, headers=None, body=None, sock=None):
-        headers = headers or {}
+        headers = NoCaseDict(headers or {})
         body, headers = self._process_body(body, headers)
         cookies, headers = self._process_cookies(headers)
         request_bytes = self._render_request(method, path, headers, body)

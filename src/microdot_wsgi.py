@@ -1,8 +1,7 @@
 import os
 import signal
 from microdot import *  # noqa: F401, F403
-from microdot import Microdot as BaseMicrodot
-from microdot import Request
+from microdot import Microdot as BaseMicrodot, Request, NoCaseDict
 
 
 class Microdot(BaseMicrodot):
@@ -15,7 +14,7 @@ class Microdot(BaseMicrodot):
         path = environ.get('SCRIPT_NAME', '') + environ.get('PATH_INFO', '')
         if 'QUERY_STRING' in environ and environ['QUERY_STRING']:
             path += '?' + environ['QUERY_STRING']
-        headers = {}
+        headers = NoCaseDict()
         for k, v in environ.items():
             if k.startswith('HTTP_'):
                 h = '-'.join([p.title() for p in k[5:].split('_')])
