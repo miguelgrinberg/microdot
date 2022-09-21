@@ -13,6 +13,9 @@ API Reference
 .. autoclass:: microdot.Response
    :members:
 
+.. autoclass:: microdot.NoCaseDict
+   :members:
+
 .. autoclass:: microdot.MultiDict
    :members:
 
