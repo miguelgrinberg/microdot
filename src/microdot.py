@@ -91,6 +91,11 @@ def urldecode_bytes(s):
     return b''.join(result).decode()
 
 
+def urlencode(s):
+    return s.replace(' ', '+').replace('%', '%25').replace('?', '%3F').replace(
+        '#', '%23').replace('&', '%26').replace('+', '%2B')
+
+
 class NoCaseDict(dict):
     """A subclass of dictionary that holds case-insensitive keys.
 
