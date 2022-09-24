@@ -23,15 +23,19 @@ def get_session(request):
     global secret_key
     if not secret_key:
         raise ValueError('The session secret key is not configured')
+    if hasattr(request.g, '_session'):
+        return request.g._session
     session = request.cookies.get('session')
     if session is None:
-        return {}
+        request.g._session = {}
+        return request.g._session
     try:
         session = jwt.decode(session, secret_key, algorithms=['HS256'])
     except jwt.exceptions.PyJWTError:  # pragma: no cover
-        raise
-        return {}
-    return session
+        request.g._session = {}
+    else:
+        request.g._session = session
+    return request.g._session
 
 
 def update_session(request, session):

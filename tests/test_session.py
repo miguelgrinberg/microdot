@@ -19,6 +19,9 @@ class TestSession(unittest.TestCase):
         @self.app.get('/')
         def index(req):
             session = get_session(req)
+            session2 = get_session(req)
+            session2['foo'] = 'bar'
+            self.assertEqual(session['foo'], 'bar')
             return str(session.get('name'))
 
         @self.app.get('/with')
