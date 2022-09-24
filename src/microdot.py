@@ -92,8 +92,9 @@ def urldecode_bytes(s):
 
 
 def urlencode(s):
-    return s.replace(' ', '+').replace('%', '%25').replace('?', '%3F').replace(
-        '#', '%23').replace('&', '%26').replace('+', '%2B')
+    return s.replace('+', '%2B').replace(' ', '+').replace(
+        '%', '%25').replace('?', '%3F').replace('#', '%23').replace(
+            '&', '%26').replace('=', '%3D')
 
 
 class NoCaseDict(dict):
