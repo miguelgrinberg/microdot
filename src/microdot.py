@@ -111,25 +111,32 @@ class NoCaseDict(dict):
         >>> print(d)
         {}
     """
-
     def __init__(self, initial_dict=None):
         super().__init__(initial_dict or {})
         self.keymap = {k.lower(): k for k in self.keys() if k.lower() != k}
 
     def __setitem__(self, key, value):
-        key = self.keymap.get(key.lower(), key)
-        if key.lower() != key:
-            self.keymap[key.lower()] = key
+        kl = key.lower()
+        key = self.keymap.get(kl, key)
+        if kl != key:
+            self.keymap[kl] = key
         super().__setitem__(key, value)
 
     def __getitem__(self, key):
-        return super().__getitem__(self.keymap.get(key.lower(), key))
+        kl = key.lower()
+        return super().__getitem__(self.keymap.get(kl, kl))
 
     def __delitem__(self, key):
-        super().__delitem__(self.keymap.get(key.lower(), key))
+        kl = key.lower()
+        super().__delitem__(self.keymap.get(kl, kl))
 
     def __contains__(self, key):
-        return self.keymap.get(key.lower(), key) in self.keys()
+        kl = key.lower()
+        return self.keymap.get(kl, kl) in self.keys()
+
+    def get(self, key, default=None):
+        kl = key.lower()
+        return super().get(self.keymap.get(kl, kl), default)
 
 
 class MultiDict(dict):
