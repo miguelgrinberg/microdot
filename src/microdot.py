@@ -277,6 +277,8 @@ class Request():
         self.client_addr = client_addr
         #: The HTTP method of the request.
         self.method = method
+        #: The request URL, including the path and query string.
+        self.url = url
         #: The path portion of the URL.
         self.path = url
         #: The query string portion of the URL.
