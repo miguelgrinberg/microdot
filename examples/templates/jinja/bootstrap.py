@@ -5,12 +5,14 @@ app = Microdot()
 Response.default_content_type = 'text/html'
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index(req):
-    name = None
-    if req.method == 'POST':
-        name = req.form.get('name')
-    return render_template('index_jinja.html', name=name)
+    return render_template('page1.html', page='Page 1')
+
+
+@app.route('/page2')
+def page2(req):
+    return render_template('page2.html', page='Page 2')
 
 
 if __name__ == '__main__':

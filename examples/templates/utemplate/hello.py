@@ -10,7 +10,7 @@ def index(req):
     name = None
     if req.method == 'POST':
         name = req.form.get('name')
-    return render_template('index_utemplate.html', name=name)
+    return render_template('index.html', name=name)
 
 
 if __name__ == '__main__':
