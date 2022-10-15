@@ -465,6 +465,71 @@ class TestMicrodot(unittest.TestCase):
                          'text/plain; charset=UTF-8')
         self.assertEqual(res.text, '501')
 
+    def test_exception_handler_parent(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            foo = []
+            return foo[1]
+
+        @app.errorhandler(LookupError)
+        def handle_lookup_error(req, exc):
+            return exc.__class__.__name__, 501
+
+        client = TestClient(app)
+        res = client.get('/')
+        self.assertEqual(res.status_code, 501)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.text, 'IndexError')
+
+    def test_exception_handler_redundant_parent(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            foo = []
+            return foo[1]
+
+        @app.errorhandler(LookupError)
+        def handle_lookup_error(req, exc):
+            return 'LookupError', 501
+
+        @app.errorhandler(IndexError)
+        def handle_lookup_error(req, exc):
+            return 'IndexError', 501
+
+        client = TestClient(app)
+        res = client.get('/')
+        self.assertEqual(res.status_code, 501)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.text, 'IndexError')
+
+    def test_exception_handler_multiple_parents(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            foo = []
+            return foo[1]
+
+        @app.errorhandler(Exception)
+        def handle_lookup_error(req, exc):
+            return 'Exception', 501
+
+        @app.errorhandler(LookupError)
+        def handle_lookup_error(req, exc):
+            return 'LookupError', 501
+
+        client = TestClient(app)
+        res = client.get('/')
+        self.assertEqual(res.status_code, 501)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.text, 'Exception')
+
     def test_abort(self):
         app = Microdot()
 
