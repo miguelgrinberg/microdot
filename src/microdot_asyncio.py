@@ -393,11 +393,21 @@ class Microdot(BaseMicrodot):
                         res = exc.reason, exc.status_code
                 except Exception as exc:
                     print_exception(exc)
+                    idx = None
                     res = None
                     if exc.__class__ in self.error_handlers:
+                        idx = exc.__class__
+                    else:
+                        for handler in self.error_handlers:
+                            if not isinstance(handler, type):
+                                continue
+                            if issubclass(exc.__class__, handler):
+                                idx = handler
+                                break
+                    if idx:
                         try:
                             res = await self._invoke_handler(
-                                self.error_handlers[exc.__class__], req, exc)
+                                self.error_handlers[idx], req, exc)
                         except Exception as exc2:  # pragma: no cover
                             print_exception(exc2)
                     if res is None:
