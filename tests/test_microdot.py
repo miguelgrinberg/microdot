@@ -530,6 +530,25 @@ class TestMicrodot(unittest.TestCase):
                          'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'Exception')
 
+    def test_exception_handler_no_viable_parents(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            foo = []
+            return foo[1]
+
+        @app.errorhandler(RuntimeError)
+        def handle_runtime_error(req, exc):
+            return 'RuntimeError', 501
+
+        client = TestClient(app)
+        res = client.get('/')
+        self.assertEqual(res.status_code, 500)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.text, 'Internal server error')
+
     def test_abort(self):
         app = Microdot()
 
