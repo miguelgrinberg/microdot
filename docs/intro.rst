@@ -323,12 +323,18 @@ custom error handler for 404 errors::
 
 The ``errorhandler()`` decorator has a second form, in which it takes an
 exception class as an argument. Microdot will then invoke the handler when an
-exception of that class is raised. The next example provides a custom response
-for division by zero errors::
+exception of that class or subclass is raised. The next example provides a
+custom response for division by zero errors::
 
     @app.errorhandler(ZeroDivisionError)
     def division_by_zero(request, exception):
         return {'error': 'division by zero'}, 500
+
+When an exception can be handled by multiple error handlers, the handler that
+is registered with the same class of the exception takes precedence. In the
+event there is no error handler for the same class, but multiple error handlers
+registered for base classes of the exception, the handler that was defined
+first takes precedence.
 
 Mounting a Sub-Application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -481,7 +487,7 @@ Accessing the Raw Request Body
 
 For cases in which neither JSON nor form data is expected, the
 :attr:`body <microdot.Request.body>` request attribute returns the entire body
-of the request as a byte sequence. 
+of the request as a byte sequence.
 
 If the expected body is too large to fit in memory, the application can use the
 :attr:`stream <microdot.Request.stream>` request attribute to read the body
@@ -645,9 +651,9 @@ File Responses
 
 The :func:`send_file <microdot.Response.send_file>` function builds a response
 object for a file::
-    
+
         from microdot import send_file
-    
+
         @app.get('/')
         def index(request):
             return send_file('/static/index.html')
