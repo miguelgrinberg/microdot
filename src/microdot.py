@@ -1110,7 +1110,7 @@ class Microdot():
                         idx = exc.__class__
                     else:
                         for handler in self.error_handlers:
-                            if handler.__class__.__name__ != "type":
+                            if not isinstance(handler, type):
                                 continue
                             if issubclass(exc.__class__, handler):
                                 idx = handler
