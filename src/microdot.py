@@ -6,9 +6,6 @@ The ``microdot`` module defines a few classes that help implement HTTP-based
 servers for MicroPython and standard Python, with multithreading support for
 Python interpreters that support it.
 """
-from inspect import isclass
-
-
 try:
     from sys import print_exception
 except ImportError:  # pragma: no cover
@@ -1112,10 +1109,11 @@ class Microdot():
                     if exc.__class__ in self.error_handlers:
                         idx = exc.__class__
                     else:
-                        clss = (i for i in self.error_handlers if isclass(i))
-                        for cls in clss:
-                            if issubclass(exc.__class__, cls):
-                                idx = cls
+                        for handler in self.error_handlers:
+                            if handler.__class__.__name__ != "type":
+                                continue
+                            if issubclass(exc.__class__, handler):
+                                idx = handler
                                 break
                     if idx:
                         try:
