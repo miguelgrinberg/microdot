@@ -497,7 +497,7 @@ class TestMicrodot(unittest.TestCase):
             return 'LookupError', 501
 
         @app.errorhandler(IndexError)
-        def handle_lookup_error(req, exc):
+        def handle_index_error(req, exc):
             return 'IndexError', 501
 
         client = TestClient(app)
@@ -516,7 +516,7 @@ class TestMicrodot(unittest.TestCase):
             return foo[1]
 
         @app.errorhandler(Exception)
-        def handle_lookup_error(req, exc):
+        def handle_generic_exception(req, exc):
             return 'Exception', 501
 
         @app.errorhandler(LookupError)
