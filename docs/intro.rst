@@ -314,7 +314,7 @@ automatically handled by Microdot are:
 While the above errors are fully complaint with the HTTP specification, the
 application might want to provide custom responses for them. The
 :func:`errorhandler() <microdot.Microdot.errorhandler>` decorator registers
-a functions to respond to specific error codes. The following example shows a
+functions to respond to specific error codes. The following example shows a
 custom error handler for 404 errors::
 
     @app.errorhandler(404)
@@ -322,13 +322,17 @@ custom error handler for 404 errors::
         return {'error': 'resource not found'}, 404
 
 The ``errorhandler()`` decorator has a second form, in which it takes an
-exception class as an argument. Microdot will then invoke the handler when an
-exception of that class is raised. The next example provides a custom response
-for division by zero errors::
+exception class as an argument. Microdot will then invoke the handler when the
+exception is an instance of the given class is raised. The next example
+provides a custom response for division by zero errors::
 
     @app.errorhandler(ZeroDivisionError)
     def division_by_zero(request, exception):
         return {'error': 'division by zero'}, 500
+
+When the raised exception class does not have an error handler defined, but
+one or more of its base classes do, Microdot makes an attempt to invoke the
+most specific handler.
 
 Mounting a Sub-Application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -481,7 +485,7 @@ Accessing the Raw Request Body
 
 For cases in which neither JSON nor form data is expected, the
 :attr:`body <microdot.Request.body>` request attribute returns the entire body
-of the request as a byte sequence. 
+of the request as a byte sequence.
 
 If the expected body is too large to fit in memory, the application can use the
 :attr:`stream <microdot.Request.stream>` request attribute to read the body
@@ -645,9 +649,9 @@ File Responses
 
 The :func:`send_file <microdot.Response.send_file>` function builds a response
 object for a file::
-    
+
         from microdot import send_file
-    
+
         @app.get('/')
         def index(request):
             return send_file('/static/index.html')

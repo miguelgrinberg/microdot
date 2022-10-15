@@ -17,6 +17,7 @@ except ImportError:
     import io
 
 from microdot import Microdot as BaseMicrodot
+from microdot import mro
 from microdot import NoCaseDict
 from microdot import Request as BaseRequest
 from microdot import Response as BaseResponse
@@ -393,11 +394,19 @@ class Microdot(BaseMicrodot):
                         res = exc.reason, exc.status_code
                 except Exception as exc:
                     print_exception(exc)
+                    exc_class = None
                     res = None
                     if exc.__class__ in self.error_handlers:
+                        exc_class = exc.__class__
+                    else:
+                        for c in mro(exc.__class__)[1:]:
+                            if c in self.error_handlers:
+                                exc_class = c
+                                break
+                    if exc_class:
                         try:
                             res = await self._invoke_handler(
-                                self.error_handlers[exc.__class__], req, exc)
+                                self.error_handlers[exc_class], req, exc)
                         except Exception as exc2:  # pragma: no cover
                             print_exception(exc2)
                     if res is None:

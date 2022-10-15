@@ -145,6 +145,39 @@ class NoCaseDict(dict):
         return super().get(self.keymap.get(kl, kl), default)
 
 
+def mro(cls):  # pragma: no cover
+    """Return the method resolution order of a class.
+
+    This is a helper function that returns the method resolution order of a
+    class. It is used by Microdot to find the best error handler to invoke for
+    the raised exception.
+
+    In CPython, this function returns the ``__mro__`` attribute of the class.
+    In MicroPython, this function implements a recursive depth-first scanning
+    of the class hierarchy.
+    """
+    if hasattr(cls, 'mro'):
+        return cls.__mro__
+
+    def _mro(cls):
+        m = [cls]
+        for base in cls.__bases__:
+            m += _mro(base)
+        return m
+
+    mro_list = _mro(cls)
+
+    # If a class appears multiple times (due to multiple inheritance) remove
+    # all but the last occurence. This matches the method resolution order
+    # of MicroPython, but not CPython.
+    mro_pruned = []
+    for i in range(len(mro_list)):
+        base = mro_list.pop(0)
+        if base not in mro_list:
+            mro_pruned.append(base)
+    return mro_pruned
+
+
 class MultiDict(dict):
     """A subclass of dictionary that can hold multiple values for the same
     key. It is used to hold key/value pairs decoded from query strings and
@@ -1104,10 +1137,18 @@ class Microdot():
                         res = exc.reason, exc.status_code
                 except Exception as exc:
                     print_exception(exc)
+                    exc_class = None
                     res = None
                     if exc.__class__ in self.error_handlers:
+                        exc_class = exc.__class__
+                    else:
+                        for c in mro(exc.__class__)[1:]:
+                            if c in self.error_handlers:
+                                exc_class = c
+                                break
+                    if exc_class:
                         try:
-                            res = self.error_handlers[exc.__class__](req, exc)
+                            res = self.error_handlers[exc_class](req, exc)
                         except Exception as exc2:  # pragma: no cover
                             print_exception(exc2)
                     if res is None:
