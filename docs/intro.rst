@@ -327,7 +327,7 @@ exception of that class is raised. The next example provides a custom response
 for division by zero errors::
 
     @app.errorhandler(ZeroDivisionError)
-    def division_by_zero(request):
+    def division_by_zero(request, exception):
         return {'error': 'division by zero'}, 500
 
 Mounting a Sub-Application
