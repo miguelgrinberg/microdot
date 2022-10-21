@@ -244,7 +244,7 @@ Example::
                 ws.send(message)
 
 .. note::
-   An unsupported *microsoft_websocket_alt.py* module, with the same
+   An unsupported *microdot_websocket_alt.py* module, with the same
    interface, is also provided. This module uses the native WebSocket support
    in MicroPython that powers the WebREPL, and may provide slightly better
    performance for MicroPython low-end boards. This module is not compatible
@@ -276,9 +276,9 @@ This extension has the same interface as the synchronous WebSocket extension,
 but the ``receive()`` and ``send()`` methods are asynchronous.
 
 .. note::
-   An unsupported *microsoft_asgi_websocket.py* module, with the same
+   An unsupported *microdot_asgi_websocket.py* module, with the same
    interface, is also provided. This module must be used instead of
-   *microsoft_asyncio_websocket.py* when the ASGI support is used. The
+   *microdot_asyncio_websocket.py* when the ASGI support is used. The
    `echo_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo_asgi.py>`_
    example shows how to use this module.
 
