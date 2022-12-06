@@ -381,7 +381,8 @@ class Microdot(BaseMicrodot):
                             res = await self._invoke_handler(
                                 handler, req, res) or res
                         for handler in req.after_request_handlers:
-                            res = await handler(req, res) or res
+                            res = await self._invoke_handler(
+                                handler, req, res) or res
                     elif f in self.error_handlers:
                         res = await self._invoke_handler(
                             self.error_handlers[f], req)
