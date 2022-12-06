@@ -1,5 +1,14 @@
 # Microdot change log
 
+**Release 1.2.1** - 2022-12-06
+
+- Error handling invokes parent exceptions [#74](https://github.com/miguelgrinberg/microdot/issues/74) ([commit](https://github.com/miguelgrinberg/microdot/commit/24d74fb8483b04e8abe6e303e06f0a310f32700b)) (thanks **Diego Pomares**!)
+- Addressed error when deleting a user session in async app [#86](https://github.com/miguelgrinberg/microdot/issues/86) ([commit](https://github.com/miguelgrinberg/microdot/commit/5a589afd5e519e94e84fc1ee69033f2dad51c3ea))
+- Add asyncio file upload example ([commit](https://github.com/miguelgrinberg/microdot/commit/c841cbedda40f59a9d87f6895fdf9fd954f854a2))
+- New Jinja and uTemplate examples with Bootstrap ([commit](https://github.com/miguelgrinberg/microdot/commit/211ad953aeedb4c7f73fe210424aa173b4dc7fee))
+- Fix typos in documentation [#77](https://github.com/miguelgrinberg/microdot/issues/77) ([commit](https://github.com/miguelgrinberg/microdot/commit/4a9b92b800d3fd87110f7bc9f546c10185ee13bc)) (thanks **Diego Pomares**!)
+- Add missing exception argument to error handler example in documentation [#73](https://github.com/miguelgrinberg/microdot/issues/73) ([commit](https://github.com/miguelgrinberg/microdot/commit/c443599089f2127d1cb052dfba8a05c1969d65e3)) (thanks **Diego Pomares**!)
+
 **Release 1.2.0** - 2022-09-25
 
 - Use a case insensitive dict for headers ([commit #1](https://github.com/miguelgrinberg/microdot/commit/b0fd6c432371ca5cb10d07ff84c4deed7aa0ce2e) [commit #2](https://github.com/miguelgrinberg/microdot/commit/a8515c97b030f942fa6ca85cbe1772291468fb0d))
