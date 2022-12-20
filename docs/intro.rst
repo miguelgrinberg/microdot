@@ -283,7 +283,7 @@ handled::
     def start_timer(request):
         request.g.start_time = time.time()
 
-    @ap.after_request
+    @app.after_request
     def end_timer(request, response):
         duration = time.time() - request.g.start_time
         print(f'Request took {duration:0.2f} seconds')
