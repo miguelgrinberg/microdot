@@ -76,7 +76,7 @@ apps = [
 for app, env, name in apps:
     p = subprocess.Popen(
         app.split() if isinstance(app, str) else app,
-        env={'PATH': os.environ['PATH'], **env},
+        env={'PATH': os.environ['PATH'] + ':../../bin', **env},
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
