@@ -1,3 +1,8 @@
 .py.class, .py.function, .py.method, .py.property {
   margin-top: 20px;
 }
+
+div.sphinxsidebar {
+    max-height: 100%;
+    overflow-y: auto;
+}
