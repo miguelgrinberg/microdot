@@ -1122,10 +1122,6 @@ class Microdot():
                             res = Response(body, status_code, headers)
                         elif not isinstance(res, Response):
                             res = Response(res)
-                        for handler in self.after_request_handlers:
-                            res = handler(req, res) or res
-                        for handler in req.after_request_handlers:
-                            res = handler(req, res) or res
                     elif f in self.error_handlers:
                         res = self.error_handlers[f](req)
                     else:
@@ -1161,11 +1157,14 @@ class Microdot():
                 res = self.error_handlers[400](req)
             else:
                 res = 'Bad request', 400
-
         if isinstance(res, tuple):
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
+        for handler in self.after_request_handlers:
+            res = handler(req, res) or res
+        for handler in req.after_request_handlers:
+            res = handler(req, res) or res
         return res
 
 

@@ -377,12 +377,6 @@ class Microdot(BaseMicrodot):
                             res = Response(body, status_code, headers)
                         elif not isinstance(res, Response):
                             res = Response(res)
-                        for handler in self.after_request_handlers:
-                            res = await self._invoke_handler(
-                                handler, req, res) or res
-                        for handler in req.after_request_handlers:
-                            res = await self._invoke_handler(
-                                handler, req, res) or res
                     elif f in self.error_handlers:
                         res = await self._invoke_handler(
                             self.error_handlers[f], req)
@@ -425,6 +419,12 @@ class Microdot(BaseMicrodot):
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
+        for handler in self.after_request_handlers:
+            res = await self._invoke_handler(
+                handler, req, res) or res
+        for handler in req.after_request_handlers:
+            res = await self._invoke_handler(
+                handler, req, res) or res
         return res
 
     async def _invoke_handler(self, f_or_coro, *args, **kwargs):
