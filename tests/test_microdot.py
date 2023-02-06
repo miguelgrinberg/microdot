@@ -279,6 +279,39 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.headers['Content-Length'], '3')
         self.assertEqual(res.text, 'baz')
 
+    def test_after_error_request(self):
+        app = Microdot()
+
+        @app.after_error_request
+        def after_error_request_one(req, res):
+            res.headers['X-One'] = '1'
+
+        @app.after_error_request
+        def after_error_request_two(req, res):
+            res.set_cookie('foo', 'bar')
+            return res
+
+        @app.route('/foo')
+        def foo(req):
+            return 'foo'
+
+        client = TestClient(app)
+
+        res = client.get('/foo')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertNotIn('X-One', res.headers)
+        self.assertNotIn('Set-Cookie', res.headers)
+
+        res = client.get('/bar')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.headers['Set-Cookie'], ['foo=bar'])
+        self.assertEqual(res.headers['X-One'], '1')
+        self.assertEqual(client.cookies['foo'], 'bar')
+
     def test_400(self):
         self._mock()
 
@@ -661,7 +694,11 @@ class TestMicrodot(unittest.TestCase):
 
         @subapp.after_request
         def after(req, res):
-            return res.body + b':after'
+            res.body += b':after'
+
+        @subapp.after_error_request
+        def after_error(req, res):
+            res.body += b':errorafter'
 
         @subapp.errorhandler(404)
         def not_found(req):
@@ -680,7 +717,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(res.headers['Content-Type'],
                          'text/plain; charset=UTF-8')
-        self.assertEqual(res.text, '404')
+        self.assertEqual(res.text, '404:errorafter')
 
         res = client.get('/sub/app')
         self.assertEqual(res.status_code, 200)

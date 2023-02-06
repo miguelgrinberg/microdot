@@ -293,6 +293,12 @@ The function can return a modified response object to replace the original. If
 the function does not return a value, then the original response object is
 used.
 
+The after request handlers are only invoked for successful requests. The
+:func:`after_error_request() <microdot.Microdot.after_error_request>`
+decorator can be used to register a function that is called after an error
+occurs. The function receives the request and the error response and is
+expected to return an updated response object.
+
 .. note::
    The :ref:`request.g <The "g" Object>` object is a special object that allows
    the before and after request handlers, as well sa the route function to

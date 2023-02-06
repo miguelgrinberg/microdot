@@ -314,6 +314,39 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertEqual(res.headers['Content-Length'], '3')
         self.assertEqual(res.text, 'baz')
 
+    def test_after_error_request(self):
+        app = Microdot()
+
+        @app.after_error_request
+        def after_error_request_one(req, res):
+            res.headers['X-One'] = '1'
+
+        @app.after_error_request
+        def after_error_request_two(req, res):
+            res.set_cookie('foo', 'bar')
+            return res
+
+        @app.route('/foo')
+        def foo(req):
+            return 'foo'
+
+        client = TestClient(app)
+
+        res = self._run(client.get('/foo'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertNotIn('X-One', res.headers)
+        self.assertNotIn('Set-Cookie', res.headers)
+
+        res = self._run(client.get('/bar'))
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.headers['Set-Cookie'], ['foo=bar'])
+        self.assertEqual(res.headers['X-One'], '1')
+        self.assertEqual(client.cookies['foo'], 'bar')
+
     def test_400(self):
         self._mock()
 

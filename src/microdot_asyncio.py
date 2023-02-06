@@ -347,6 +347,7 @@ class Microdot(BaseMicrodot):
                 status_code=res.status_code))
 
     async def dispatch_request(self, req):
+        after_request_handled = False
         if req:
             if req.content_length > req.max_content_length:
                 if 413 in self.error_handlers:
@@ -383,6 +384,7 @@ class Microdot(BaseMicrodot):
                         for handler in req.after_request_handlers:
                             res = await self._invoke_handler(
                                 handler, req, res) or res
+                        after_request_handled = True
                     elif f in self.error_handlers:
                         res = await self._invoke_handler(
                             self.error_handlers[f], req)
@@ -425,6 +427,10 @@ class Microdot(BaseMicrodot):
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
+        if not after_request_handled:
+            for handler in self.after_error_request_handlers:
+                res = await self._invoke_handler(
+                    handler, req, res) or res
         return res
 
     async def _invoke_handler(self, f_or_coro, *args, **kwargs):
