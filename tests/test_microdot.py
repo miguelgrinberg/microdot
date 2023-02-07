@@ -301,8 +301,8 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'],
                          'text/plain; charset=UTF-8')
-        self.assertNotIn('X-One', res.headers)
-        self.assertNotIn('Set-Cookie', res.headers)
+        self.assertFalse('X-One' in res.headers)
+        self.assertFalse('Set-Cookie' in res.headers)
 
         res = client.get('/bar')
         self.assertEqual(res.status_code, 404)
