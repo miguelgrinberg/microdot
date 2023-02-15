@@ -23,7 +23,7 @@ Asynchronous Support with Asyncio
        | MicroPython: `uasyncio <https://github.com/micropython/micropython/tree/master/extmod/uasyncio>`_
 
    * - Examples
-     - | `hello_async.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello_async.py>`_
+     - | `hello_async.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_async.py>`_
 
 Microdot can be extended to use an asynchronous programming model based on the
 ``asyncio`` package. When the :class:`Microdot <microdot_asyncio.Microdot>`
@@ -68,8 +68,8 @@ Using the uTemplate Engine
      - | `utemplate <https://github.com/pfalcon/utemplate/tree/master/utemplate>`_
 
    * - Examples
-     - | `hello_utemplate.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello_utemplate.py>`_
-       | `hello_utemplate_async.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello_utemplate_async.py>`_
+     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/templates/utemplate/hello.py>`_
+       | `hello_utemplate_async.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_utemplate_async.py>`_
 
 The :func:`render_template <microdot_utemplate.render_template>` function is
 used to render HTML templates with the uTemplate engine. The first argument is
@@ -110,7 +110,7 @@ Using the Jinja Engine
      - | `Jinja2 <https://jinja.palletsprojects.com/>`_
 
    * - Examples
-     - | `hello_jinja.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello_jinja.py>`_
+     - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/templates/jinja/hello.py>`_
 
 The :func:`render_template <microdot_jinja.render_template>` function is used
 to render HTML templates with the Jinja engine. The first argument is the
@@ -156,7 +156,7 @@ Maintaing Secure User Sessions
                       `hmac <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/hmac/hmac.py>`_
 
    * - Examples
-     - | `login.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/login.py>`_
+     - | `login.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/sessions/login.py>`_
 
 The session extension provides a secure way for the application to maintain
 user sessions. The session is stored as a signed cookie in the client's
@@ -297,7 +297,7 @@ HTTPS Support
 
    * - Examples
      - | `hello_tls.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/tls/hello_tls.py>`_
-       | `hello_asyncio_tls.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/tls/hello_asyncio_tls.py>`_
+       | `hello_async_tls.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/tls/hello_async_tls.py>`_
 
 The ``run()`` function accepts an optional ``ssl`` argument, through which an
 initialized ``SSLContext`` object can be passed. MicroPython does not currently
@@ -423,7 +423,7 @@ Using a WSGI Web Server
      - | A WSGI web server, such as `Gunicorn <https://gunicorn.org/>`_.
 
    * - Examples
-     - | `hello_wsgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello_wsgi.py>`_
+     - | `hello_wsgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_wsgi.py>`_
 
 
 The ``microdot_wsgi`` module provides an extended ``Microdot`` class that
@@ -468,7 +468,7 @@ Using an ASGI Web Server
      - | An ASGI web server, such as `Uvicorn <https://uvicorn.org/>`_.
 
    * - Examples
-     - | `hello_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello_asgi.py>`_
+     - | `hello_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_asgi.py>`_
 
 The ``microdot_asgi`` module provides an extended ``Microdot`` class that
 implements the ASGI protocol and can be used with a compliant ASGI server such
