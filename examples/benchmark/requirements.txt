@@ -29,5 +29,5 @@ toml==0.10.2
 typing_extensions==4.3.0
 urllib3==1.26.11
 uvicorn==0.18.2
-Werkzeug==2.2.1
+Werkzeug==2.2.3
 wsproto==1.1.0
