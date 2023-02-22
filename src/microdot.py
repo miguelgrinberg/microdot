@@ -43,11 +43,13 @@ try:
 except ImportError:
     import re
 
+socket_timeout_error = OSError
 try:
     import usocket as socket
 except ImportError:
     try:
         import socket
+        socket_timeout_error = socket.timeout
     except ImportError:  # pragma: no cover
         socket = None
 
@@ -299,6 +301,11 @@ class Request():
     #:
     #:    Request.max_readline = 16 * 1024  # 16KB lines allowed
     max_readline = 2 * 1024
+
+    #: Specify a suggested read timeout to use when reading the request. Set to
+    #: 0 to disable the use of a timeout. This timeout should be considered a
+    #: suggestion only, as some platforms may not support it.
+    socket_read_timeout = 0.1
 
     class G:
         pass
@@ -1085,6 +1092,9 @@ class Microdot():
         return f
 
     def handle_request(self, sock, addr):
+        if Request.socket_read_timeout and \
+                hasattr(sock, 'settimeout'):  # pragma: no cover
+            sock.settimeout(Request.socket_read_timeout)
         if not hasattr(sock, 'readline'):  # pragma: no cover
             stream = sock.makefile("rwb")
         else:
@@ -1095,6 +1105,9 @@ class Microdot():
         try:
             req = Request.create(self, stream, addr, sock)
             res = self.dispatch_request(req)
+        except socket_timeout_error as exc:  # pragma: no cover
+            if exc.errno and exc.errno != 60:
+                print_exception(exc)  # not a timeout
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
         try:
