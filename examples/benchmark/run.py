@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+from timeit import timeit
 import requests
 import psutil
 import humanize
@@ -81,14 +82,18 @@ for app, env, name in apps:
         stderr=subprocess.DEVNULL
     )
     time.sleep(1)
+    tm = 0
     if not name.startswith('baseline'):
-        r = requests.get('http://localhost:5000')
-        r.raise_for_status()
+        def req():
+            r = requests.get('http://localhost:5000')
+            r.raise_for_status()
+
+        tm = timeit(req, number=1000)
     proc = psutil.Process(p.pid)
     mem = proc.memory_info().rss
     for child in proc.children(recursive=True):
         mem += child.memory_info().rss
     bar = '*' * (mem // (1024 * 1024))
-    print(f'{name:<28}{humanize.naturalsize(mem):>10} {bar}')
+    print(f'{name:<28}{tm:10.2f}s {humanize.naturalsize(mem):>10} {bar}')
     p.terminate()
     time.sleep(1)
