@@ -1106,7 +1106,7 @@ class Microdot():
             req = Request.create(self, stream, addr, sock)
             res = self.dispatch_request(req)
         except socket_timeout_error as exc:  # pragma: no cover
-            if exc.errno and exc.errno != 60:
+            if exc.errno and exc.errno not in [60, 110]:
                 print_exception(exc)  # not a timeout
         except Exception as exc:  # pragma: no cover
             print_exception(exc)
