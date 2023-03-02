@@ -93,10 +93,10 @@ class Microdot(BaseMicrodot):
         header_list = []
         for name, value in res.headers.items():
             if not isinstance(value, list):
-                header_list.append((name, value))
+                header_list.append((name.lower().encode(), value.encode()))
             else:
                 for v in value:
-                    header_list.append((name, v))
+                    header_list.append((name.lower().encode(), v.encode()))
 
         if scope['type'] != 'http':  # pragma: no cover
             return
