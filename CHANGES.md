@@ -1,5 +1,21 @@
 # Microdot change log
 
+**Release 1.2.2** - 2023-03-03
+
+- Add a socket read timeout to abort incomplete requests [#99](https://github.com/miguelgrinberg/microdot/issues/99) ([commit](https://github.com/miguelgrinberg/microdot/commit/d0d358f94a63f8565d6406feff0c6e7418cc7f81))
+- More robust timeout handling [#106](https://github.com/miguelgrinberg/microdot/issues/106) ([commit](https://github.com/miguelgrinberg/microdot/commit/4d432a7d6cd88b874a8b825fb62891ed22881f74))
+- Add @after_error_handler decorator [#97](https://github.com/miguelgrinberg/microdot/issues/97) ([commit](https://github.com/miguelgrinberg/microdot/commit/fcaeee69052b5681706f65b022e667baeee30d4d))
+- Return headers as lowercase byte sequences as required by ASGI ([commit](https://github.com/miguelgrinberg/microdot/commit/ddb3b8f442d3683df04554104edaf8acd9c68148))
+- Async example of static file serving ([commit](https://github.com/miguelgrinberg/microdot/commit/680cd9c023352f0ff03d67f1041ea174b7b7385b))
+- Fixing broken links to examples in documentation [#101](https://github.com/miguelgrinberg/microdot/issues/101) ([commit](https://github.com/miguelgrinberg/microdot/commit/c00b24c9436e1b8f3d4c9bb6f2adfca988902e91)) (thanks **Eric Welch**!)
+- Add scrollbar to documentation's left sidebar ([commit](https://github.com/miguelgrinberg/microdot/commit/2aa90d42451dc64c84efcc4f40a1b6c8d1ef1e8d))
+- Documentation typo [#90](https://github.com/miguelgrinberg/microdot/issues/90) ([commit](https://github.com/miguelgrinberg/microdot/commit/81394980234f24aac834faf8e2e8225231e9014b)) (thanks **William Wheeler**!)
+- Add CPU timing to benchmark ([commit](https://github.com/miguelgrinberg/microdot/commit/9398c960752f87bc32d7c4349cbf594e5d678e99))
+- Upgrade uasyncio release used in tests ([commit](https://github.com/miguelgrinberg/microdot/commit/3d6815119ca1ec989f704f626530f938c857a8e5))
+- Update unittest library for MicroPython ([commit](https://github.com/miguelgrinberg/microdot/commit/ecd84ecb7bd3c29d5af96739442b908badeab804))
+- New build of micropython for unit tests ([commit](https://github.com/miguelgrinberg/microdot/commit/818f98d9a4e531e01c0f913813425ab2b40c289d))
+- Remove 3.6, add 3.11 to builds ([commit](https://github.com/miguelgrinberg/microdot/commit/dd15d90239b73b5fd413515c9cd4ac23f6d42f67))
+
 **Release 1.2.1** - 2022-12-06
 
 - Error handling invokes parent exceptions [#74](https://github.com/miguelgrinberg/microdot/issues/74) ([commit](https://github.com/miguelgrinberg/microdot/commit/24d74fb8483b04e8abe6e303e06f0a310f32700b)) (thanks **Diego Pomares**!)
