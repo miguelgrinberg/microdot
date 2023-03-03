@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 1.2.3** - 2023-03-03
+
+- Corrected a problem with previous build.
+
 **Release 1.2.2** - 2023-03-03
 
 - Add a socket read timeout to abort incomplete requests [#99](https://github.com/miguelgrinberg/microdot/issues/99) ([commit](https://github.com/miguelgrinberg/microdot/commit/d0d358f94a63f8565d6406feff0c6e7418cc7f81))
