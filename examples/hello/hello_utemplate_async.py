@@ -1,5 +1,5 @@
-from microdot_asyncio import Microdot, Response
-from microdot_utemplate import render_template
+from microdot.asyncio import Microdot, Response
+from microdot.utemplate import render_template
 
 app = Microdot()
 Response.default_content_type = 'text/html'

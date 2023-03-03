@@ -4,9 +4,9 @@ try:
 except ImportError:
     import asyncio
 import unittest
-from microdot_asyncio import Microdot
-from microdot_asyncio_websocket import with_websocket
-from microdot_asyncio_test_client import TestClient
+from microdot.asyncio import Microdot
+from microdot.asyncio.websocket import with_websocket
+from microdot.asyncio.test_client import TestClient
 
 
 class TestMicrodotAsyncWebSocket(unittest.TestCase):

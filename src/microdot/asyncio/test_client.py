@@ -1,8 +1,8 @@
-from microdot_asyncio import Request, Response, _AsyncBytesIO
-from microdot_test_client import TestClient as BaseTestClient, \
+from microdot.asyncio import Request, Response, AsyncBytesIO
+from microdot.test_client import TestClient as BaseTestClient, \
     TestResponse as BaseTestResponse
 try:
-    from microdot_asyncio_websocket import WebSocket
+    from microdot.asyncio.websocket import WebSocket
 except:  # pragma: no cover  # noqa: E722
     WebSocket = None
 
@@ -37,7 +37,7 @@ class TestClient(BaseTestClient):
     The following example shows how to create a test client for an application
     and send a test request::
 
-        from microdot_asyncio import Microdot
+        from microdot.asyncio import Microdot
 
         app = Microdot()
 
@@ -61,8 +61,8 @@ class TestClient(BaseTestClient):
             reader.buffer = request_bytes
             writer = sock[1]
         else:
-            reader = _AsyncBytesIO(request_bytes)
-            writer = _AsyncBytesIO(b'')
+            reader = AsyncBytesIO(request_bytes)
+            writer = AsyncBytesIO(b'')
 
         req = await Request.create(self.app, reader, writer,
                                    ('127.0.0.1', 1234))
@@ -81,7 +81,8 @@ class TestClient(BaseTestClient):
         :param headers: A dictionary of headers to send with the request.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.asyncio.test_client.TestResponse>`
+        object.
         """
         return await self.request('GET', path, headers=headers)
 
@@ -95,7 +96,8 @@ class TestClient(BaseTestClient):
                      to bytes as UTF-8. A bytes body is sent as-is.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.asyncio.test_client.TestResponse>`
+        object.
         """
         return await self.request('POST', path, headers=headers, body=body)
 
@@ -109,7 +111,8 @@ class TestClient(BaseTestClient):
                      to bytes as UTF-8. A bytes body is sent as-is.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.asyncio.test_client.TestResponse>`
+        object.
         """
         return await self.request('PUT', path, headers=headers, body=body)
 
@@ -123,7 +126,8 @@ class TestClient(BaseTestClient):
                      to bytes as UTF-8. A bytes body is sent as-is.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.asyncio.test_client.TestResponse>`
+        object.
         """
         return await self.request('PATCH', path, headers=headers, body=body)
 
@@ -134,7 +138,8 @@ class TestClient(BaseTestClient):
         :param headers: A dictionary of headers to send with the request.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.asyncio.test_client.TestResponse>`
+        object.
         """
         return await self.request('DELETE', path, headers=headers)
 

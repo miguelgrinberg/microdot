@@ -1,4 +1,4 @@
-from microdot_asgi import Microdot
+from microdot.asgi import Microdot
 
 app = Microdot()
 

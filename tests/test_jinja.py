@@ -6,8 +6,8 @@ except ImportError:
 import sys
 import unittest
 from microdot import Microdot, Request
-from microdot_asyncio import Microdot as MicrodotAsync, Request as RequestAsync
-from microdot_jinja import render_template, init_templates
+from microdot.asyncio import Microdot as MicrodotAsync, Request as RequestAsync
+from microdot.jinja import render_template, init_templates
 from tests.mock_socket import get_request_fd, get_async_request_fd
 
 init_templates('tests/templates')

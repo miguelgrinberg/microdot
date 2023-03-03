@@ -11,7 +11,7 @@ try:
 except ImportError:
     mock = None
 
-from microdot_wsgi import Microdot
+from microdot.wsgi import Microdot
 
 
 @unittest.skipIf(sys.implementation.name == 'micropython',
@@ -107,7 +107,7 @@ class TestMicrodotWSGI(unittest.TestCase):
         def start_response(status, headers):
             pass
 
-        with mock.patch('microdot_wsgi.os.kill') as kill:
+        with mock.patch('microdot.wsgi.os.kill') as kill:
             app(environ, start_response)
 
         kill.assert_called()

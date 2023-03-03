@@ -1,7 +1,7 @@
 import sys
 from microdot import Microdot, send_file
-from microdot_websocket import with_websocket
-from microdot_ssl import create_ssl_context
+from microdot.websocket import with_websocket
+from microdot.ssl import create_ssl_context
 
 app = Microdot()
 

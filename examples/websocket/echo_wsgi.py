@@ -1,5 +1,5 @@
-from microdot_wsgi import Microdot, send_file
-from microdot_websocket import with_websocket
+from microdot.wsgi import Microdot, send_file
+from microdot.websocket import with_websocket
 
 app = Microdot()
 

@@ -768,6 +768,6 @@ multi-threading that is not appropriate for concurrent request handling. For
 that reason, use of the `threading <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/threading/threading.py>`_
 module on microcontroller platforms is not recommended.
 
-The :ref:`micropython_asyncio <Asynchronous Support with Asyncio>` extension
+The :ref:`microdot.asyncio <Asynchronous Support with Asyncio>` extension
 provides a more robust concurrency option that is supported even on low-end
 MicroPython boards.

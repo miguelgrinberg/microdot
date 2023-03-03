@@ -1,7 +1,7 @@
 import sys
 import unittest
 from microdot import Microdot, Response, abort
-from microdot_test_client import TestClient
+from microdot.test_client import TestClient
 from tests import mock_socket
 
 
@@ -14,10 +14,17 @@ class TestMicrodot(unittest.TestCase):
         self.original_create_thread = sys.modules['microdot'].create_thread
         sys.modules['microdot'].socket = mock_socket
         sys.modules['microdot'].create_thread = mock_create_thread
+        if hasattr(sys.modules['microdot'], 'microdot'):
+            sys.modules['microdot'].microdot.socket = mock_socket
+            sys.modules['microdot'].microdot.create_thread = mock_create_thread
 
     def _unmock(self):
         sys.modules['microdot'].socket = self.original_socket
         sys.modules['microdot'].create_thread = self.original_create_thread
+        if hasattr(sys.modules['microdot'], 'microdot'):
+            sys.modules['microdot'].microdot.socket = self.original_socket
+            sys.modules['microdot'].microdot.create_thread = \
+                self.original_create_thread
 
     def _add_shutdown(self, app):
         @app.route('/shutdown')

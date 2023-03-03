@@ -85,7 +85,7 @@ def with_session(f):
             return 'Hello, World!'
 
     Note that the decorator does not save the session. To update the session,
-    call the :func:`update_session <microdot_session.update_session>` function.
+    call the :func:`update_session <microdot.session.update_session>` function.
     """
     def wrapper(request, *args, **kwargs):
         return f(request, get_session(request), *args, **kwargs)

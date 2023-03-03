@@ -1,8 +1,8 @@
 """
-microdot_asyncio
+microdot.asyncio
 ----------------
 
-The ``microdot_asyncio`` module defines a few classes that help implement
+The ``microdot.asyncio`` module defines a few classes that help implement
 HTTP-based servers for MicroPython and standard Python that use ``asyncio``
 and coroutines.
 """
@@ -30,7 +30,7 @@ def _iscoroutine(coro):
     return hasattr(coro, 'send') and hasattr(coro, 'throw')
 
 
-class _AsyncBytesIO:
+class AsyncBytesIO:
     def __init__(self, data):
         self.stream = io.BytesIO(data)
 
@@ -105,7 +105,7 @@ class Request(BaseRequest):
     @property
     def stream(self):
         if self._stream is None:
-            self._stream = _AsyncBytesIO(self._body)
+            self._stream = AsyncBytesIO(self._body)
         return self._stream
 
     @staticmethod
@@ -236,7 +236,7 @@ class Microdot(BaseMicrodot):
         Example::
 
             import asyncio
-            from microdot_asyncio import Microdot
+            from microdot.asyncio import Microdot
 
             app = Microdot()
 
@@ -308,7 +308,7 @@ class Microdot(BaseMicrodot):
 
         Example::
 
-            from microdot_asyncio import Microdot
+            from microdot.asyncio import Microdot
 
             app = Microdot()
 

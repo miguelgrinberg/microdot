@@ -1,7 +1,7 @@
 import unittest
 from microdot import Microdot
-from microdot_websocket import with_websocket, WebSocket
-from microdot_test_client import TestClient
+from microdot.websocket import with_websocket, WebSocket
+from microdot.test_client import TestClient
 
 
 class TestMicrodotWebSocket(unittest.TestCase):

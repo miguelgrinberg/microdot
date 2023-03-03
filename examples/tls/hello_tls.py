@@ -1,6 +1,6 @@
 import sys
 from microdot import Microdot
-from microdot_ssl import create_ssl_context
+from microdot.ssl import create_ssl_context
 
 app = Microdot()
 

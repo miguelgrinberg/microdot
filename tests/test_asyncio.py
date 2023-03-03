@@ -4,8 +4,8 @@ except ImportError:
     import asyncio
 import sys
 import unittest
-from microdot_asyncio import Microdot, Response, abort
-from microdot_asyncio_test_client import TestClient
+from microdot.asyncio import Microdot, Response, abort
+from microdot.asyncio.test_client import TestClient
 from tests import mock_asyncio, mock_socket
 
 
@@ -21,11 +21,17 @@ class TestMicrodotAsync(unittest.TestCase):
         return loop.run_until_complete(coro)
 
     def _mock(self):
-        self.original_asyncio = sys.modules['microdot_asyncio'].asyncio
-        sys.modules['microdot_asyncio'].asyncio = mock_asyncio
+        self.original_asyncio = sys.modules['microdot'].asyncio.asyncio
+        sys.modules['microdot'].asyncio.asyncio = mock_asyncio
+        if hasattr(sys.modules['microdot'].asyncio, 'microdot_asyncio'):
+            sys.modules['microdot'].asyncio.microdot_asyncio.asyncio = \
+                mock_asyncio
 
     def _unmock(self):
-        sys.modules['microdot_asyncio'].asyncio = self.original_asyncio
+        sys.modules['microdot'].asyncio.asyncio = self.original_asyncio
+        if hasattr(sys.modules['microdot'].asyncio, 'microdot_asyncio'):
+            sys.modules['microdot'].asyncio.microdot_asyncio.asyncio = \
+                self.original_asyncio
 
     def _add_shutdown(self, app):
         @app.route('/shutdown')

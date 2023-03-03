@@ -1,5 +1,5 @@
-from microdot_asyncio import Microdot, send_file
-from microdot_asyncio_websocket import with_websocket
+from microdot.asyncio import Microdot, send_file
+from microdot.asyncio.websocket import with_websocket
 
 app = Microdot()
 

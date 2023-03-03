@@ -1,5 +1,5 @@
-from microdot_asyncio import Response, abort
-from microdot_websocket import WebSocket as BaseWebSocket
+from microdot.asyncio import Response, abort
+from microdot.websocket import WebSocket as BaseWebSocket
 
 
 class WebSocket(BaseWebSocket):

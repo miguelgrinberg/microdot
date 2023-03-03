@@ -19,97 +19,97 @@ API Reference
 .. autoclass:: microdot.MultiDict
    :members:
 
-``microdot_asyncio`` module
+``microdot.asyncio`` module
 ---------------------------
 
-.. autoclass:: microdot_asyncio.Microdot
+.. autoclass:: microdot.asyncio.Microdot
    :inherited-members:
    :members:
 
-.. autoclass:: microdot_asyncio.Request
+.. autoclass:: microdot.asyncio.Request
    :inherited-members:
    :members:
 
-.. autoclass:: microdot_asyncio.Response
+.. autoclass:: microdot.asyncio.Response
    :inherited-members:
    :members:
 
-``microdot_utemplate`` module
+``microdot.utemplate`` module
 -----------------------------
 
-.. automodule:: microdot_utemplate
+.. automodule:: microdot.utemplate
    :members:
 
-``microdot_jinja`` module
+``microdot.jinja`` module
 -------------------------
 
-.. automodule:: microdot_jinja
+.. automodule:: microdot.jinja
    :members:
 
-``microdot_session`` module
+``microdot.session`` module
 ---------------------------
 
-.. automodule:: microdot_session
+.. automodule:: microdot.session
    :members:
 
-``microdot_cors`` module
+``microdot.cors`` module
 ------------------------
 
-.. automodule:: microdot_cors
+.. automodule:: microdot.cors
    :members:
 
-``microdot_websocket`` module
+``microdot.websocket`` module
 ------------------------------
 
-.. automodule:: microdot_websocket
+.. automodule:: microdot.websocket
    :members:
 
-``microdot_asyncio_websocket`` module
+``microdot.asyncio.websocket`` module
 -------------------------------------
 
-.. automodule:: microdot_asyncio_websocket
+.. automodule:: microdot.asyncio.websocket
    :members:
 
-``microdot_asgi_websocket`` module
+``microdot.asgi.websocket`` module
 -------------------------------------
 
-.. automodule:: microdot_asgi_websocket
+.. automodule:: microdot.asgi.websocket
    :members:
 
-``microdot_ssl`` module
+``microdot.ssl`` module
 -----------------------
 
-.. automodule:: microdot_ssl
+.. automodule:: microdot.ssl
    :members:
 
-``microdot_test_client`` module
+``microdot.test_client`` module
 -------------------------------
 
-.. autoclass:: microdot_test_client.TestClient
+.. autoclass:: microdot.test_client.TestClient
    :members:
 
-.. autoclass:: microdot_test_client.TestResponse
+.. autoclass:: microdot.test_client.TestResponse
    :members:
 
-``microdot_asyncio_test_client`` module
+``microdot.asyncio.test_client`` module
 ---------------------------------------
 
-.. autoclass:: microdot_asyncio_test_client.TestClient
+.. autoclass:: microdot.asyncio.test_client.TestClient
    :members:
 
-.. autoclass:: microdot_asyncio_test_client.TestResponse
+.. autoclass:: microdot.asyncio.test_client.TestResponse
    :members:
 
-``microdot_wsgi`` module
+``microdot.wsgi`` module
 ------------------------
 
-.. autoclass:: microdot_wsgi.Microdot
+.. autoclass:: microdot.wsgi.Microdot
    :members:
    :exclude-members: shutdown, run
 
-``microdot_asgi`` module
+``microdot.asgi`` module
 ------------------------
 
-.. autoclass:: microdot_asgi.Microdot
+.. autoclass:: microdot.asgi.Microdot
    :members:
    :exclude-members: shutdown, run

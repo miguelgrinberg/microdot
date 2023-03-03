@@ -1,5 +1,5 @@
 from microdot import Microdot
-from microdot_cors import CORS
+from microdot.cors import CORS
 
 app = Microdot()
 CORS(app, allowed_origins=['https://example.org'], allow_credentials=True)

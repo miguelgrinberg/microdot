@@ -5,7 +5,7 @@ except ImportError:
 
 import unittest
 from microdot import MultiDict
-from microdot_asyncio import Request
+from microdot.asyncio import Request
 from tests.mock_socket import get_async_request_fd
 
 

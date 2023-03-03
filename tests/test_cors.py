@@ -1,7 +1,7 @@
 import unittest
 from microdot import Microdot
-from microdot_test_client import TestClient
-from microdot_cors import CORS
+from microdot.test_client import TestClient
+from microdot.cors import CORS
 
 
 class TestCORS(unittest.TestCase):

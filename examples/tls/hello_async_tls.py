@@ -1,5 +1,5 @@
 import ssl
-from microdot_asyncio import Microdot
+from microdot.asyncio import Microdot
 
 app = Microdot()
 

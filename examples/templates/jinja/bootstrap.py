@@ -1,5 +1,5 @@
 from microdot import Microdot, Response
-from microdot_jinja import render_template
+from microdot.jinja import render_template
 
 app = Microdot()
 Response.default_content_type = 'text/html'

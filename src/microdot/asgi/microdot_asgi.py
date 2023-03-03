@@ -1,9 +1,9 @@
 import asyncio
 import os
 import signal
-from microdot_asyncio import *  # noqa: F401, F403
-from microdot_asyncio import Microdot as BaseMicrodot
-from microdot_asyncio import Request
+from microdot.asyncio import *  # noqa: F401, F403
+from microdot.asyncio import Microdot as BaseMicrodot
+from microdot.asyncio import Request
 from microdot import NoCaseDict
 
 

@@ -1,4 +1,4 @@
-from microdot_asyncio import Microdot, send_file, Request
+from microdot.asyncio import Microdot, send_file, Request
 
 app = Microdot()
 Request.max_content_length = 1024 * 1024  # 1MB (change as needed)

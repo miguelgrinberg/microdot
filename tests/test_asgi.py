@@ -11,7 +11,7 @@ try:
 except ImportError:
     mock = None
 
-from microdot_asgi import Microdot, Response
+from microdot.asgi import Microdot, Response
 from tests import mock_asyncio
 
 
@@ -166,7 +166,7 @@ class TestMicrodotASGI(unittest.TestCase):
         async def send(packet):
             pass
 
-        with mock.patch('microdot_asgi.os.kill') as kill:
+        with mock.patch('microdot.asgi.os.kill') as kill:
             mock_asyncio.run(app(scope, receive, send))
 
         kill.assert_called()

@@ -1,9 +1,14 @@
-Core Extensions
----------------
+Optional Modules
+----------------
 
-Microdot is a highly extensible web application framework. The extensions
-described in this section are maintained as part of the Microdot project and
-can be obtained from the same source code repository.
+Microdot is a highly extensible web application framework. The modules
+described in this section are also part of the Microdot project, but their use
+is optional.
+
+When using CPython, these modules are all installed together with the core
+module. Each module documents which source files are needed. This may help
+MicroPython users save space by removing the modules that are not used by the
+application.
 
 Asynchronous Support with Asyncio
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -15,8 +20,12 @@ Asynchronous Support with Asyncio
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📂 asyncio/
+       |      📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/__init__.py>`_
+       |      📃 `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/microdot_asyncio.py>`_
 
    * - Required external dependencies
      - | CPython: None
@@ -26,13 +35,13 @@ Asynchronous Support with Asyncio
      - | `hello_async.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_async.py>`_
 
 Microdot can be extended to use an asynchronous programming model based on the
-``asyncio`` package. When the :class:`Microdot <microdot_asyncio.Microdot>`
-class is imported from the ``microdot_asyncio`` package, an asynchronous server
+``asyncio`` package. When the :class:`Microdot <microdot.asyncio.Microdot>`
+class is imported from the ``microdot.asyncio`` package, an asynchronous server
 is used, and handlers can be defined as coroutines.
 
 The example that follows uses ``asyncio`` coroutines for concurrency::
 
-    from microdot_asyncio import Microdot
+    from microdot.asyncio import Microdot
 
     app = Microdot()
 
@@ -61,8 +70,10 @@ Using the uTemplate Engine
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_utemplate.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_utemplate.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `utemplate.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/utemplate.py>`_
 
    * - Required external dependencies
      - | `utemplate <https://github.com/pfalcon/utemplate/tree/master/utemplate>`_
@@ -71,7 +82,7 @@ Using the uTemplate Engine
      - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/templates/utemplate/hello.py>`_
        | `hello_utemplate_async.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_utemplate_async.py>`_
 
-The :func:`render_template <microdot_utemplate.render_template>` function is
+The :func:`render_template <microdot.utemplate.render_template>` function is
 used to render HTML templates with the uTemplate engine. The first argument is
 the template filename, relative to the templates directory, which is
 *templates* by default. Any additional arguments are passed to the template
@@ -79,7 +90,7 @@ engine to be used as arguments.
 
 Example::
 
-    from microdot_utemplate import render_template
+    from microdot.utemplate import render_template
 
     @app.get('/')
     def index(req):
@@ -87,9 +98,9 @@ Example::
 
 The default location from where templates are loaded is the *templates*
 subdirectory. This location can be changed with the
-:func:`init_templates <microdot_utemplate.init_templates>` function::
+:func:`init_templates <microdot.utemplate.init_templates>` function::
 
-    from microdot_utemplate import init_templates
+    from microdot.utemplate import init_templates
 
     init_templates('my_templates')
 
@@ -103,8 +114,10 @@ Using the Jinja Engine
      - | CPython only
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_jinja.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_jinja.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `jinja.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/jinja.py>`_
 
    * - Required external dependencies
      - | `Jinja2 <https://jinja.palletsprojects.com/>`_
@@ -112,7 +125,7 @@ Using the Jinja Engine
    * - Examples
      - | `hello.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/templates/jinja/hello.py>`_
 
-The :func:`render_template <microdot_jinja.render_template>` function is used
+The :func:`render_template <microdot.jinja.render_template>` function is used
 to render HTML templates with the Jinja engine. The first argument is the
 template filename, relative to the templates directory, which is *templates* by
 default. Any additional arguments are passed to the template engine to be used
@@ -120,7 +133,7 @@ as arguments.
 
 Example::
 
-    from microdot_jinja import render_template
+    from microdot.jinja import render_template
 
     @app.get('/')
     def index(req):
@@ -128,9 +141,9 @@ Example::
 
 The default location from where templates are loaded is the *templates*
 subdirectory. This location can be changed with the
-:func:`init_templates <microdot_jinja.init_templates>` function::
+:func:`init_templates <microdot.jinja.init_templates>` function::
 
-    from microdot_jinja import init_templates
+    from microdot.jinja import init_templates
 
     init_templates('my_templates')
 
@@ -147,8 +160,10 @@ Maintaing Secure User Sessions
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_session.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_session.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `session.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/session.py>`_
 
    * - Required external dependencies
      - | CPython: `PyJWT <https://pyjwt.readthedocs.io/>`_
@@ -168,23 +183,24 @@ that will be used to sign the session cookies. It is very important that this
 key is kept secret. An attacker who is in possession of this key can generate
 valid user session cookies with any contents.
 
-To set the secret key, use the :func:`set_session_secret_key <microdot_session.set_session_secret_key>` function::
+To set the secret key, use the :func:`set_session_secret_key <microdot.session.set_session_secret_key>`
+function::
 
-    from microdot_session import set_session_secret_key
+    from microdot.session import set_session_secret_key
 
     set_session_secret_key('top-secret!')
 
-To :func:`get_session <microdot_session.get_session>`,
-:func:`update_session <microdot_session.update_session>` and
-:func:`delete_session <microdot_session.delete_session>` functions are used
+To :func:`get_session <microdot.session.get_session>`,
+:func:`update_session <microdot.session.update_session>` and
+:func:`delete_session <microdot.session.delete_session>` functions are used
 inside route handlers to retrieve, store and delete session data respectively.
-The :func:`with_session <microdot_session.with_session>` decorator is provided
+The :func:`with_session <microdot.session.with_session>` decorator is provided
 as a convenient way to retrieve the session at the start of a route handler.
 
 Example::
 
     from microdot import Microdot
-    from microdot_session import set_session_secret_key, with_session, \
+    from microdot.session import set_session_secret_key, with_session, \
         update_session, delete_session
 
     app = Microdot()
@@ -218,8 +234,10 @@ Cross-Origin Resource Sharing (CORS)
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_cors.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_cors.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `cors.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/cors.py>`_
 
    * - Required external dependencies
      - | None
@@ -234,11 +252,11 @@ resources from each other. For example, a web application running on
 ``https://example.com`` can access resources from ``https://api.example.com``.
 
 To enable CORS support, create an instance of the
-:class:`CORS <microdot_cors.CORS>` class and configure the desired options.
+:class:`CORS <microdot.cors.CORS>` class and configure the desired options.
 Example::
 
     from microdot import Microdot
-    from microdot_cors import CORS
+    from microdot.cors import CORS
 
     app = Microdot()
     cors = CORS(app, allowed_origins=['https://example.com'],
@@ -254,8 +272,10 @@ WebSocket Support
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_websocket.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/websocket.py>`_
 
    * - Required external dependencies
      - | None
@@ -265,7 +285,7 @@ WebSocket Support
        | `echo_wsgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo_wsgi.py>`_
 
 The WebSocket extension provides a way for the application to handle WebSocket
-requests. The :func:`websocket <microdot_websocket.with_websocket>` decorator
+requests. The :func:`websocket <microdot.websocket.with_websocket>` decorator
 is used to mark a route handler as a WebSocket handler. The handler receives
 a WebSocket object as a second argument. The WebSocket object provides
 ``send()`` and ``receive()`` methods to send and receive messages respectively.
@@ -280,7 +300,7 @@ Example::
                 ws.send(message)
 
 .. note::
-   An unsupported *microdot_websocket_alt.py* module, with the same
+   An unsupported *microdot.websocket_alt.py* module, with the same
    interface, is also provided. This module uses the native WebSocket support
    in MicroPython that powers the WebREPL, and may provide slightly better
    performance for MicroPython low-end boards. This module is not compatible
@@ -296,10 +316,14 @@ Asynchronous WebSocket
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio.py>`_
-       | `microdot_websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_websocket.py>`_
-       | `microdot_asyncio_websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio_websocket.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/websocket.py>`_
+       |   📂 asyncio/
+       |      📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/__init__.py>`_
+       |      📃 `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/microdot_asyncio.py>`_
+       |      📃 `websocket.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/websocket.py>`_
 
    * - Required external dependencies
      - | CPython: None
@@ -312,9 +336,9 @@ This extension has the same interface as the synchronous WebSocket extension,
 but the ``receive()`` and ``send()`` methods are asynchronous.
 
 .. note::
-   An unsupported *microdot_asgi_websocket.py* module, with the same
+   An unsupported *microdot.asgi.websocket.py* module, with the same
    interface, is also provided. This module must be used instead of
-   *microdot_asyncio_websocket.py* when the ASGI support is used. The
+   *microdot.asyncio.websocket.py* when the ASGI support is used. The
    `echo_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/websocket/echo_asgi.py>`_
    example shows how to use this module.
 
@@ -328,8 +352,10 @@ HTTPS Support
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_ssl.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_ssl.py>`_
+     - | 📂 microdot/
+       |    📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |    📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |    📃 `ssl.py <https://github.com/miguelgrinberg/microdot/tree/main/src/ssl.py>`_
 
    * - Examples
      - | `hello_tls.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/tls/hello_tls.py>`_
@@ -337,13 +363,13 @@ HTTPS Support
 
 The ``run()`` function accepts an optional ``ssl`` argument, through which an
 initialized ``SSLContext`` object can be passed. MicroPython does not currently
-have a ``SSLContext`` implementation, so the ``microdot_ssl`` module provides
+have a ``SSLContext`` implementation, so the ``microdot.ssl`` module provides
 a basic implementation that can be used to create a context.
 
 Example::
 
     from microdot import Microdot
-    from microdot_ssl import create_ssl_context
+    from microdot.ssl import create_ssl_context
 
     app = Microdot()
 
@@ -355,7 +381,7 @@ Example::
     app.run(port=4443, debug=True, ssl=sslctx)
 
 .. note::
-   The ``microdot_ssl`` module is only needed for MicroPython. When used under
+   The ``microdot.ssl`` module is only needed for MicroPython. When used under
    CPython, this module creates a standard ``SSLContext`` instance.
 
 .. note::
@@ -373,8 +399,10 @@ Test Client
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_test_client.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_test_client.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `test_client.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/test_client.py>`_
 
    * - Required external dependencies
      - | None
@@ -385,7 +413,7 @@ send requests into the application.
 Example::
 
     from microdot import Microdot
-    from microdot_test_client import TestClient
+    from microdot.test_client import TestClient
 
     app = Microdot()
 
@@ -398,7 +426,7 @@ Example::
         response = client.get('/')
         assert response.text == 'Hello, World!'
 
-See the documentation for the :class:`TestClient <microdot_test_client.TestClient>`
+See the documentation for the :class:`TestClient <microdot.test_client.TestClient>`
 class for more details.
 
 Asynchronous Test Client
@@ -411,27 +439,31 @@ Asynchronous Test Client
      - | CPython & MicroPython
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio.py>`_
-       | `microdot_test_client.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_test_client.py>`_
-       | `microdot_asyncio_test_client.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio_test_client.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📃 `test_client.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/test_client.py>`_
+       |   📂 asyncio/
+       |      📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/__init__.py>`_
+       |      📃 `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/microdot_asyncio.py>`_
+       |      📃 `test_client.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/test_client.py>`_
 
    * - Required external dependencies
      - | None
 
-Similar to the :class:`TestClient <microdot_test_client.TestClient>` class
+Similar to the :class:`TestClient <microdot.test_client.TestClient>` class
 above, but for asynchronous applications.
 
 Example usage::
 
-    from microdot_asyncio_test_client import TestClient
+    from microdot.asyncio.test_client import TestClient
 
     async def test_app():
         client = TestClient(app)
         response = await client.get('/')
         assert response.text == 'Hello, World!'
 
-See the :class:`reference documentation <microdot_asyncio_test_client.TestClient>`
+See the :class:`reference documentation <microdot.asyncio.test_client.TestClient>`
 for details.
 
 Deploying on a Production Web Server
@@ -452,8 +484,12 @@ Using a WSGI Web Server
      - | CPython only
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_wsgi.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_wsgi.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📂 wsgi/
+       |      📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/wsgi/__init__.py>`_
+       |      📃 `microdot_wsgi.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/wsgi/microdot_wsgi.py>`_
 
    * - Required external dependencies
      - | A WSGI web server, such as `Gunicorn <https://gunicorn.org/>`_.
@@ -462,16 +498,16 @@ Using a WSGI Web Server
      - | `hello_wsgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_wsgi.py>`_
 
 
-The ``microdot_wsgi`` module provides an extended ``Microdot`` class that
+The ``microdot.wsgi`` module provides an extended ``Microdot`` class that
 implements the WSGI protocol and can be used with a compliant WSGI web server
 such as `Gunicorn <https://gunicorn.org/>`_ or
 `uWSGI <https://uwsgi-docs.readthedocs.io/en/latest/>`_.
 
 To use a WSGI web server, the application must import the
-:class:`Microdot <microdot_wsgi.Microdot>` class from the ``microdot_wsgi``
+:class:`Microdot <microdot.wsgi.Microdot>` class from the ``microdot.wsgi``
 module::
 
-    from microdot_wsgi import Microdot
+    from microdot.wsgi import Microdot
 
     app = Microdot()
 
@@ -499,9 +535,15 @@ Using an ASGI Web Server
      - | CPython only
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
-       | `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asyncio.py>`_
-       | `microdot_asgi.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot_asgi.py>`_
+     - | 📂 microdot/
+       |   📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/__init__.py>`_
+       |   📃 `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/microdot.py>`_
+       |   📂 asyncio/
+       |      📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/__init__.py>`_
+       |      📃 `microdot_asyncio.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asyncio/microdot_asyncio.py>`_
+       |   📂 asgi/
+       |      📃 `__init__.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asgi/__init__.py>`_
+       |      📃 `microdot_asgi.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asgi/microdot_asgi.py>`_
 
    * - Required external dependencies
      - | An ASGI web server, such as `Uvicorn <https://uvicorn.org/>`_.
@@ -509,15 +551,15 @@ Using an ASGI Web Server
    * - Examples
      - | `hello_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_asgi.py>`_
 
-The ``microdot_asgi`` module provides an extended ``Microdot`` class that
+The ``microdot.asgi`` module provides an extended ``Microdot`` class that
 implements the ASGI protocol and can be used with a compliant ASGI server such
 as `Uvicorn <https://www.uvicorn.org/>`_.
 
 To use an ASGI web server, the application must import the
-:class:`Microdot <microdot_asgi.Microdot>` class from the ``microdot_asgi``
+:class:`Microdot <microdot.asgi.Microdot>` class from the ``microdot.asgi``
 module::
 
-    from microdot_asgi import Microdot
+    from microdot.asgi import Microdot
 
     app = Microdot()
 

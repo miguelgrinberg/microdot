@@ -1,5 +1,5 @@
 from microdot import Microdot, Response, redirect
-from microdot_session import set_session_secret_key, with_session, \
+from microdot.session import set_session_secret_key, with_session, \
     update_session, delete_session
 
 BASE_TEMPLATE = '''<!doctype html>

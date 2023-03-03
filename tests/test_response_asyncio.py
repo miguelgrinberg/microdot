@@ -4,7 +4,7 @@ except ImportError:
     import asyncio
 
 import unittest
-from microdot_asyncio import Response
+from microdot.asyncio import Response
 from tests.mock_socket import FakeStreamAsync
 
 

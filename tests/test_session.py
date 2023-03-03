@@ -4,11 +4,11 @@ except ImportError:
     import asyncio
 import unittest
 from microdot import Microdot
-from microdot_asyncio import Microdot as MicrodotAsync
-from microdot_session import set_session_secret_key, get_session, \
+from microdot.asyncio import Microdot as MicrodotAsync
+from microdot.session import set_session_secret_key, get_session, \
     update_session, delete_session, with_session
-from microdot_test_client import TestClient
-from microdot_asyncio_test_client import TestClient as TestClientAsync
+from microdot.test_client import TestClient
+from microdot.asyncio.test_client import TestClient as TestClientAsync
 
 set_session_secret_key('top-secret!')
 

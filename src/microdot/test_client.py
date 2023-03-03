@@ -2,7 +2,7 @@ from io import BytesIO
 import json
 from microdot import Request, Response, NoCaseDict
 try:
-    from microdot_websocket import WebSocket
+    from microdot.websocket import WebSocket
 except:  # pragma: no cover  # noqa: E722
     WebSocket = None
 
@@ -173,7 +173,7 @@ class TestClient:
         :param headers: A dictionary of headers to send with the request.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.test_client.TestResponse>` object.
         """
         return self.request('GET', path, headers=headers)
 
@@ -187,7 +187,7 @@ class TestClient:
                      to bytes as UTF-8. A bytes body is sent as-is.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.test_client.TestResponse>` object.
         """
         return self.request('POST', path, headers=headers, body=body)
 
@@ -201,7 +201,7 @@ class TestClient:
                      to bytes as UTF-8. A bytes body is sent as-is.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.test_client.TestResponse>` object.
         """
         return self.request('PUT', path, headers=headers, body=body)
 
@@ -215,7 +215,7 @@ class TestClient:
                      to bytes as UTF-8. A bytes body is sent as-is.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.test_client.TestResponse>` object.
         """
         return self.request('PATCH', path, headers=headers, body=body)
 
@@ -226,7 +226,7 @@ class TestClient:
         :param headers: A dictionary of headers to send with the request.
 
         This method returns a
-        :class:`TestResponse <microdot_test_client.TestResponse>` object.
+        :class:`TestResponse <microdot.test_client.TestResponse>` object.
         """
         return self.request('DELETE', path, headers=headers)
 
