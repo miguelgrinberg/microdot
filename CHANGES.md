@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 1.2.4** - 2023-03-03
+
+- One more attempt to correct build issues ([commit](https://github.com/miguelgrinberg/microdot/commit/cb39898829f4edc233ab4e7ba3f7ef3c5c50f196))
+
 **Release 1.2.3** - 2023-03-03
 
 - Corrected a problem with previous build.
