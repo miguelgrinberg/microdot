@@ -525,6 +525,10 @@ class Response():
     #: ``Content-Type`` header.
     default_content_type = 'text/plain'
 
+    #: The default cache control max age used by :meth:`send_file`. A value
+    #: of ``None`` means that no ``Cache-Control`` header is added.
+    default_send_file_max_age = None
+
     #: Special response used to signal that a response does not need to be
     #: written to the client. Used to exit WebSocket connections cleanly.
     already_handled = None
@@ -651,7 +655,8 @@ class Response():
         return cls(status_code=status_code, headers={'Location': location})
 
     @classmethod
-    def send_file(cls, filename, status_code=200, content_type=None):
+    def send_file(cls, filename, status_code=200, content_type=None,
+                  max_age=None):
         """Send file contents in a response.
 
         :param filename: The filename of the file.
@@ -660,6 +665,10 @@ class Response():
         :param content_type: The ``Content-Type`` header to use in the
                              response. If omitted, it is generated
                              automatically from the file extension.
+        :param max_age: The ``Cache-Control`` header's ``max-age`` value in
+                        seconds. If omitted, the value of the
+                        :attr:`Response.default_send_file_max_age` attribute is
+                        used.
 
         Security note: The filename is assumed to be trusted. Never pass
         filenames provided by the user without validating and sanitizing them
@@ -671,9 +680,15 @@ class Response():
                 content_type = Response.types_map[ext]
             else:
                 content_type = 'application/octet-stream'
+        headers = {'Content-Type': content_type}
+
+        if max_age is None:
+            max_age = cls.default_send_file_max_age
+        if max_age is not None:
+            headers['Cache-Control'] = 'max-age={}'.format(max_age)
+
         f = open(filename, 'rb')
-        return cls(body=f, status_code=status_code,
-                   headers={'Content-Type': content_type})
+        return cls(body=f, status_code=status_code, headers=headers)
 
 
 class URLPattern():

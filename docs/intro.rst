@@ -662,6 +662,15 @@ object for a file::
         def index(request):
             return send_file('/static/index.html')
 
+A suggested caching duration can be returned to the client in the `max_age`
+argument::
+
+        from microdot import send_file
+
+        @app.get('/')
+        def image(request):
+            return send_file('/static/image.jpg', max_age=3600)  # in seconds
+
 .. note::
    Unlike other web frameworks, Microdot does not automatically configure a
    route to serve static files. The following is an example route that can be
@@ -673,7 +682,7 @@ object for a file::
             if '..' in path:
                 # directory traversal is not allowed
                 return 'Not found', 404
-            return send_file('static/' + path)
+            return send_file('static/' + path, max_age=86400)
 
 Streaming Responses
 ^^^^^^^^^^^^^^^^^^^

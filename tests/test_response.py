@@ -235,6 +235,21 @@ class TestResponse(unittest.TestCase):
             b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
         Response.send_file_buffer_size = original_buffer_size
 
+    def test_send_file_max_age(self):
+        res = Response.send_file('tests/files/test.txt', max_age=123)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Cache-Control'], 'max-age=123')
+
+        Response.default_send_file_max_age = 456
+        res = Response.send_file('tests/files/test.txt')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Cache-Control'], 'max-age=456')
+        res = Response.send_file('tests/files/test.txt', max_age=123)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Cache-Control'], 'max-age=123')
+
+        Response.default_send_file_max_age = None
+
     def test_default_content_type(self):
         original_content_type = Response.default_content_type
         res = Response('foo')
