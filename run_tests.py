@@ -6,4 +6,5 @@ sys.path.insert(3, 'libs/micropython')
 
 import unittest
 
-unittest.main('tests')
+if not unittest.main('tests').wasSuccessful():
+    sys.exit(1)
