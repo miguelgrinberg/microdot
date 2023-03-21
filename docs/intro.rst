@@ -662,7 +662,7 @@ object for a file::
         def index(request):
             return send_file('/static/index.html')
 
-A suggested caching duration can be returned to the client in the `max_age`
+A suggested caching duration can be returned to the client in the ``max_age``
 argument::
 
         from microdot import send_file
