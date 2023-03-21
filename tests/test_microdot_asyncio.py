@@ -101,6 +101,48 @@ class TestMicrodotAsync(unittest.TestCase):
         self.assertEqual(res.body, b'bar-async')
         self.assertEqual(res.json, None)
 
+    def test_head_request(self):
+        app = Microdot()
+
+        @app.route('/foo')
+        def index(req):
+            return 'foo'
+
+        mock_socket.clear_requests()
+        fd = mock_socket.add_request('HEAD', '/foo')
+        self._add_shutdown(app)
+        app.run()
+
+        self.assertTrue(fd.response.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertIn(b'Content-Length: 3\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n'))
+
+    def test_options_request(self):
+        app = Microdot()
+
+        @app.route('/', methods=['GET', 'DELETE'])
+        async def index(req):
+            return 'foo'
+
+        @app.post('/')
+        async def index_post(req):
+            return 'bar'
+
+        @app.route('/foo', methods=['POST', 'PUT'])
+        async def foo(req):
+            return 'baz'
+
+        client = TestClient(app)
+        res = self._run(client.request('OPTIONS', '/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Allow'],
+                         'GET, DELETE, POST, HEAD, OPTIONS')
+        res = self._run(client.request('OPTIONS', '/foo'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Allow'], 'POST, PUT, OPTIONS')
+
     def test_empty_request(self):
         app = Microdot()
 

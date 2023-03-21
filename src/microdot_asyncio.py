@@ -151,10 +151,11 @@ class Response(BaseResponse):
             await stream.awrite(b'\r\n')
 
             # body
-            async for body in self.body_iter():
-                if isinstance(body, str):  # pragma: no cover
-                    body = body.encode()
-                await stream.awrite(body)
+            if not self.is_head:
+                async for body in self.body_iter():
+                    if isinstance(body, str):  # pragma: no cover
+                        body = body.encode()
+                    await stream.awrite(body)
         except OSError as exc:  # pragma: no cover
             if exc.errno in MUTED_SOCKET_ERRORS or \
                     exc.args[0] == 'Connection lost':
@@ -385,6 +386,8 @@ class Microdot(BaseMicrodot):
                             res = await self._invoke_handler(
                                 handler, req, res) or res
                         after_request_handled = True
+                    elif isinstance(f, dict):
+                        res = Response(headers=f)
                     elif f in self.error_handlers:
                         res = await self._invoke_handler(
                             self.error_handlers[f], req)
@@ -431,6 +434,7 @@ class Microdot(BaseMicrodot):
             for handler in self.after_error_request_handlers:
                 res = await self._invoke_handler(
                     handler, req, res) or res
+        res.is_head = (req and req.method == 'HEAD')
         return res
 
     async def _invoke_handler(self, f_or_coro, *args, **kwargs):

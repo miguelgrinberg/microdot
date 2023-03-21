@@ -548,6 +548,7 @@ class Response():
         else:
             # this applies to bytes, file-like objects or generators
             self.body = body
+        self.is_head = False
 
     def set_cookie(self, cookie, value, path=None, domain=None, expires=None,
                    max_age=None, secure=False, http_only=False):
@@ -612,19 +613,20 @@ class Response():
         stream.write(b'\r\n')
 
         # body
-        can_flush = hasattr(stream, 'flush')
-        try:
-            for body in self.body_iter():
-                if isinstance(body, str):  # pragma: no cover
-                    body = body.encode()
-                stream.write(body)
-                if can_flush:  # pragma: no cover
-                    stream.flush()
-        except OSError as exc:  # pragma: no cover
-            if exc.errno in MUTED_SOCKET_ERRORS:
-                pass
-            else:
-                raise
+        if not self.is_head:
+            can_flush = hasattr(stream, 'flush')
+            try:
+                for body in self.body_iter():
+                    if isinstance(body, str):  # pragma: no cover
+                        body = body.encode()
+                    stream.write(body)
+                    if can_flush:  # pragma: no cover
+                        stream.flush()
+            except OSError as exc:  # pragma: no cover
+                if exc.errno in MUTED_SOCKET_ERRORS:
+                    pass
+                else:
+                    raise
 
     def body_iter(self):
         if self.body:
@@ -793,6 +795,7 @@ class Microdot():
         self.after_error_request_handlers = []
         self.error_handlers = {}
         self.shutdown_requested = False
+        self.options_handler = self.default_options_handler
         self.debug = False
         self.server = None
 
@@ -828,7 +831,8 @@ class Microdot():
         """
         def decorated(f):
             self.url_map.append(
-                (methods or ['GET'], URLPattern(url_pattern), f))
+                ([m.upper() for m in (methods or ['GET'])],
+                 URLPattern(url_pattern), f))
             return f
         return decorated
 
@@ -1114,16 +1118,31 @@ class Microdot():
         self.shutdown_requested = True
 
     def find_route(self, req):
+        method = req.method.upper()
+        if method == 'OPTIONS' and self.options_handler:
+            return self.options_handler(req)
+        if method == 'HEAD':
+            method = 'GET'
         f = 404
         for route_methods, route_pattern, route_handler in self.url_map:
             req.url_args = route_pattern.match(req.path)
             if req.url_args is not None:
-                if req.method in route_methods:
+                if method in route_methods:
                     f = route_handler
                     break
                 else:
                     f = 405
         return f
+
+    def default_options_handler(self, req):
+        allow = []
+        for route_methods, route_pattern, route_handler in self.url_map:
+            if route_pattern.match(req.path) is not None:
+                allow.extend(route_methods)
+        if 'GET' in allow:
+            allow.append('HEAD')
+        allow.append('OPTIONS')
+        return {'Allow': ', '.join(allow)}
 
     def handle_request(self, sock, addr):
         if Request.socket_read_timeout and \
@@ -1199,6 +1218,8 @@ class Microdot():
                         for handler in req.after_request_handlers:
                             res = handler(req, res) or res
                         after_request_handled = True
+                    elif isinstance(f, dict):
+                        res = Response(headers=f)
                     elif f in self.error_handlers:
                         res = self.error_handlers[f](req)
                     else:
@@ -1242,6 +1263,7 @@ class Microdot():
         if not after_request_handled:
             for handler in self.after_error_request_handlers:
                 res = handler(req, res) or res
+        res.is_head = (req and req.method == 'HEAD')
         return res
 
 

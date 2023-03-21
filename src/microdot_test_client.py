@@ -58,6 +58,7 @@ class TestResponse:
         test_res._initialize_body(res)
         test_res._process_text_body()
         test_res._process_json_body()
+        test_res.is_head = res.is_head
         return test_res
 
 
