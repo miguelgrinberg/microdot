@@ -250,6 +250,24 @@ class TestResponse(unittest.TestCase):
 
         Response.default_send_file_max_age = None
 
+    def test_send_file_compressed(self):
+        res = Response.send_file('tests/files/test.txt', compressed=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Encoding'], 'gzip')
+
+        res = Response.send_file('tests/files/test.txt', compressed='foo')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'], 'text/plain')
+        self.assertEqual(res.headers['Content-Encoding'], 'foo')
+
+        res = Response.send_file('tests/files/test', compressed=True,
+                                 file_extension='.gz')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'application/octet-stream')
+        self.assertEqual(res.headers['Content-Encoding'], 'gzip')
+
     def test_default_content_type(self):
         original_content_type = Response.default_content_type
         res = Response('foo')

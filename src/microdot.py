@@ -656,7 +656,8 @@ class Response():
 
     @classmethod
     def send_file(cls, filename, status_code=200, content_type=None,
-                  max_age=None):
+                  stream=None, max_age=None, compressed=False,
+                  file_extension=''):
         """Send file contents in a response.
 
         :param filename: The filename of the file.
@@ -664,11 +665,25 @@ class Response():
                             default is 302.
         :param content_type: The ``Content-Type`` header to use in the
                              response. If omitted, it is generated
-                             automatically from the file extension.
+                             automatically from the file extension of the
+                             ``filename`` parameter.
+        :param stream: A file-like object to read the file contents from. If
+                       a stream is given, the ``filename`` parameter is only
+                       used when generating the ``Content-Type`` header.
         :param max_age: The ``Cache-Control`` header's ``max-age`` value in
                         seconds. If omitted, the value of the
                         :attr:`Response.default_send_file_max_age` attribute is
                         used.
+        :param compressed: Whether the file is compressed. If ``True``, the
+                           ``Content-Encoding`` header is set to ``gzip``. A
+                           string with the header value can also be passed.
+                           Note that when using this option the file must have
+                           been compressed beforehand. This option only sets
+                           the header.
+        :param file_extension: A file extension to append to the ``filename``
+                               parameter when opening the file, including the
+                               dot. The extension given here is not considered
+                               when generating the ``Content-Type`` header.
 
         Security note: The filename is assumed to be trusted. Never pass
         filenames provided by the user without validating and sanitizing them
@@ -687,7 +702,11 @@ class Response():
         if max_age is not None:
             headers['Cache-Control'] = 'max-age={}'.format(max_age)
 
-        f = open(filename, 'rb')
+        if compressed:
+            headers['Content-Encoding'] = compressed \
+                if isinstance(compressed, str) else 'gzip'
+
+        f = stream or open(filename + file_extension, 'rb')
         return cls(body=f, status_code=status_code, headers=headers)
 
 
