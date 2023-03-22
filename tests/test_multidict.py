@@ -58,3 +58,11 @@ class TestMultiDict(unittest.TestCase):
         del d['oNE']
         self.assertEqual(list(d.items()), [('two', 5)])
         self.assertEqual(list(d.values()), [5])
+
+        d.update({'oNe': 1, 'two': 2, 'three': 3})
+        self.assertEqual(d['one'], 1)
+        self.assertEqual(d['ONE'], 1)
+        self.assertEqual(d['two'], 2)
+        self.assertEqual(d['TWO'], 2)
+        self.assertEqual(d['three'], 3)
+        self.assertEqual(d['THREE'], 3)

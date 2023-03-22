@@ -146,6 +146,10 @@ class NoCaseDict(dict):
         kl = key.lower()
         return super().get(self.keymap.get(kl, kl), default)
 
+    def update(self, other_dict):
+        for key, value in other_dict.items():
+            self[key] = value
+
 
 def mro(cls):  # pragma: no cover
     """Return the method resolution order of a class.
