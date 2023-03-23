@@ -52,6 +52,12 @@ API Reference
 .. automodule:: microdot_session
    :members:
 
+``microdot_cors`` module
+------------------------
+
+.. automodule:: microdot_cors
+   :members:
+
 ``microdot_websocket`` module
 ------------------------------
 
