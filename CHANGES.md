@@ -1,5 +1,15 @@
 # Microdot change log
 
+**Release 1.3.0** - 2023-04-08
+
+- Cross-Origin Resource Sharing (CORS) extension [#45](https://github.com/miguelgrinberg/microdot/issues/45) ([commit](https://github.com/miguelgrinberg/microdot/commit/67798f7dbffb30018ab4b62a9aaa297f63bc9e64))
+- Respond to `HEAD` and `OPTIONS` requests ([commit](https://github.com/miguelgrinberg/microdot/commit/6a31f89673518e79fef5659c04e609b7976a5e34))
+- Tolerate slightly invalid formats in query strings [#126](https://github.com/miguelgrinberg/microdot/issues/126) ([commit](https://github.com/miguelgrinberg/microdot/commit/a1b061656fa19dae583951596b0f1f0603652a56))
+- Support compressed files in `send_file()` [#93](https://github.com/miguelgrinberg/microdot/issues/93) ([commit](https://github.com/miguelgrinberg/microdot/commit/daf1001ec55ab38e6cdfee4931729a3b7506858b))
+- Add `max_age` argument to `send_file()` ([commit](https://github.com/miguelgrinberg/microdot/commit/e684ee32d91d3e2ab9569bb5fd342986c010ffeb))
+- Add `update()` method to `NoCaseDict` class ([commit](https://github.com/miguelgrinberg/microdot/commit/ea6766cea96b756b36ed777f9c1b6a6680db09ba))
+- Set exit code to 1 for failed MicroPython test runs ([commit](https://github.com/miguelgrinberg/microdot/commit/a350e8fd1e55fac12c9e5b909cfa82d880b177ef))
+
 **Release 1.2.4** - 2023-03-03
 
 - One more attempt to correct build issues ([commit](https://github.com/miguelgrinberg/microdot/commit/cb39898829f4edc233ab4e7ba3f7ef3c5c50f196))
