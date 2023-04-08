@@ -404,11 +404,11 @@ class Request():
         if len(urlencoded) > 0:
             if isinstance(urlencoded, str):
                 for k, v in [pair.split('=', 1)
-                             for pair in urlencoded.split('&')]:
+                             for pair in urlencoded.split('&') if pair]:
                     data[urldecode_str(k)] = urldecode_str(v)
             elif isinstance(urlencoded, bytes):  # pragma: no branch
                 for k, v in [pair.split(b'=', 1)
-                             for pair in urlencoded.split(b'&')]:
+                             for pair in urlencoded.split(b'&') if pair]:
                     data[urldecode_bytes(k)] = urldecode_bytes(v)
         return data
 

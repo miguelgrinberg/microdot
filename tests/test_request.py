@@ -45,6 +45,13 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(req.args, MultiDict(
             {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
 
+    def test_badly_formatted_args(self):
+        fd = get_request_fd('GET', '/?&foo=bar&abc=def&&&x=%2f%%')
+        req = Request.create('app', fd, 'addr')
+        self.assertEqual(req.query_string, '&foo=bar&abc=def&&&x=%2f%%')
+        self.assertEqual(req.args, MultiDict(
+            {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
+
     def test_json(self):
         fd = get_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json'}, body='{"foo":"bar"}')
