@@ -17,7 +17,7 @@ class WebSocket(BaseWebSocket):
             opcode, payload = await self._read_frame()
             send_opcode, data = self._process_websocket_frame(opcode, payload)
             if send_opcode:  # pragma: no cover
-                await self.send(send_opcode, data)
+                await self.send(data, send_opcode)
             elif data:  # pragma: no branch
                 return data
 
