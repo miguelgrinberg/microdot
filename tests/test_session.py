@@ -5,23 +5,23 @@ except ImportError:
 import unittest
 from microdot import Microdot
 from microdot.asyncio import Microdot as MicrodotAsync
-from microdot.session import set_session_secret_key, get_session, \
-    update_session, delete_session, with_session
+from microdot.session import Session, with_session
 from microdot.test_client import TestClient
 from microdot.asyncio.test_client import TestClient as TestClientAsync
 
-set_session_secret_key('top-secret!')
+session_ext = Session(secret_key='top-secret!')
 
 
 class TestSession(unittest.TestCase):
     def test_session(self):
         app = Microdot()
+        session_ext.initialize(app)
         client = TestClient(app)
 
         @app.get('/')
         def index(req):
-            session = get_session(req)
-            session2 = get_session(req)
+            session = session_ext.get(req)
+            session2 = session_ext.get(req)
             session2['foo'] = 'bar'
             self.assertEqual(session['foo'], 'bar')
             return str(session.get('name'))
@@ -32,13 +32,16 @@ class TestSession(unittest.TestCase):
             return str(session.get('name'))
 
         @app.post('/set')
-        def set_session(req):
-            update_session(req, {'name': 'joe'})
+        @with_session
+        def save_session(req, session):
+            session['name'] = 'joe'
+            session.save()
             return 'OK'
 
         @app.post('/del')
-        def del_session(req):
-            delete_session(req)
+        @with_session
+        def delete_session(req, session):
+            session.delete()
             return 'OK'
 
         res = client.get('/')
@@ -68,12 +71,13 @@ class TestSession(unittest.TestCase):
 
     def test_session_async(self):
         app = MicrodotAsync()
+        session_ext.initialize(app, secret_key='some-other-secret')
         client = TestClientAsync(app)
 
         @app.get('/')
         async def index(req):
-            session = get_session(req)
-            session2 = get_session(req)
+            session = session_ext.get(req)
+            session2 = session_ext.get(req)
             session2['foo'] = 'bar'
             self.assertEqual(session['foo'], 'bar')
             return str(session.get('name'))
@@ -84,13 +88,16 @@ class TestSession(unittest.TestCase):
             return str(session.get('name'))
 
         @app.post('/set')
-        async def set_session(req):
-            update_session(req, {'name': 'joe'})
+        @with_session
+        async def save_session(req, session):
+            session['name'] = 'joe'
+            session.save()
             return 'OK'
 
         @app.post('/del')
-        async def del_session(req):
-            delete_session(req)
+        @with_session
+        async def delete_session(req, session):
+            session.delete()
             return 'OK'
 
         res = self._run(client.get('/'))
@@ -115,17 +122,15 @@ class TestSession(unittest.TestCase):
         self.assertEqual(res.text, 'None')
 
     def test_session_no_secret_key(self):
-        set_session_secret_key(None)
         app = Microdot()
+        session_ext = Session(app)
         client = TestClient(app)
 
         @app.get('/')
         def index(req):
-            self.assertRaises(ValueError, get_session, req)
-            self.assertRaises(ValueError, update_session, req, {})
+            self.assertRaises(ValueError, session_ext.get, req)
+            self.assertRaises(ValueError, session_ext.update, req, {})
             return ''
 
         res = client.get('/')
         self.assertEqual(res.status_code, 200)
-
-        set_session_secret_key('top-secret!')

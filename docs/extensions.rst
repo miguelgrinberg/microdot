@@ -178,33 +178,56 @@ user sessions. The session is stored as a signed cookie in the client's
 browser, in `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
 format.
 
-To work with user sessions, the application first must configure the secret key
-that will be used to sign the session cookies. It is very important that this
-key is kept secret. An attacker who is in possession of this key can generate
-valid user session cookies with any contents.
-
-To set the secret key, use the :func:`set_session_secret_key <microdot.session.set_session_secret_key>`
-function::
-
-    from microdot.session import set_session_secret_key
-
-    set_session_secret_key('top-secret!')
-
-To :func:`get_session <microdot.session.get_session>`,
-:func:`update_session <microdot.session.update_session>` and
-:func:`delete_session <microdot.session.delete_session>` functions are used
-inside route handlers to retrieve, store and delete session data respectively.
-The :func:`with_session <microdot.session.with_session>` decorator is provided
-as a convenient way to retrieve the session at the start of a route handler.
-
+To work with user sessions, create an instance of the
+:class:`Session <microdot.session.Session>` class and configure a secret key
+that will be used to protect user sessions with a cryptographic signature.
 Example::
 
     from microdot import Microdot
-    from microdot.session import set_session_secret_key, with_session, \
-        update_session, delete_session
+    from microdot.session import Session
 
     app = Microdot()
-    set_session_secret_key('top-secret')
+    Session(app, secret_key='top-secret!')
+
+When the application is created in a factory function, the session extension
+can be initialized in two steps::
+
+    from microdot import Microdot
+    from microdot.session import Session
+
+    session = Session(secret_key='top-secret!')
+
+    def create_app():
+        app = Microdot()
+        session.initialize(app)
+        return app
+
+It is very important that the secret key is well protected. An attacker who is
+in possession of this key can generate user session cookies with any contents
+that the server will accept as valid.
+
+The :func:`with_session <microdot.session.with_session>` decorator is provided
+as a convenient way to retrieve the session and add it to the route function as
+an additional argument. Example::
+
+    from microdot.session import with_session
+
+    @app.route('/')
+    @with_session
+    def index(request, session):
+        # ...
+
+The session object is a standard Python dictionary that is extended with
+:func:`save() <microdot.session.SessionDict.save>` and
+:func:`delete() <microdot.session.SessionDict.delete>` methods.
+
+The following example demonstrates a simple log in system::
+
+    from microdot import Microdot
+    from microdot.session import Session, with_session
+
+    app = Microdot()
+    Session(app, secret_key='top-secret')
 
     @app.route('/', methods=['GET', 'POST'])
     @with_session
@@ -212,7 +235,8 @@ Example::
         username = session.get('username')
         if req.method == 'POST':
             username = req.form.get('username')
-            update_session(req, {'username': username})
+            session['username'] = username
+            session.save()
             return redirect('/')
         if username is None:
             return 'Not logged in'
@@ -220,8 +244,9 @@ Example::
             return 'Logged in as ' + username
 
     @app.post('/logout')
-    def logout(req):
-        delete_session(req)
+    @with_session
+    def logout(req, session):
+        session.delete()
         return redirect('/')
 
 Cross-Origin Resource Sharing (CORS)
@@ -261,6 +286,19 @@ Example::
     app = Microdot()
     cors = CORS(app, allowed_origins=['https://example.com'],
                 allow_credentials=True)
+
+When the application is created in a factory function, this extension can be
+initialized in two steps::
+
+    from microdot import Microdot
+    from microdot.cors import CORS
+
+    cors = CORS(allowed_origins=['https://example.com'],
+                allow_credentials=True)
+
+    def create_app():
+        app = Microdot()
+        cors.initialize(app)
 
 WebSocket Support
 ~~~~~~~~~~~~~~~~~

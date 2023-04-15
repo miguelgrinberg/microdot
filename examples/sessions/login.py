@@ -1,6 +1,5 @@
 from microdot import Microdot, Response, redirect
-from microdot.session import set_session_secret_key, with_session, \
-    update_session, delete_session
+from microdot.session import Session, with_session
 
 BASE_TEMPLATE = '''<!doctype html>
 <html>
@@ -29,7 +28,7 @@ LOGGED_IN = '''<p>Hello <b>{username}</b>!</p>
 </form>'''
 
 app = Microdot()
-set_session_secret_key('top-secret')
+Session(app, secret_key='top-secret')
 Response.default_content_type = 'text/html'
 
 
@@ -40,7 +39,8 @@ def index(req, session):
     username = session.get('username')
     if req.method == 'POST':
         username = req.form.get('username')
-        update_session(req, {'username': username})
+        session['username'] = username
+        session.save()
         return redirect('/')
     if username is None:
         return BASE_TEMPLATE.format(content=LOGGED_OUT)
@@ -50,8 +50,9 @@ def index(req, session):
 
 
 @app.post('/logout')
-def logout(req):
-    delete_session(req)
+@with_session
+def logout(req, session):
+    session.delete()
     return redirect('/')
 
 
