@@ -308,8 +308,9 @@ class Request():
 
     #: Specify a suggested read timeout to use when reading the request. Set to
     #: 0 to disable the use of a timeout. This timeout should be considered a
-    #: suggestion only, as some platforms may not support it.
-    socket_read_timeout = 0.1
+    #: suggestion only, as some platforms may not support it. The default is
+    #: 1 second.
+    socket_read_timeout = 1
 
     class G:
         pass
