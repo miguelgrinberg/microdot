@@ -7,6 +7,7 @@ htmldoc = '''<!DOCTYPE html>
 <html>
     <head>
         <title>Microdot Example Page</title>
+        <meta charset="UTF-8">
     </head>
     <body>
         <div>

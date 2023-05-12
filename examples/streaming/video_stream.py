@@ -19,6 +19,7 @@ def index(request):
 <html>
   <head>
     <title>Microdot Video Streaming</title>
+    <meta charset="UTF-8">
   </head>
   <body>
     <h1>Microdot Video Streaming</h1>

@@ -6,6 +6,7 @@ BASE_TEMPLATE = '''<!doctype html>
 <html>
   <head>
     <title>Microdot login example</title>
+    <meta charset="UTF-8">
   </head>
   <body>
     <h1>Microdot login example</h1>
@@ -17,7 +18,7 @@ LOGGED_OUT = '''<p>You are not logged in.</p>
 <form method="POST">
   <p>
     Username:
-    <input type="text" name="username" autofocus />
+    <input name="username" autofocus />
   </p>
   <input type="submit" value="Submit" />
 </form>'''
