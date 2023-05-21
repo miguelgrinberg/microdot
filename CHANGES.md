@@ -1,5 +1,13 @@
 # Microdot change log
 
+**Release 1.3.1** - 2023-05-21
+
+- Support negative numbers for int path components [#137](https://github.com/miguelgrinberg/microdot/issues/137) ([commit](https://github.com/miguelgrinberg/microdot/commit/a0dd7c8ab6d681932324e56ed101aba861a105a0))
+- Use a more conservative default for socket timeout [#130](https://github.com/miguelgrinberg/microdot/issues/130) ([commit](https://github.com/miguelgrinberg/microdot/commit/239cf4ff37268a7e2467b93be44fe9f91cee8aee))
+- More robust check for socket timeout error code [#106](https://github.com/miguelgrinberg/microdot/issues/106) ([commit](https://github.com/miguelgrinberg/microdot/commit/efec9f14be7b6f3451e4d1d0fe7e528ce6ca74dc))
+- WebSocket error when handling PING packet [#129](https://github.com/miguelgrinberg/microdot/issues/129) ([commit](https://github.com/miguelgrinberg/microdot/commit/87cd098f66e24bed6bbad29b1490a129e355bbb3))
+- Explicitly set UTF-8 encoding for HTML files in examples [#132](https://github.com/miguelgrinberg/microdot/issues/132) ([commit](https://github.com/miguelgrinberg/microdot/commit/f81de6d9582f4905b9c2735d3c639b92d7e77994))
+
 **Release 1.3.0** - 2023-04-08
 
 - Cross-Origin Resource Sharing (CORS) extension [#45](https://github.com/miguelgrinberg/microdot/issues/45) ([commit](https://github.com/miguelgrinberg/microdot/commit/67798f7dbffb30018ab4b62a9aaa297f63bc9e64))
