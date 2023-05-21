@@ -736,7 +736,7 @@ class URLPattern():
                 if type_ == 'string':
                     pattern = '[^/]+'
                 elif type_ == 'int':
-                    pattern = '\\d+'
+                    pattern = '-?\\d+'
                 elif type_ == 'path':
                     pattern = '.+'
                 elif type_.startswith('re:'):

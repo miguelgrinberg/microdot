@@ -56,10 +56,12 @@ class TestURLPattern(unittest.TestCase):
 
         p = URLPattern('/users/<int:id>/<int:id2>/')
         self.assertEqual(p.match('/users/123/456/'), {'id': 123, 'id2': 456})
+        self.assertEqual(p.match('/users/123/-456/'), {'id': 123, 'id2': -456})
         self.assertIsNone(p.match('/users/'))
-        self.assertIsNone(p.match('/users/123/456'))
+        self.assertIsNone(p.match('/users/123/-456'))
         self.assertIsNone(p.match('/users/123/abc/'))
-        self.assertIsNone(p.match('/users/123/456/abc'))
+        self.assertIsNone(p.match('/users/123/-456/abc'))
+        self.assertIsNone(p.match('/users/--123/456/'))
 
     def test_path_argument(self):
         p = URLPattern('/users/<path:path>')
