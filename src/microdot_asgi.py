@@ -59,8 +59,9 @@ class Microdot(BaseMicrodot):
         headers = NoCaseDict()
         content_length = 0
         for key, value in scope.get('headers', []):
-            headers[key] = value
-            if key.lower() == 'content-length':
+            key = key.decode().title()
+            headers[key] = value.decode()
+            if key == 'Content-Length':
                 content_length = int(value)
 
         if content_length and content_length <= Request.max_body_length:
