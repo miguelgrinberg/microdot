@@ -1,5 +1,10 @@
 # Microdot change log
 
+**Release 1.3.2** - 2023-06-13
+
+- In ASGI, return headers as strings and not binary [#144](https://github.com/miguelgrinberg/microdot/issues/144) ([commit](https://github.com/miguelgrinberg/microdot/commit/e92310fa55bbffcdcbb33f560e27c3579d7ac451))
+- Incorrect import in `static_async.py` example ([commit](https://github.com/miguelgrinberg/microdot/commit/c07a53943508e64baea160748e67efc92e75b036))
+
 **Release 1.3.1** - 2023-05-21
 
 - Support negative numbers for int path components [#137](https://github.com/miguelgrinberg/microdot/issues/137) ([commit](https://github.com/miguelgrinberg/microdot/commit/a0dd7c8ab6d681932324e56ed101aba861a105a0))
