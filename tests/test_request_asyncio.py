@@ -49,11 +49,12 @@ class TestRequestAsync(unittest.TestCase):
         self.assertEqual(req.body, b'aaa')
 
     def test_args(self):
-        fd = get_async_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
+        fd = get_async_request_fd('GET', '/?foo=bar&abc=def&foo&x=%2f%%')
         req = _run(Request.create('app', fd, 'writer', 'addr'))
-        self.assertEqual(req.query_string, 'foo=bar&abc=def&x=%2f%%')
-        self.assertEqual(req.args, MultiDict(
-            {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
+        self.assertEqual(req.query_string, 'foo=bar&abc=def&foo&x=%2f%%')
+        md = MultiDict({'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        md['foo'] = ''
+        self.assertEqual(req.args, md)
 
     def test_json(self):
         fd = get_async_request_fd('GET', '/foo', headers={

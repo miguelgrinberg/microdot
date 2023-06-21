@@ -404,13 +404,15 @@ class Request():
         data = MultiDict()
         if len(urlencoded) > 0:
             if isinstance(urlencoded, str):
-                for k, v in [pair.split('=', 1)
-                             for pair in urlencoded.split('&') if pair]:
-                    data[urldecode_str(k)] = urldecode_str(v)
+                for kv in [pair.split('=', 1)
+                           for pair in urlencoded.split('&') if pair]:
+                    data[urldecode_str(kv[0])] = urldecode_str(kv[1]) \
+                        if len(kv) > 1 else ''
             elif isinstance(urlencoded, bytes):  # pragma: no branch
-                for k, v in [pair.split(b'=', 1)
-                             for pair in urlencoded.split(b'&') if pair]:
-                    data[urldecode_bytes(k)] = urldecode_bytes(v)
+                for kv in [pair.split(b'=', 1)
+                           for pair in urlencoded.split(b'&') if pair]:
+                    data[urldecode_bytes(kv[0])] = urldecode_bytes(kv[1]) \
+                        if len(kv) > 1 else b''
         return data
 
     @property

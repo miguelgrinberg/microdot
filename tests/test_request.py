@@ -39,11 +39,12 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(req.body, b'aaa')
 
     def test_args(self):
-        fd = get_request_fd('GET', '/?foo=bar&abc=def&x=%2f%%')
+        fd = get_request_fd('GET', '/?foo=bar&abc=def&foo&x=%2f%%')
         req = Request.create('app', fd, 'addr')
-        self.assertEqual(req.query_string, 'foo=bar&abc=def&x=%2f%%')
-        self.assertEqual(req.args, MultiDict(
-            {'foo': 'bar', 'abc': 'def', 'x': '/%%'}))
+        self.assertEqual(req.query_string, 'foo=bar&abc=def&foo&x=%2f%%')
+        md = MultiDict({'foo': 'bar', 'abc': 'def', 'x': '/%%'})
+        md['foo'] = ''
+        self.assertEqual(req.args, md)
 
     def test_badly_formatted_args(self):
         fd = get_request_fd('GET', '/?&foo=bar&abc=def&&&x=%2f%%')
