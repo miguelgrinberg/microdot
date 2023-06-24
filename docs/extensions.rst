@@ -486,6 +486,9 @@ web application using the Gunicorn web server::
 
     gunicorn test:app
 
+When using this WSGI adapter, the ``environ`` dictionary provided by the web
+server is available to request handlers as ``request.environ``.
+
 Using an ASGI Web Server
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -529,3 +532,5 @@ web application using the Uvicorn web server::
 
     uvicorn test:app
 
+When using this ASGI adapter, the ``scope`` dictionary provided by the web
+server is available to request handlers as ``request.asgi_scope``.
