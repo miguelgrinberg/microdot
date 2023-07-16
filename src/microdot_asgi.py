@@ -120,17 +120,18 @@ class Microdot(BaseMicrodot):
         asyncio.ensure_future(cancel_monitor())
 
         body_iter = res.body_iter().__aiter__()
+        res_body = b''
         try:
-            body = await body_iter.__anext__()
+            res_body = await body_iter.__anext__()
             while not cancelled:  # pragma: no branch
                 next_body = await body_iter.__anext__()
                 await send({'type': 'http.response.body',
-                            'body': body,
+                            'body': res_body,
                             'more_body': True})
-                body = next_body
+                res_body = next_body
         except StopAsyncIteration:
             await send({'type': 'http.response.body',
-                        'body': body,
+                        'body': res_body,
                         'more_body': False})
 
     async def __call__(self, scope, receive, send):
