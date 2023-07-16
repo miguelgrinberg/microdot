@@ -1,5 +1,13 @@
 # Microdot change log
 
+**Release 1.3.3** - 2023-07-16
+
+- Handle query string arguments without value [#149](https://github.com/miguelgrinberg/microdot/issues/149) ([commit](https://github.com/miguelgrinberg/microdot/commit/3554bc91cb1523efa5b66fe3ef173f8e86e8c2a0))
+- Support empty responses with ASGI adapter ([commit](https://github.com/miguelgrinberg/microdot/commit/e09e9830f43af41d38775547637558494151a385))
+- Added CORS extension to Python package ([commit](https://github.com/miguelgrinberg/microdot/commit/304ca2ef6881fe718126b3e308211e760109d519))
+- Document access to WSGI and ASGI attributes [#153](https://github.com/miguelgrinberg/microdot/issues/153) ([commit](https://github.com/miguelgrinberg/microdot/commit/d99df2c4010ab70c60b86ab334d656903e04eb26))
+- Upgrade micropython tests to use v1.20 ([commit](https://github.com/miguelgrinberg/microdot/commit/e0f0565551966ee0238a5a1819c78a13639ad704))
+
 **Release 1.3.2** - 2023-06-13
 
 - In ASGI, return headers as strings and not binary [#144](https://github.com/miguelgrinberg/microdot/issues/144) ([commit](https://github.com/miguelgrinberg/microdot/commit/e92310fa55bbffcdcbb33f560e27c3579d7ac451))
