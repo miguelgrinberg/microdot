@@ -137,8 +137,8 @@ subdirectory. This location can be changed with the
 .. note::
     The Jinja extension is not compatible with MicroPython.
 
-Maintaing Secure User Sessions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Maintaining Secure User Sessions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :align: left

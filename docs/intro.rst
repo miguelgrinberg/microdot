@@ -301,7 +301,7 @@ expected to return an updated response object.
 
 .. note::
    The :ref:`request.g <The "g" Object>` object is a special object that allows
-   the before and after request handlers, as well sa the route function to
+   the before and after request handlers, as well as the route function to
    share data during the life of the request.
 
 Error Handlers
@@ -500,7 +500,7 @@ contents as a file-like object.
 Cookies
 ^^^^^^^
 
-Cookies that are sent by the client are made available throught the
+Cookies that are sent by the client are made available through the
 :attr:`cookies <microdot.Request.cookies>` attribute of the request object in
 dictionary form.
 
@@ -595,7 +595,7 @@ always returned to the client in the response body::
 In the above example, Microdot issues a standard 200 status code response, and
 inserts the necessary headers.
 
-The applicaton can provide its own status code as a second value returned from
+The application can provide its own status code as a second value returned from
 the route. The example below returns a 202 status code::
 
     @app.get('/')
@@ -611,7 +611,7 @@ The next example returns an HTML response, instead of a default text response::
         return '<h1>Hello, World!</h1>', 202, {'Content-Type': 'text/html'}
 
 If the application needs to return custom headers, but does not need to change
-the default status code, then it can return two values, omitting the stauts
+the default status code, then it can return two values, omitting the status
 code::
 
     @app.get('/')
@@ -753,7 +753,7 @@ Another option is to create a response object directly in the route function::
    Standard cookies do not offer sufficient privacy and security controls, so
    never store sensitive information in them unless you are adding additional
    protection mechanisms such as encryption or cryptographic signing. The
-   :ref:`session <Maintaing Secure User Sessions>` extension implements signed
+   :ref:`session <Maintaining Secure User Sessions>` extension implements signed
    cookies that prevent tampering by malicious actors.
 
 Concurrency
