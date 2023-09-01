@@ -1074,7 +1074,7 @@ class Microdot():
             app = Microdot()
 
             @app.route('/')
-            def index():
+            def index(request):
                 return 'Hello, world!'
 
             app.run(debug=True)

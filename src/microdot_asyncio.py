@@ -241,7 +241,7 @@ class Microdot(BaseMicrodot):
             app = Microdot()
 
             @app.route('/')
-            async def index():
+            async def index(request):
                 return 'Hello, world!'
 
             async def main():
@@ -313,7 +313,7 @@ class Microdot(BaseMicrodot):
             app = Microdot()
 
             @app.route('/')
-            async def index():
+            async def index(request):
                 return 'Hello, world!'
 
             app.run(debug=True)
