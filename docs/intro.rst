@@ -16,6 +16,11 @@ them to *.mpy* files. These source files can also be
 `frozen <https://docs.micropython.org/en/latest/develop/optimizations.html?highlight=frozen#frozen-bytecode>`_
 and incorporated into a custom MicroPython firmware.
 
+Alternatively you can install using `mpremote` and `mip`
+```
+mpremote a0 mip install https://github.com/miguelgrinberg/microdot/releases/download/micropython-1.20-v1.3.3/microdot.mpy
+```
+
 Getting Started
 ---------------
 
