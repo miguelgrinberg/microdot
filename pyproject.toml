@@ -1,6 +1,57 @@
+[project]
+name = "microdot"
+version = "1.3.4.dev0"
+authors = [
+    { name = "Miguel Grinberg", email = "miguel.grinberg@gmail.com" },
+]
+description = "The impossibly small web framework for MicroPython"
+classifiers = [
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: MicroPython",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Homepage = "https://github.com/miguelgrinberg/microdot"
+"Bug Tracker" = "https://github.com/miguelgrinberg/microdot/issues"
+
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+]
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+py-modules = [
+    "microdot",
+    "microdot_asyncio",
+    "microdot_utemplate",
+    "microdot_jinja",
+    "microdot_session",
+    "microdot_cors",
+    "microdot_websocket",
+    "microdot_websocket_alt",
+    "microdot_asyncio_websocket",
+    "microdot_test_client",
+    "microdot_asyncio_test_client",
+    "microdot_wsgi",
+    "microdot_asgi",
+    "microdot_asgi_websocket",
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
 [build-system]
 requires = [
-    "setuptools>=42",
-    "wheel"
+    "setuptools>=61.2",
 ]
 build-backend = "setuptools.build_meta"
