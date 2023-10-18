@@ -27,7 +27,7 @@ sniffio==1.2.0
 starlette==0.27.0
 toml==0.10.2
 typing_extensions==4.3.0
-urllib3==1.26.17
+urllib3==1.26.18
 uvicorn==0.18.2
 Werkzeug==2.2.3
 wsproto==1.1.0
