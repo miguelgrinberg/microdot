@@ -280,6 +280,11 @@ class Microdot(BaseMicrodot):
 
         while True:
             try:
+                if hasattr(self.server, 'serve_forever'):  # pragma: no cover
+                    try:
+                        await self.server.serve_forever()
+                    except asyncio.CancelledError:
+                        pass
                 await self.server.wait_closed()
                 break
             except AttributeError:  # pragma: no cover
