@@ -1,5 +1,11 @@
 # Microdot change log
 
+**Release 1.3.4** - 2023-11-08
+
+- Handle change in `wait_closed()` behavior in Python 3.12 [#177](https://github.com/miguelgrinberg/microdot/issues/177) ([commit](https://github.com/miguelgrinberg/microdot/commit/5550b20cdd347d59e2aa68f6ebf9e9abffaff9fc))
+- Added missing request argument in some documentation examples [#163](https://github.com/miguelgrinberg/microdot/issues/163) ([commit](https://github.com/miguelgrinberg/microdot/commit/744548f8dc33a72512b34c4001ee9c6c1edd22ee))
+- Fix minor documentation typos [#161](https://github.com/miguelgrinberg/microdot/issues/161) ([commit](https://github.com/miguelgrinberg/microdot/commit/2e4911d10826cbb3914de4a45e495c3be36543fa)) (thanks **Andy Piper**!)
+
 **Release 1.3.3** - 2023-07-16
 
 - Handle query string arguments without value [#149](https://github.com/miguelgrinberg/microdot/issues/149) ([commit](https://github.com/miguelgrinberg/microdot/commit/3554bc91cb1523efa5b66fe3ef173f8e86e8c2a0))
