@@ -1,2 +1,0 @@
-{% args name %}
-Hello, {{ name }}!
