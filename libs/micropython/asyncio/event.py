@@ -1,7 +1,8 @@
-# MicroPython uasyncio module
+# MicroPython asyncio module
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
 from . import core
+
 
 # Event class for primitive events that can be waited on, set, and cleared
 class Event:
@@ -23,7 +24,8 @@ class Event:
     def clear(self):
         self.state = False
 
-    async def wait(self):
+    # async
+    def wait(self):
         if not self.state:
             # Event not set, put the calling task on the event's waiting queue
             self.waiting.push(core.cur_task)
@@ -38,16 +40,16 @@ class Event:
 # that asyncio will poll until a flag is set.
 # Note: Unlike Event, this is self-clearing after a wait().
 try:
-    import uio
+    import io
 
-    class ThreadSafeFlag(uio.IOBase):
+    class ThreadSafeFlag(io.IOBase):
         def __init__(self):
             self.state = 0
 
         def ioctl(self, req, flags):
             if req == 3:  # MP_STREAM_POLL
                 return self.state * flags
-            return None
+            return -1  # Other requests are unsupported
 
         def set(self):
             self.state = 1

@@ -1,10 +1,10 @@
-# MicroPython uasyncio module
+# MicroPython asyncio module
 # MIT license; Copyright (c) 2019-2022 Damien P. George
 
 from . import core
 
 
-def _run(waiter, aw):
+async def _run(waiter, aw):
     try:
         result = await aw
         status = True
@@ -61,7 +61,8 @@ class _Remove:
         pass
 
 
-async def gather(*aws, return_exceptions=False):
+# async
+def gather(*aws, return_exceptions=False):
     if not aws:
         return []
 
@@ -122,7 +123,7 @@ async def gather(*aws, return_exceptions=False):
 
     # Either this gather was cancelled, or one of the sub-tasks raised an exception with
     # return_exceptions==False, so reraise the exception here.
-    if state is not 0:
+    if state:
         raise state
 
     # Return the list of return values of each sub-task.

@@ -1,4 +1,4 @@
-# MicroPython uasyncio module
+# MicroPython asyncio module
 # MIT license; Copyright (c) 2019 Damien P. George
 
 from time import ticks_ms as ticks, ticks_diff, ticks_add
@@ -6,7 +6,7 @@ import sys, select
 
 # Import TaskQueue and Task, preferring built-in C code over Python code
 try:
-    from _uasyncio import TaskQueue, Task
+    from _asyncio import TaskQueue, Task
 except:
     from .task import TaskQueue, Task
 
@@ -29,6 +29,7 @@ _exc_context = {"message": "Task exception wasn't retrieved", "exception": None,
 
 ################################################################################
 # Sleep functions
+
 
 # "Yield" once, then raise StopIteration
 class SingletonGenerator:
@@ -131,6 +132,7 @@ class IOQueue:
 
 ################################################################################
 # Main run loop
+
 
 # Ensure the awaitable is a task
 def _promote_to_task(aw):
@@ -270,9 +272,9 @@ class Loop:
         return Loop._exc_handler
 
     def default_exception_handler(loop, context):
-        print(context["message"])
-        print("future:", context["future"], "coro=", context["future"].coro)
-        sys.print_exception(context["exception"])
+        print(context["message"], file=sys.stderr)
+        print("future:", context["future"], "coro=", context["future"].coro, file=sys.stderr)
+        sys.print_exception(context["exception"], sys.stderr)
 
     def call_exception_handler(context):
         (Loop._exc_handler or Loop.default_exception_handler)(Loop, context)

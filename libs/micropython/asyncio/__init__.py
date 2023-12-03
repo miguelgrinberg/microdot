@@ -1,4 +1,4 @@
-# MicroPython uasyncio module
+# MicroPython asyncio module
 # MIT license; Copyright (c) 2019 Damien P. George
 
 from .core import *
@@ -17,6 +17,7 @@ _attrs = {
     "StreamReader": "stream",
     "StreamWriter": "stream",
 }
+
 
 # Lazy loader, effectively does:
 #   global attr

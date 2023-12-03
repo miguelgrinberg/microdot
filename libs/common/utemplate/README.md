@@ -1,8 +1,6 @@
 utemplate
 =========
 
-*Release: 1.4.1, Source: https://github.com/pfalcon/utemplate*
-
 `utemplate` is a lightweight and memory-efficient template engine for
 Python, primarily designed for use with Pycopy, a lightweight Python
 implementation (https://github.com/pfalcon/pycopy). It is also fully

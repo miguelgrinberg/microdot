@@ -1,4 +1,4 @@
-# MicroPython uasyncio module
+# MicroPython asyncio module
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
 from . import core
@@ -26,7 +26,8 @@ class Stream:
         # TODO yield?
         self.s.close()
 
-    async def read(self, n=-1):
+    # async
+    def read(self, n=-1):
         r = b""
         while True:
             yield core._io_queue.queue_read(self.s)
@@ -38,11 +39,13 @@ class Stream:
                     return r
                 r += r2
 
-    async def readinto(self, buf):
+    # async
+    def readinto(self, buf):
         yield core._io_queue.queue_read(self.s)
         return self.s.readinto(buf)
 
-    async def readexactly(self, n):
+    # async
+    def readexactly(self, n):
         r = b""
         while n:
             yield core._io_queue.queue_read(self.s)
@@ -54,7 +57,8 @@ class Stream:
                 n -= len(r2)
         return r
 
-    async def readline(self):
+    # async
+    def readline(self):
         l = b""
         while True:
             yield core._io_queue.queue_read(self.s)
@@ -73,10 +77,11 @@ class Stream:
                 buf = buf[ret:]
         self.out_buf += buf
 
-    async def drain(self):
+    # async
+    def drain(self):
         if not self.out_buf:
             # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
-            return await core.sleep_ms(0)
+            return (yield from core.sleep_ms(0))
         mv = memoryview(self.out_buf)
         off = 0
         while off < len(mv):
@@ -93,9 +98,11 @@ StreamWriter = Stream
 
 
 # Create a TCP stream connection to a remote host
-async def open_connection(host, port):
-    from uerrno import EINPROGRESS
-    import usocket as socket
+#
+# async
+def open_connection(host, port):
+    from errno import EINPROGRESS
+    import socket
 
     ai = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[0]  # TODO this is blocking!
     s = socket.socket(ai[0], ai[1], ai[2])
@@ -120,20 +127,30 @@ class Server:
         await self.wait_closed()
 
     def close(self):
+        # Note: the _serve task must have already started by now due to the sleep
+        # in start_server, so `state` won't be clobbered at the start of _serve.
+        self.state = True
         self.task.cancel()
 
     async def wait_closed(self):
         await self.task
 
     async def _serve(self, s, cb):
+        self.state = False
         # Accept incoming connections
         while True:
             try:
                 yield core._io_queue.queue_read(s)
-            except core.CancelledError:
-                # Shutdown server
+            except core.CancelledError as er:
+                # The server task was cancelled, shutdown server and close socket.
                 s.close()
-                return
+                if self.state:
+                    # If the server was explicitly closed, ignore the cancellation.
+                    return
+                else:
+                    # Otherwise e.g. the parent task was cancelled, propagate
+                    # cancellation.
+                    raise er
             try:
                 s2, addr = s.accept()
             except:
@@ -147,7 +164,7 @@ class Server:
 # Helper function to start a TCP stream server, running as a new task
 # TODO could use an accept-callback on socket read activity instead of creating a task
 async def start_server(cb, host, port, backlog=5):
-    import usocket as socket
+    import socket
 
     # Create and bind server socket.
     host = socket.getaddrinfo(host, port)[0]  # TODO this is blocking!
@@ -160,6 +177,16 @@ async def start_server(cb, host, port, backlog=5):
     # Create and return server object and task.
     srv = Server()
     srv.task = core.create_task(srv._serve(s, cb))
+    try:
+        # Ensure that the _serve task has been scheduled so that it gets to
+        # handle cancellation.
+        await core.sleep_ms(0)
+    except core.CancelledError as er:
+        # If the parent task is cancelled during this first sleep, then
+        # we will leak the task and it will sit waiting for the socket, so
+        # cancel it.
+        srv.task.cancel()
+        raise er
     return srv
 
 
