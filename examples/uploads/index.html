@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Microdot Upload Example</title>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <h1>Microdot Upload Example</h1>
+    <form id="form">
+      <input type="file" id="file" name="file" />
+      <input type="submit" value="Upload" />
+    </form>
+    <script>
+      async function upload(ev) {
+        ev.preventDefault();
+        const file = document.getElementById('file').files[0];
+        if (!file) {
+          return;
+        }
+        await fetch('/upload', {
+          method: 'POST',
+          body: file,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Disposition': `attachment; filename="${file.name}"`,
+          },
+        }).then(res => {
+          console.log('Upload accepted');
+          window.location.href = '/';
+        });
+      }
+      document.getElementById('form').addEventListener('submit', upload);
+    </script>
+  </body>
+</html>

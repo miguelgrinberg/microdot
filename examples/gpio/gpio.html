@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Microdot GPIO Example</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script>
+            function getCookie(name) {
+                var value = "; " + document.cookie;
+                var parts = value.split("; " + name + "=");
+                if (parts.length == 2)
+                    return parts.pop().split(";").shift();
+            }
+            function showMessage() {
+                document.getElementById('message').innerHTML = getCookie('message');
+            }
+            function onLoad() {
+                showMessage();
+                var form = getCookie('form');
+                if (form) {
+                    form = form.split(',')
+                    document.getElementById('pin').selectedIndex = parseInt(form[0]);
+                    document.getElementById(form[1]).checked = true;
+                }
+            }
+        </script>
+    </head>
+    <body onload="onLoad();">
+        <div class="container">
+            <h1>Microdot GPIO Example</h1>
+            <div class="alert alert-primary" role="alert" id="message">
+            </div>
+            <form method="POST" action="">
+                <p>
+                    GPIO Pin:
+                    <select name="pin" id="pin">
+                        <option>0</option>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                        <option>11</option>
+                        <option>12</option>
+                        <option>13</option>
+                        <option>14</option>
+                        <option>15</option>
+                        <option>16</option>
+                    </select>
+                </p>
+                <div>
+                    <p>
+                        <input type="radio" name="pull" value="pullup" id="pullup">
+                        <label for="pullup">Pull-Up</label>&nbsp;&nbsp;
+                        <input type="radio" name="pull" value="pulldown" id="pulldown">
+                        <label for="pulldown">Pull-Down</label>&nbsp;&nbsp;
+                        <input type="radio" name="pull" value="pullnone" id="pullnone" checked>
+                        <label for="pullnone">None</label>
+                        <br>
+                        <input type="submit" class="btn btn-outline-dark" name="read" value="Read">
+                    </p>
+                </div>
+                <div>
+                    <p>
+                        <input type="submit" class="btn btn-outline-dark" name="set-low" value="Set Low">
+                        <input type="submit" class="btn btn-outline-dark" name="set-high" value="Set high">
+                    </p>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

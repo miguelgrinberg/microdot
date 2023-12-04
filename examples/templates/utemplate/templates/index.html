@@ -1,0 +1,21 @@
+{% args name %}
+<!doctype html>
+<html>
+  <head>
+    <title>Microdot + uTemplate example</title>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <h1>Microdot + uTemplate example</h1>
+    {% if name %}
+    <p>Hello, <b>{{ name }}</b>!</p>
+    {% endif %}
+    <form method="POST">
+      <p>
+        What is your name?
+        <input type="text" name="name" autofocus />
+      </p>
+      <input type="submit" value="Submit" />
+    </form>
+  </body>
+</html>
