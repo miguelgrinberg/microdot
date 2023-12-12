@@ -27,16 +27,20 @@ async def index(request):
 
 @app.route('/video_feed')
 async def video_feed(request):
-    if sys.implementation.name != 'micropython':
-        # CPython supports yielding async generators
-        async def stream():
-            yield b'--frame\r\n'
-            while True:
-                for frame in frames:
-                    yield b'Content-Type: image/jpeg\r\n\r\n' + frame + \
-                        b'\r\n--frame\r\n'
-                    await asyncio.sleep(1)
+    print('Starting video stream.')
 
+    if sys.implementation.name != 'micropython':
+        # CPython supports async generator function
+        async def stream():
+            try:
+                yield b'--frame\r\n'
+                while True:
+                    for frame in frames:
+                        yield b'Content-Type: image/jpeg\r\n\r\n' + frame + \
+                            b'\r\n--frame\r\n'
+                        await asyncio.sleep(1)
+            except GeneratorExit:
+                print('Stopping video stream.')
     else:
         # MicroPython can only use class-based async generators
         class stream():
@@ -51,6 +55,9 @@ async def video_feed(request):
                 self.i = (self.i + 1) % len(frames)
                 return b'Content-Type: image/jpeg\r\n\r\n' + \
                     frames[self.i] + b'\r\n--frame\r\n'
+
+            async def aclose(self):
+                print('Stopping video stream.')
 
     return stream(), 200, {'Content-Type':
                            'multipart/x-mixed-replace; boundary=frame'}

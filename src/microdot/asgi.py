@@ -134,6 +134,8 @@ class Microdot(BaseMicrodot):
             await send({'type': 'http.response.body',
                         'body': res_body,
                         'more_body': False})
+        if hasattr(body_iter, 'aclose'):  # pragma: no branch
+            await body_iter.aclose()
         cancelled = True
         await monitor_task
 

@@ -128,6 +128,10 @@ class Microdot(BaseMicrodot):
                 except StopAsyncIteration:
                     raise StopIteration
 
+            def close(self):  # pragma: no cover
+                if hasattr(self.iter, 'aclose'):
+                    self.loop.run_until_complete(self.iter.aclose())
+
         return async_to_sync_iter(res.body_iter(), self.loop)
 
     def __call__(self, environ, start_response):

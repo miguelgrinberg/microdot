@@ -1,6 +1,7 @@
 import binascii
 import hashlib
 from microdot import Response
+from microdot.microdot import MUTED_SOCKET_ERRORS
 
 
 class WebSocket:
@@ -162,7 +163,7 @@ def websocket_wrapper(f, upgrade_function):
             await f(request, ws, *args, **kwargs)
             await ws.close()  # pragma: no cover
         except OSError as exc:
-            if exc.errno not in [32, 54, 104]:  # pragma: no cover
+            if exc.errno not in MUTED_SOCKET_ERRORS:  # pragma: no cover
                 raise
         return ''
     return wrapper

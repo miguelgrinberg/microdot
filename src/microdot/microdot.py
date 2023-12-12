@@ -646,10 +646,21 @@ class Response:
 
             # body
             if not self.is_head:
-                async for body in self.body_iter():
+                iter = self.body_iter()
+                async for body in iter:
                     if isinstance(body, str):  # pragma: no cover
                         body = body.encode()
-                    await stream.awrite(body)
+                    try:
+                        await stream.awrite(body)
+                    except OSError as exc:  # pragma: no cover
+                        if exc.errno in MUTED_SOCKET_ERRORS or \
+                                exc.args[0] == 'Connection lost':
+                            if hasattr(iter, 'aclose'):
+                                await iter.aclose()
+                        raise
+                if hasattr(iter, 'aclose'):  # pragma: no branch
+                    await iter.aclose()
+
         except OSError as exc:  # pragma: no cover
             if exc.errno in MUTED_SOCKET_ERRORS or \
                     exc.args[0] == 'Connection lost':
@@ -665,40 +676,49 @@ class Response:
         response = self
 
         class iter:
+            ITER_UNKNOWN = 0
+            ITER_SYNC_GEN = 1
+            ITER_FILE_OBJ = 2
+            ITER_NO_BODY = -1
+
             def __aiter__(self):
                 if response.body:
-                    self.i = 0  # need to determine type of response.body
+                    self.i = self.ITER_UNKNOWN  # need to determine type
                 else:
-                    self.i = -1  # no response body
+                    self.i = self.ITER_NO_BODY
                 return self
 
             async def __anext__(self):
-                if self.i == -1:
+                if self.i == self.ITER_NO_BODY:
+                    await self.aclose()
                     raise StopAsyncIteration
-                if self.i == 0:
+                if self.i == self.ITER_UNKNOWN:
                     if hasattr(response.body, 'read'):
-                        self.i = 2  # response body is a file-like object
+                        self.i = self.ITER_FILE_OBJ
                     elif hasattr(response.body, '__next__'):
-                        self.i = 1  # response body is a sync generator
+                        self.i = self.ITER_SYNC_GEN
                         return next(response.body)
                     else:
-                        self.i = -1  # response body is a plain string
+                        self.i = self.ITER_NO_BODY
                         return response.body
-                elif self.i == 1:
+                elif self.i == self.ITER_SYNC_GEN:
                     try:
                         return next(response.body)
                     except StopIteration:
+                        await self.aclose()
                         raise StopAsyncIteration
                 buf = response.body.read(response.send_file_buffer_size)
                 if iscoroutine(buf):  # pragma: no cover
                     buf = await buf
                 if len(buf) < response.send_file_buffer_size:
-                    self.i = -1
-                    if hasattr(response.body, 'close'):  # pragma: no cover
-                        result = response.body.close()
-                        if iscoroutine(result):
-                            await result
+                    self.i = self.ITER_NO_BODY
                 return buf
+
+            async def aclose(self):
+                if hasattr(response.body, 'close'):
+                    result = response.body.close()
+                    if iscoroutine(result):  # pragma: no cover
+                        await result
 
         return iter()
 

@@ -36,10 +36,13 @@ class TestResponse:
 
     async def _initialize_body(self, res):
         self.body = b''
-        async for body in res.body_iter():  # pragma: no branch
+        iter = res.body_iter()
+        async for body in iter:  # pragma: no branch
             if isinstance(body, str):
                 body = body.encode()
             self.body += body
+        if hasattr(iter, 'aclose'):  # pragma: no branch
+            await iter.aclose()
 
     def _process_text_body(self):
         try:

@@ -1,3 +1,0 @@
-[flake8]
-select = C,E,F,W,B,B950
-per-file-ignores = ./*/__init__.py:F401

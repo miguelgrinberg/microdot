@@ -25,9 +25,10 @@ WebSocket Support
 
 The WebSocket extension gives the application the ability to handle WebSocket
 requests. The :func:`with_websocket <microdot.websocket.with_websocket>`
-decorator is used to mark a route handler as a WebSocket handler, which
-receives a WebSocket object as a second argument. The WebSocket object provides
-``send()`` and ``receive()`` methods to send and receive messages respectively.
+decorator is used to mark a route handler as a WebSocket handler. Decorated
+routes receive a WebSocket object as a second argument. The WebSocket object
+provides ``send()`` and ``receive()`` asynchronous methods to send and receive
+messages respectively.
 
 Example::
 
@@ -37,6 +38,45 @@ Example::
             while True:
                 message = await ws.receive()
                 await ws.send(message)
+
+Server-Sent Events Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     -  | `sse.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/sse.py>`_
+
+   * - Required external dependencies
+     - | None
+
+   * - Examples
+     - | `counter.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/sse/counter.py>`_
+
+The Server-Sent Events (SSE) extension simplifies the creation of a streaming
+endpoint that follows the SSE web standard. The :func:`with_sse <microdot.sse.with_sse>`
+decorator is used to mark a route as an SSE handler. Decorated routes receive
+an SSE object as second argument. The SSE object provides a ``send()``
+asynchronous method to send an event to the client.
+
+Example::
+
+    @app.route('/events')
+    @with_sse
+    async def events(request, sse):
+        for i in range(10):
+            await asyncio.sleep(1)
+            await sse.send({'counter': i})  # unnamed event
+        await sse.send('end', event='comment')  # named event
+
+.. note::
+   The SSE protocol is unidirectional, so there is no ``receive()`` method in
+   the SSE object. For bidirectional communication with the client, use the
+   WebSocket extension.
 
 Rendering Templates
 ~~~~~~~~~~~~~~~~~~~

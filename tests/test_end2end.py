@@ -39,6 +39,7 @@ class TestEnd2End(unittest.TestCase):
         async def run():
             server = asyncio.create_task(app.start_server(host='127.0.0.1',
                                                           port=5678))
+            await asyncio.sleep(0.1)
             response = await self.request('/')
             self.assertEqual(response[0], 'HTTP/1.0 200 OK')
             self.assertEqual(response[-1], 'Hello, World!')
@@ -92,6 +93,7 @@ class TestEnd2End(unittest.TestCase):
 
         async def run():
             server = asyncio.create_task(app.start_server(port=5678))
+            await asyncio.sleep(0.1)
             await asyncio.gather(self.request('/async1'),
                                  self.request('/async2'),
                                  self.request('/sync1'),

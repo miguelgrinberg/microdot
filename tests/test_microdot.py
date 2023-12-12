@@ -682,6 +682,7 @@ class TestMicrodot(unittest.TestCase):
 
     def test_streaming(self):
         app = Microdot()
+        done = False
 
         @app.route('/')
         def index(req):
@@ -700,6 +701,10 @@ class TestMicrodot(unittest.TestCase):
                     self.i += 1
                     return data
 
+                async def aclose(self):
+                    nonlocal done
+                    done = True
+
             return stream()
 
         client = TestClient(app)
@@ -708,6 +713,7 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.headers['Content-Type'],
                          'text/plain; charset=UTF-8')
         self.assertEqual(res.text, 'foobar')
+        self.assertEqual(done, True)
 
     def test_already_handled_response(self):
         app = Microdot()
