@@ -211,7 +211,7 @@ Maintaining Secure User Sessions
      - | `login.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/sessions/login.py>`_
 
 The session extension provides a secure way for the application to maintain
-user sessions. The session is stored as a signed cookie in the client's
+user sessions. The session data is stored as a signed cookie in the client's
 browser, in `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
 format.
 
@@ -228,7 +228,7 @@ To initialize the session extension and configure the secret key, create a
 The :func:`with_session <microdot.session.with_session>` decorator is the
 most convenient way to retrieve the session at the start of a request::
 
-    from microdot import Microdot
+    from microdot import Microdot, redirect
     from microdot.session import Session, with_session
 
     app = Microdot()
@@ -434,5 +434,7 @@ server is available to request handlers as ``request.environ``.
 
 .. note::
     In spite of WSGI being a synchronous protocol, the Microdot application
-    internally runs under an asyncio event loop, so all the considerations
-    about using ``def`` functions as handlers still apply.
+    internally runs under an asyncio event loop. For that reason, the
+    recommendation to prefer ``async def`` handlers over ``def`` still applies
+    under WSGI. Consult the :ref:`Concurrency` section for a discussion of how
+    the two types of functions are handled by Microdot.

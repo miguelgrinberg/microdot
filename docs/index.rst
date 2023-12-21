@@ -18,6 +18,8 @@ systems with limited resources such as microcontrollers. Both standard Python
 
    intro
    extensions
+   migrating
+   freezing
    api
 
 * :ref:`genindex`

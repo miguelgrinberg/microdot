@@ -27,7 +27,7 @@ proven to be problematic.
 
 For this reason most applications built for earlier versions will need to be
 updated to work correctly with Microdot 2. The
-[Migration Guide](https://microdot.readthedocs.io/en/stable/intro.html#migrating-to-microdot-2-x-from-older-releases)
+[Migration Guide](https://microdot.readthedocs.io/en/stable/migrating.html)
 describes the backwards incompatible changes that were made.
 
 ## Resources
