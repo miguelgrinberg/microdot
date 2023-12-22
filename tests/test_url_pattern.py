@@ -1,5 +1,5 @@
 import unittest
-from microdot import URLPattern
+from microdot.microdot import URLPattern
 
 
 class TestURLPattern(unittest.TestCase):

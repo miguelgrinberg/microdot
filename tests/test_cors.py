@@ -1,10 +1,18 @@
+import asyncio
 import unittest
 from microdot import Microdot
-from microdot_test_client import TestClient
-from microdot_cors import CORS
+from microdot.test_client import TestClient
+from microdot.cors import CORS
 
 
 class TestCORS(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.loop = asyncio.new_event_loop()
+
+    def _run(self, coro):
+        return self.loop.run_until_complete(coro)
+
     def test_origin(self):
         app = Microdot()
         cors = CORS(allowed_origins=['https://example.com'],
@@ -16,13 +24,14 @@ class TestCORS(unittest.TestCase):
             return 'foo'
 
         client = TestClient(app)
-        res = client.get('/')
+        res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
         self.assertFalse('Access-Control-Allow-Origin' in res.headers)
         self.assertFalse('Access-Control-Allow-Credentials' in res.headers)
         self.assertFalse('Vary' in res.headers)
 
-        res = client.get('/', headers={'Origin': 'https://example.com'})
+        res = self._run(client.get(
+            '/', headers={'Origin': 'https://example.com'}))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'],
                          'https://example.com')
@@ -32,14 +41,15 @@ class TestCORS(unittest.TestCase):
 
         cors.allow_credentials = False
 
-        res = client.get('/foo', headers={'Origin': 'https://example.com'})
+        res = self._run(client.get(
+            '/foo', headers={'Origin': 'https://example.com'}))
         self.assertEqual(res.status_code, 404)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'],
                          'https://example.com')
         self.assertFalse('Access-Control-Allow-Credentials' in res.headers)
         self.assertEqual(res.headers['Vary'], 'Origin')
 
-        res = client.get('/', headers={'Origin': 'https://bad.com'})
+        res = self._run(client.get('/', headers={'Origin': 'https://bad.com'}))
         self.assertEqual(res.status_code, 200)
         self.assertFalse('Access-Control-Allow-Origin' in res.headers)
         self.assertFalse('Access-Control-Allow-Credentials' in res.headers)
@@ -58,14 +68,15 @@ class TestCORS(unittest.TestCase):
             return 'foo', {'Vary': 'X-Foo, X-Bar'}
 
         client = TestClient(app)
-        res = client.get('/')
+        res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'], '*')
         self.assertFalse('Vary' in res.headers)
         self.assertEqual(res.headers['Access-Control-Expose-Headers'],
                          'X-Test, X-Test2')
 
-        res = client.get('/', headers={'Origin': 'https://example.com'})
+        res = self._run(client.get(
+            '/', headers={'Origin': 'https://example.com'}))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'],
                          'https://example.com')
@@ -73,7 +84,8 @@ class TestCORS(unittest.TestCase):
         self.assertEqual(res.headers['Access-Control-Expose-Headers'],
                          'X-Test, X-Test2')
 
-        res = client.get('/bad', headers={'Origin': 'https://example.com'})
+        res = self._run(client.get(
+            '/bad', headers={'Origin': 'https://example.com'}))
         self.assertEqual(res.status_code, 404)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'],
                          'https://example.com')
@@ -81,7 +93,8 @@ class TestCORS(unittest.TestCase):
         self.assertEqual(res.headers['Access-Control-Expose-Headers'],
                          'X-Test, X-Test2')
 
-        res = client.get('/foo', headers={'Origin': 'https://example.com'})
+        res = self._run(client.get(
+            '/foo', headers={'Origin': 'https://example.com'}))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Vary'], 'X-Foo, X-Bar, Origin')
 
@@ -94,10 +107,10 @@ class TestCORS(unittest.TestCase):
             return 'foo'
 
         client = TestClient(app)
-        res = client.request('OPTIONS', '/', headers={
+        res = self._run(client.request('OPTIONS', '/', headers={
             'Origin': 'https://example.com',
             'Access-Control-Request-Method': 'POST',
-            'Access-Control-Request-Headers': 'X-Test, X-Test2'})
+            'Access-Control-Request-Headers': 'X-Test, X-Test2'}))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'],
                          'https://example.com')
@@ -106,8 +119,8 @@ class TestCORS(unittest.TestCase):
         self.assertEqual(res.headers['Access-Control-Allow-Headers'],
                          'X-Test, X-Test2')
 
-        res = client.request('OPTIONS', '/', headers={
-            'Origin': 'https://example.com'})
+        res = self._run(client.request('OPTIONS', '/', headers={
+            'Origin': 'https://example.com'}))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'],
                          'https://example.com')
@@ -125,10 +138,10 @@ class TestCORS(unittest.TestCase):
             return 'foo'
 
         client = TestClient(app)
-        res = client.request('OPTIONS', '/', headers={
+        res = self._run(client.request('OPTIONS', '/', headers={
             'Origin': 'https://example.com',
             'Access-Control-Request-Method': 'POST',
-            'Access-Control-Request-Headers': 'X-Test, X-Test2'})
+            'Access-Control-Request-Headers': 'X-Test, X-Test2'}))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Access-Control-Allow-Origin'],
                          'https://example.com')
@@ -136,9 +149,9 @@ class TestCORS(unittest.TestCase):
         self.assertEqual(res.headers['Access-Control-Allow-Methods'], 'POST')
         self.assertEqual(res.headers['Access-Control-Allow-Headers'], 'X-Test')
 
-        res = client.request('OPTIONS', '/', headers={
+        res = self._run(client.request('OPTIONS', '/', headers={
             'Origin': 'https://example.com',
-            'Access-Control-Request-Method': 'GET'})
+            'Access-Control-Request-Method': 'GET'}))
         self.assertEqual(res.status_code, 200)
         self.assertFalse('Access-Control-Allow-Methods' in res.headers)
         self.assertFalse('Access-Control-Allow-Headers' in res.headers)
@@ -152,7 +165,7 @@ class TestCORS(unittest.TestCase):
             return 'foo'
 
         client = TestClient(app)
-        res = client.get('/')
+        res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
         self.assertFalse('Access-Control-Allow-Origin' in res.headers)
         self.assertFalse('Vary' in res.headers)

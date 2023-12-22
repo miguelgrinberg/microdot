@@ -13,103 +13,53 @@ API Reference
 .. autoclass:: microdot.Response
    :members:
 
-.. autoclass:: microdot.NoCaseDict
-   :members:
 
-.. autoclass:: microdot.MultiDict
-   :members:
-
-``microdot_asyncio`` module
----------------------------
-
-.. autoclass:: microdot_asyncio.Microdot
-   :inherited-members:
-   :members:
-
-.. autoclass:: microdot_asyncio.Request
-   :inherited-members:
-   :members:
-
-.. autoclass:: microdot_asyncio.Response
-   :inherited-members:
-   :members:
-
-``microdot_utemplate`` module
------------------------------
-
-.. automodule:: microdot_utemplate
-   :members:
-
-``microdot_jinja`` module
--------------------------
-
-.. automodule:: microdot_jinja
-   :members:
-
-``microdot_session`` module
----------------------------
-
-.. automodule:: microdot_session
-   :members:
-
-``microdot_cors`` module
-------------------------
-
-.. automodule:: microdot_cors
-   :members:
-
-``microdot_websocket`` module
-------------------------------
-
-.. automodule:: microdot_websocket
-   :members:
-
-``microdot_asyncio_websocket`` module
--------------------------------------
-
-.. automodule:: microdot_asyncio_websocket
-   :members:
-
-``microdot_asgi_websocket`` module
--------------------------------------
-
-.. automodule:: microdot_asgi_websocket
-   :members:
-
-``microdot_ssl`` module
+``websocket`` extension
 -----------------------
 
-.. automodule:: microdot_ssl
+.. automodule:: microdot.websocket
    :members:
 
-``microdot_test_client`` module
--------------------------------
+``utemplate`` templating extension
+----------------------------------
 
-.. autoclass:: microdot_test_client.TestClient
+.. automodule:: microdot.utemplate
    :members:
 
-.. autoclass:: microdot_test_client.TestResponse
+``jinja`` templating extension
+------------------------------
+
+.. automodule:: microdot.jinja
    :members:
 
-``microdot_asyncio_test_client`` module
----------------------------------------
+``session`` extension
+---------------------
 
-.. autoclass:: microdot_asyncio_test_client.TestClient
+.. automodule:: microdot.session
    :members:
 
-.. autoclass:: microdot_asyncio_test_client.TestResponse
+``cors`` extension
+------------------
+
+.. automodule:: microdot.cors
    :members:
 
-``microdot_wsgi`` module
-------------------------
+``test_client`` extension
+-------------------------
 
-.. autoclass:: microdot_wsgi.Microdot
+.. automodule:: microdot.test_client
+   :members:
+
+``asgi`` extension
+------------------
+
+.. autoclass:: microdot.asgi.Microdot
    :members:
    :exclude-members: shutdown, run
 
-``microdot_asgi`` module
-------------------------
+``wsgi`` extension
+-------------------
 
-.. autoclass:: microdot_asgi.Microdot
+.. autoclass:: microdot.wsgi.Microdot
    :members:
    :exclude-members: shutdown, run

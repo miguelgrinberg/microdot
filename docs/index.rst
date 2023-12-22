@@ -9,15 +9,17 @@ Microdot
 *"The impossibly small web framework for Python and MicroPython"*
 
 Microdot is a minimalistic Python web framework inspired by
-`Flask <https://flask.palletsprojects.com/>`_, and designed to run on
-systems with limited resources such as microcontrollers. It runs on standard
-Python and on `MicroPython <https://micropython.org>`_.
+`Flask <https://flask.palletsprojects.com/>`_. Given its size, it can run on
+systems with limited resources such as microcontrollers. Both standard Python
+(CPython) and `MicroPython <https://micropython.org>`_ are supported.
 
 .. toctree::
    :maxdepth: 3
 
    intro
    extensions
+   migrating
+   freezing
    api
 
 * :ref:`genindex`

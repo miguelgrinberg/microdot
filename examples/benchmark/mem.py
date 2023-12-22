@@ -4,7 +4,7 @@ app = Microdot()
 
 
 @app.get('/')
-def index(req):
+async def index(req):
     return {'hello': 'world'}
 
 

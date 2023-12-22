@@ -1,5 +1,5 @@
 import unittest
-from microdot import MultiDict, NoCaseDict
+from microdot.microdot import MultiDict, NoCaseDict
 
 
 class TestMultiDict(unittest.TestCase):

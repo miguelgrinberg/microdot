@@ -1,4 +1,4 @@
-from microdot_wsgi import Microdot
+from microdot.wsgi import Microdot
 
 app = Microdot()
 

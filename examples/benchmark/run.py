@@ -14,13 +14,8 @@ apps = [
     ),
     (
         'micropython mem.py',
-        {'MICROPYPATH': '../../src'},
-        'microdot-micropython-sync'
-    ),
-    (
-        'micropython mem_async.py',
         {'MICROPYPATH': '../../src:../../libs/micropython'},
-        'microdot-micropython-async'
+        'microdot-micropython'
     ),
     (
         ['python', '-c', 'import time; time.sleep(10)'],
@@ -30,47 +25,42 @@ apps = [
     (
         'python mem.py',
         {'PYTHONPATH': '../../src'},
-        'microdot-cpython-sync'
-    ),
-    (
-        'python mem_async.py',
-        {'PYTHONPATH': '../../src'},
-        'microdot-cpython-async'
-    ),
-    (
-        'gunicorn --workers 1 --bind :5000 mem_wsgi:app',
-        {'PYTHONPATH': '../../src'},
-        'microdot-gunicorn-sync'
+        'microdot-cpython'
     ),
     (
         'uvicorn --workers 1 --port 5000 mem_asgi:app',
         {'PYTHONPATH': '../../src'},
-        'microdot-uvicorn-async'
+        'microdot-uvicorn'
+    ),
+    (
+        'gunicorn --workers 1 --bind :5000 mem_wsgi:app',
+        {'PYTHONPATH': '../../src'},
+        'microdot-gunicorn'
     ),
     (
         'flask run',
         {'FLASK_APP': 'mem_flask.py'},
-        'flask-run-sync'
+        'flask-run'
     ),
     (
         'quart run',
         {'QUART_APP': 'mem_quart.py'},
-        'quart-run-async'
+        'quart-run'
     ),
     (
         'gunicorn --workers 1 --bind :5000 mem_flask:app',
         {},
-        'flask-gunicorn-sync'
+        'flask-gunicorn'
     ),
     (
         'uvicorn --workers 1 --port 5000 mem_quart:app',
         {},
-        'quart-uvicorn-async'
+        'quart-uvicorn'
     ),
     (
         'uvicorn --workers 1 --port 5000 mem_fastapi:app',
         {},
-        'fastapi-uvicorn-async'
+        'fastapi-uvicorn'
     ),
 ]
 

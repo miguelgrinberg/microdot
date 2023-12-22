@@ -4,5 +4,5 @@ app = Quart(__name__)
 
 
 @app.get('/')
-def index():
+async def index():
     return {'hello': 'world'}

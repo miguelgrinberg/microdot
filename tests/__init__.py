@@ -1,14 +1,11 @@
-from .test_multidict import TestMultiDict
-from .test_request import TestRequest
-from .test_response import TestResponse
-from .test_url_pattern import TestURLPattern
-from .test_microdot import TestMicrodot
-from .test_microdot_websocket import TestMicrodotWebSocket
-
-from .test_request_asyncio import TestRequestAsync
-from .test_response_asyncio import TestResponseAsync
-from .test_microdot_asyncio import TestMicrodotAsync
-from .test_microdot_asyncio_websocket import TestMicrodotAsyncWebSocket
-from .test_utemplate import TestUTemplate
-
-from .test_session import TestSession
+from tests.test_microdot import *  # noqa: F401, F403
+from tests.test_multidict import *  # noqa: F401, F403
+from tests.test_request import *  # noqa: F401, F403
+from tests.test_response import *  # noqa: F401, F403
+from tests.test_urlencode import *  # noqa: F401, F403
+from tests.test_url_pattern import *  # noqa: F401, F403
+from tests.test_websocket import *  # noqa: F401, F403
+from tests.test_sse import *  # noqa: F401, F403
+from tests.test_cors import *  # noqa: F401, F403
+from tests.test_utemplate import *  # noqa: F401, F403
+from tests.test_session import *  # noqa: F401, F403

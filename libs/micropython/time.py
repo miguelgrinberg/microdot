@@ -1,76 +1,79 @@
 from utime import *
-from ucollections import namedtuple
-import ustruct
-import uctypes
-import ffi
-import ffilib
-import array
+from micropython import const
 
-libc = ffilib.libc()
+_TS_YEAR = const(0)
+_TS_MON = const(1)
+_TS_MDAY = const(2)
+_TS_HOUR = const(3)
+_TS_MIN = const(4)
+_TS_SEC = const(5)
+_TS_WDAY = const(6)
+_TS_YDAY = const(7)
+_TS_ISDST = const(8)
 
-# struct tm *gmtime(const time_t *timep);
-# struct tm *localtime(const time_t *timep);
-# size_t strftime(char *s, size_t max, const char *format,
-#                       const struct tm *tm);
-gmtime_ = libc.func("P", "gmtime", "P")
-localtime_ = libc.func("P", "localtime", "P")
-strftime_ = libc.func("i", "strftime", "sisP")
-mktime_ = libc.func("i", "mktime", "P")
-
-_struct_time = namedtuple("struct_time",
-    ["tm_year", "tm_mon", "tm_mday", "tm_hour", "tm_min", "tm_sec", "tm_wday", "tm_yday", "tm_isdst"])
-
-def _tuple_to_c_tm(t):
-    return ustruct.pack("@iiiiiiiii", t[5], t[4], t[3], t[2], t[1] - 1, t[0] - 1900, (t[6] + 1) % 7, t[7] - 1, t[8])
-
-
-def _c_tm_to_tuple(tm):
-    t = ustruct.unpack("@iiiiiiiii", tm)
-    return _struct_time(t[5] + 1900, t[4] + 1, t[3], t[2], t[1], t[0], (t[6] - 1) % 7, t[7] + 1, t[8])
-
-def struct_time(tm):
-    return _struct_time(*tm)
+_WDAY = const(("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+_MDAY = const(
+    (
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    )
+)
 
 
-def strftime(format, t=None):
-    if t is None:
-        t = localtime()
+def strftime(datefmt, ts):
+    from io import StringIO
 
-    buf = bytearray(32)
-    l = strftime_(buf, 32, format, _tuple_to_c_tm(t))
-    return str(buf[:l], "utf-8")
-
-
-def localtime(t=None):
-    if t is None:
-        t = time()
-
-    t = int(t)
-    a = ustruct.pack('l', t)
-    tm_p = localtime_(a)
-    return _c_tm_to_tuple(uctypes.bytearray_at(tm_p, 36))
-
-
-def gmtime(t=None):
-    if t is None:
-        t = time()
-
-    t = int(t)
-    a = ustruct.pack('l', t)
-    tm_p = gmtime_(a)
-    return _c_tm_to_tuple(uctypes.bytearray_at(tm_p, 36))
-
-
-def mktime(tt):
-    return mktime_(_tuple_to_c_tm(tt))
-
-
-def perf_counter():
-    return time()
-
-def process_time():
-    return clock()
-
-
-daylight = 0
-timezone = 0
+    fmtsp = False
+    ftime = StringIO()
+    for k in datefmt:
+        if fmtsp:
+            if k == "a":
+                ftime.write(_WDAY[ts[_TS_WDAY]][0:3])
+            elif k == "A":
+                ftime.write(_WDAY[ts[_TS_WDAY]])
+            elif k == "b":
+                ftime.write(_MDAY[ts[_TS_MON] - 1][0:3])
+            elif k == "B":
+                ftime.write(_MDAY[ts[_TS_MON] - 1])
+            elif k == "d":
+                ftime.write("%02d" % ts[_TS_MDAY])
+            elif k == "H":
+                ftime.write("%02d" % ts[_TS_HOUR])
+            elif k == "I":
+                ftime.write("%02d" % (ts[_TS_HOUR] % 12))
+            elif k == "j":
+                ftime.write("%03d" % ts[_TS_YDAY])
+            elif k == "m":
+                ftime.write("%02d" % ts[_TS_MON])
+            elif k == "M":
+                ftime.write("%02d" % ts[_TS_MIN])
+            elif k == "P":
+                ftime.write("AM" if ts[_TS_HOUR] < 12 else "PM")
+            elif k == "S":
+                ftime.write("%02d" % ts[_TS_SEC])
+            elif k == "w":
+                ftime.write(str(ts[_TS_WDAY]))
+            elif k == "y":
+                ftime.write("%02d" % (ts[_TS_YEAR] % 100))
+            elif k == "Y":
+                ftime.write(str(ts[_TS_YEAR]))
+            else:
+                ftime.write(k)
+            fmtsp = False
+        elif k == "%":
+            fmtsp = True
+        else:
+            ftime.write(k)
+    val = ftime.getvalue()
+    ftime.close()
+    return val

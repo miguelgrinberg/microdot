@@ -1,67 +1,87 @@
+import asyncio
 from datetime import datetime
-
-try:
-    import uio as io
-except ImportError:
-    import io
-
 import unittest
 from microdot import Response
+from tests.mock_socket import FakeStreamAsync
 
 
 class TestResponse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if hasattr(asyncio, 'set_event_loop'):
+            asyncio.set_event_loop(asyncio.new_event_loop())
+        cls.loop = asyncio.get_event_loop()
+
+    def _run(self, coro):
+        return self.loop.run_until_complete(coro)
+
     def test_create_from_string(self):
         res = Response('foo')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers, {})
         self.assertEqual(res.body, b'foo')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
-        self.assertIn(b'Content-Length: 3\r\n', response)
-        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
-        self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'Content-Length: 3\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_from_string_with_content_length(self):
         res = Response('foo', headers={'Content-Length': '2'})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers, {'Content-Length': '2'})
         self.assertEqual(res.body, b'foo')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
-        self.assertIn(b'Content-Length: 2\r\n', response)
-        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
-        self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'Content-Length: 2\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nfoo'))
 
     def test_create_from_bytes(self):
         res = Response(b'foo')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers, {})
         self.assertEqual(res.body, b'foo')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
-        self.assertIn(b'Content-Length: 3\r\n', response)
-        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
-        self.assertTrue(response.endswith(b'\r\n\r\nfoo'))
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'Content-Length: 3\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nfoo'))
+
+    def test_create_from_head(self):
+        res = Response(b'foo')
+        res.is_head = True
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers, {})
+        self.assertEqual(res.body, b'foo')
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'Content-Length: 3\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n'))
+        self.assertFalse(b'foo' in fd.response)
 
     def test_create_empty(self):
         res = Response(headers={'X-Foo': 'Bar'})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers, {'X-Foo': 'Bar'})
         self.assertEqual(res.body, b'')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
-        self.assertIn(b'X-Foo: Bar\r\n', response)
-        self.assertIn(b'Content-Length: 0\r\n', response)
-        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
-        self.assertTrue(response.endswith(b'\r\n\r\n'))
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'X-Foo: Bar\r\n', fd.response)
+        self.assertIn(b'Content-Length: 0\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n'))
 
     def test_create_json(self):
         res = Response({'foo': 'bar'})
@@ -69,40 +89,52 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.headers,
                          {'Content-Type': 'application/json; charset=UTF-8'})
         self.assertEqual(res.body, b'{"foo": "bar"}')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
-        self.assertIn(b'Content-Length: 14\r\n', response)
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'Content-Length: 14\r\n', fd.response)
         self.assertIn(b'Content-Type: application/json; charset=UTF-8\r\n',
-                      response)
-        self.assertTrue(response.endswith(b'\r\n\r\n{"foo": "bar"}'))
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n{"foo": "bar"}'))
 
         res = Response([1, '2'])
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers,
                          {'Content-Type': 'application/json; charset=UTF-8'})
         self.assertEqual(res.body, b'[1, "2"]')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 200 OK\r\n', response)
-        self.assertIn(b'Content-Length: 8\r\n', response)
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'Content-Length: 8\r\n', fd.response)
         self.assertIn(b'Content-Type: application/json; charset=UTF-8\r\n',
-                      response)
-        self.assertTrue(response.endswith(b'\r\n\r\n[1, "2"]'))
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n[1, "2"]'))
 
     def test_create_from_none(self):
         res = Response(None)
         self.assertEqual(res.status_code, 204)
         self.assertEqual(res.body, b'')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 204 N/A\r\n', response)
-        self.assertIn(b'Content-Length: 0\r\n', response)
-        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n', response)
-        self.assertTrue(response.endswith(b'\r\n\r\n'))
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 204 N/A\r\n', fd.response)
+        self.assertIn(b'Content-Length: 0\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\n'))
+
+    def test_create_from_iterator(self):
+        def gen():
+            yield 'foo'
+            yield 'bar'
+
+        res = Response(gen())
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        print(fd.response)
+        self.assertIn(b'HTTP/1.0 200 OK\r\n', fd.response)
+        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
+                      fd.response)
+        self.assertTrue(fd.response.endswith(b'\r\n\r\nfoobar'))
 
     def test_create_from_other(self):
         res = Response(123)
@@ -134,10 +166,9 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.headers, {})
         self.assertEqual(res.reason, 'ALL GOOD!')
         self.assertEqual(res.body, b'foo')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 200 ALL GOOD!\r\n', response)
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 200 ALL GOOD!\r\n', fd.response)
 
     def test_create_with_status_and_reason(self):
         res = Response('not found', 404, reason='NOT FOUND')
@@ -145,15 +176,14 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res.headers, {})
         self.assertEqual(res.reason, 'NOT FOUND')
         self.assertEqual(res.body, b'not found')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
-        self.assertIn(b'HTTP/1.0 404 NOT FOUND\r\n', response)
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
+        self.assertIn(b'HTTP/1.0 404 NOT FOUND\r\n', fd.response)
 
     def test_cookies(self):
         res = Response('ok')
         res.set_cookie('foo1', 'bar1')
-        res.set_cookie('foo2', 'bar2', path='/')
+        res.set_cookie('foo2', 'bar2', path='/', partitioned=True)
         res.set_cookie('foo3', 'bar3', domain='example.com:1234')
         res.set_cookie('foo4', 'bar4',
                        expires=datetime(2019, 11, 5, 2, 23, 54))
@@ -163,16 +193,18 @@ class TestResponse(unittest.TestCase):
         res.set_cookie('foo7', 'bar7', path='/foo', domain='example.com:1234',
                        expires=datetime(2019, 11, 5, 2, 23, 54), max_age=123,
                        secure=True, http_only=True)
+        res.delete_cookie('foo8', http_only=True)
         self.assertEqual(res.headers, {'Set-Cookie': [
             'foo1=bar1',
-            'foo2=bar2; Path=/',
+            'foo2=bar2; Path=/; Partitioned',
             'foo3=bar3; Domain=example.com:1234',
             'foo4=bar4; Expires=Tue, 05 Nov 2019 02:23:54 GMT',
             'foo5=bar5; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=123',
             'foo6=bar6; Secure; HttpOnly',
             'foo7=bar7; Path=/foo; Domain=example.com:1234; '
             'Expires=Tue, 05 Nov 2019 02:23:54 GMT; Max-Age=123; Secure; '
-            'HttpOnly'
+            'HttpOnly',
+            'foo8=; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly',
         ]})
 
     def test_redirect(self):
@@ -188,36 +220,14 @@ class TestResponse(unittest.TestCase):
             Response.redirect('/foo\x0d\x0a\x0d\x0a<p>Foo</p>')
 
     def test_send_file(self):
-        files = [
-            ('test.txt', 'text/plain'),
-            ('test.gif', 'image/gif'),
-            ('test.jpg', 'image/jpeg'),
-            ('test.png', 'image/png'),
-            ('test.html', 'text/html'),
-            ('test.css', 'text/css'),
-            ('test.js', 'application/javascript'),
-            ('test.json', 'application/json'),
-            ('test.bin', 'application/octet-stream'),
-        ]
-        for file, content_type in files:
-            res = Response.send_file('tests/files/' + file)
-            self.assertEqual(res.status_code, 200)
-            self.assertEqual(res.headers['Content-Type'], content_type)
-            fd = io.BytesIO()
-            res.write(fd)
-            response = fd.getvalue()
-            self.assertEqual(response, (
-                b'HTTP/1.0 200 OK\r\nContent-Type: ' + content_type.encode()
-                + b'\r\n\r\nfoo\n'))
         res = Response.send_file('tests/files/test.txt',
                                  content_type='text/html')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/html')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
         self.assertEqual(
-            response,
+            fd.response,
             b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
 
     def test_send_file_small_buffer(self):
@@ -227,11 +237,10 @@ class TestResponse(unittest.TestCase):
                                  content_type='text/html')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/html')
-        fd = io.BytesIO()
-        res.write(fd)
-        response = fd.getvalue()
+        fd = FakeStreamAsync()
+        self._run(res.write(fd))
         self.assertEqual(
-            response,
+            fd.response,
             b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nfoo\n')
         Response.send_file_buffer_size = original_buffer_size
 

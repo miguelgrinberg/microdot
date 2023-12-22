@@ -5,12 +5,12 @@ Request.max_content_length = 1024 * 1024  # 1MB (change as needed)
 
 
 @app.get('/')
-def index(request):
+async def index(request):
     return send_file('index.html')
 
 
 @app.post('/upload')
-def upload(request):
+async def upload(request):
     # obtain the filename and size from request headers
     filename = request.headers['Content-Disposition'].split(
         'filename=')[1].strip('"')
@@ -22,7 +22,7 @@ def upload(request):
     # write the file to the files directory in 1K chunks
     with open('files/' + filename, 'wb') as f:
         while size > 0:
-            chunk = request.stream.read(min(size, 1024))
+            chunk = await request.stream.read(min(size, 1024))
             f.write(chunk)
             size -= len(chunk)
 

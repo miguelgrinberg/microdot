@@ -1,8 +1,8 @@
-from microdot_asgi import Microdot
+from microdot.asgi import Microdot
 
 app = Microdot()
 
-htmldoc = '''<!DOCTYPE html>
+html = '''<!DOCTYPE html>
 <html>
     <head>
         <title>Microdot Example Page</title>
@@ -21,7 +21,7 @@ htmldoc = '''<!DOCTYPE html>
 
 @app.route('/')
 async def hello(request):
-    return htmldoc, 200, {'Content-Type': 'text/html'}
+    return html, 200, {'Content-Type': 'text/html'}
 
 
 @app.route('/shutdown')

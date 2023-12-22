@@ -1,5 +1,0 @@
-[run]
-omit=
-    src/microdot_websocket_alt.py
-    src/microdot_asgi_websocket.py
-    src/microdot_ssl.py

@@ -1,5 +1,5 @@
 import unittest
-from microdot import urlencode, urldecode_str, urldecode_bytes
+from microdot.microdot import urlencode, urldecode_str, urldecode_bytes
 
 
 class TestURLEncode(unittest.TestCase):
