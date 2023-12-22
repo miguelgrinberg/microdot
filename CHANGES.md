@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 2.0.0** - 2023-12-22
+
+- Major redesign switching to asyncio as the base implementation (See the [Migration Guide](https://microdot.readthedocs.io/en/stable/migrating.html) in the docs for details) [#186](https://github.com/miguelgrinberg/microdot/issues/186) ([commit](https://github.com/miguelgrinberg/microdot/commit/20ea305fe793eb206b52af9eb5c5f3c1e9f57dbb))
+
 **Release 1.3.4** - 2023-11-08
 
 - Handle change in `wait_closed()` behavior in Python 3.12 [#177](https://github.com/miguelgrinberg/microdot/issues/177) ([commit](https://github.com/miguelgrinberg/microdot/commit/5550b20cdd347d59e2aa68f6ebf9e9abffaff9fc))

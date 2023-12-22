@@ -1,6 +1,6 @@
 [project]
 name = "microdot"
-version = "1.3.5.dev0"
+version = "2.0.0"
 authors = [
     { name = "Miguel Grinberg", email = "miguel.grinberg@gmail.com" },
 ]
