@@ -183,7 +183,7 @@ class TestResponse(unittest.TestCase):
     def test_cookies(self):
         res = Response('ok')
         res.set_cookie('foo1', 'bar1')
-        res.set_cookie('foo2', 'bar2', path='/')
+        res.set_cookie('foo2', 'bar2', path='/', partitioned=True)
         res.set_cookie('foo3', 'bar3', domain='example.com:1234')
         res.set_cookie('foo4', 'bar4',
                        expires=datetime(2019, 11, 5, 2, 23, 54))
@@ -196,7 +196,7 @@ class TestResponse(unittest.TestCase):
         res.delete_cookie('foo8', http_only=True)
         self.assertEqual(res.headers, {'Set-Cookie': [
             'foo1=bar1',
-            'foo2=bar2; Path=/',
+            'foo2=bar2; Path=/; Partitioned',
             'foo3=bar3; Domain=example.com:1234',
             'foo4=bar4; Expires=Tue, 05 Nov 2019 02:23:54 GMT',
             'foo5=bar5; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=123',

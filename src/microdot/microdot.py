@@ -572,7 +572,8 @@ class Response:
         self.is_head = False
 
     def set_cookie(self, cookie, value, path=None, domain=None, expires=None,
-                   max_age=None, secure=False, http_only=False):
+                   max_age=None, secure=False, http_only=False,
+                   partitioned=False):
         """Add a cookie to the response.
 
         :param cookie: The cookie's name.
@@ -584,6 +585,7 @@ class Response:
         :param max_age: The cookie's ``Max-Age`` value.
         :param secure: The cookie's ``secure`` flag.
         :param http_only: The cookie's ``HttpOnly`` flag.
+        :param partitioned: Whether the cookie is partitioned.
         """
         http_cookie = '{cookie}={value}'.format(cookie=cookie, value=value)
         if path:
@@ -602,6 +604,8 @@ class Response:
             http_cookie += '; Secure'
         if http_only:
             http_cookie += '; HttpOnly'
+        if partitioned:
+            http_cookie += '; Partitioned'
         if 'Set-Cookie' in self.headers:
             self.headers['Set-Cookie'].append(http_cookie)
         else:
