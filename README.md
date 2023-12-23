@@ -32,5 +32,10 @@ describes the backwards incompatible changes that were made.
 
 ## Resources
 
-- Documentation: [Latest](https://microdot.readthedocs.io/en/latest/) [Stable](https://microdot.readthedocs.io/en/stable/) [Legacy v1.x](https://microdot.readthedocs.io/en/v1/)
+- Documentation
+    - [Stable](https://microdot.readthedocs.io/en/stable/)
+    - [Latest](https://microdot.readthedocs.io/en/latest/)
+- Still using version 1?
+    - [Code](https://github.com/miguelgrinberg/microdot/tree/v1)
+    - [Documentation](https://microdot.readthedocs.io/en/v1/)
 - [Change Log](https://github.com/miguelgrinberg/microdot/blob/main/CHANGES.md)

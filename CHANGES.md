@@ -2,7 +2,14 @@
 
 **Release 2.0.0** - 2023-12-22
 
-- Major redesign switching to asyncio as the base implementation (See the [Migration Guide](https://microdot.readthedocs.io/en/stable/migrating.html) in the docs for details) [#186](https://github.com/miguelgrinberg/microdot/issues/186) ([commit](https://github.com/miguelgrinberg/microdot/commit/20ea305fe793eb206b52af9eb5c5f3c1e9f57dbb))
+- Major redesign [#186](https://github.com/miguelgrinberg/microdot/issues/186) ([commit](https://github.com/miguelgrinberg/microdot/commit/20ea305fe793eb206b52af9eb5c5f3c1e9f57dbb))
+    - Code reorganization as a `microdot` package
+    - Asyncio is now the core implementation
+    - New support for Server-Sent Events (SSE)
+    - Several extensions redesigned
+    - Support for "partitioned" cookies
+    - [Cross-compiling and freezing](https://microdot.readthedocs.io/en/stable/freezing.html) guidance
+    - A [Migration Guide](https://microdot.readthedocs.io/en/stable/migrating.html) to help transition to version 2 from older releases
 
 **Release 1.3.4** - 2023-11-08
 
