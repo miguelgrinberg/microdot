@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 2.0.1** - 2023-12-23
+
+- Addressed some inadvertent mistakes in the template extensions ([commit](https://github.com/miguelgrinberg/microdot/commit/bd18ceb4424e9dfb52b1e6d498edd260aa24fc53))
+
 **Release 2.0.0** - 2023-12-22
 
 - Major redesign [#186](https://github.com/miguelgrinberg/microdot/issues/186) ([commit](https://github.com/miguelgrinberg/microdot/commit/20ea305fe793eb206b52af9eb5c5f3c1e9f57dbb))
