@@ -462,7 +462,7 @@ the sub-applications to build the larger combined application::
     from customers import customers_app
     from orders import orders_app
 
-    async def create_app():
+    def create_app():
         app = Microdot()
         app.mount(customers_app, url_prefix='/customers')
         app.mount(orders_app, url_prefix='/orders')
