@@ -2,10 +2,10 @@ import asyncio
 import sys
 import unittest
 from microdot import Microdot
-from microdot.jinja import Template, init_templates
+from microdot.jinja import Template
 from microdot.test_client import TestClient
 
-init_templates('tests/templates')
+Template.initialize('tests/templates')
 
 
 @unittest.skipIf(sys.implementation.name == 'micropython',
@@ -49,7 +49,7 @@ class TestJinja(unittest.TestCase):
         self.assertEqual(res.body, b'Hello, foo!')
 
     def test_render_async_template_in_app(self):
-        init_templates('tests/templates', enable_async=True)
+        Template.initialize('tests/templates', enable_async=True)
 
         app = Microdot()
 
@@ -62,10 +62,10 @@ class TestJinja(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.body, b'Hello, foo!')
 
-        init_templates('tests/templates')
+        Template.initialize('tests/templates')
 
     def test_generate_async_template_in_app(self):
-        init_templates('tests/templates', enable_async=True)
+        Template.initialize('tests/templates', enable_async=True)
 
         app = Microdot()
 
@@ -78,4 +78,4 @@ class TestJinja(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.body, b'Hello, foo!')
 
-        init_templates('tests/templates')
+        Template.initialize('tests/templates')

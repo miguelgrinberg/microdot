@@ -3,30 +3,32 @@ from utemplate import recompile
 _loader = None
 
 
-def init_templates(template_dir='templates', loader_class=recompile.Loader):
-    """Initialize the templating subsystem.
-
-    :param template_dir: the directory where templates are stored. This
-                         argument is optional. The default is to load templates
-                         from a *templates* subdirectory.
-    :param loader_class: the ``utemplate.Loader`` class to use when loading
-                         templates. This argument is optional. The default is
-                         the ``recompile.Loader`` class, which automatically
-                         recompiles templates when they change.
-    """
-    global _loader
-    _loader = loader_class(None, template_dir)
-
-
 class Template:
     """A template object.
 
     :param template: The filename of the template to render, relative to the
                      configured template directory.
     """
+    @classmethod
+    def initialize(cls, template_dir='templates',
+                   loader_class=recompile.Loader):
+        """Initialize the templating subsystem.
+
+        :param template_dir: the directory where templates are stored. This
+                             argument is optional. The default is to load
+                             templates from a *templates* subdirectory.
+        :param loader_class: the ``utemplate.Loader`` class to use when loading
+                             templates. This argument is optional. The default
+                             is the ``recompile.Loader`` class, which
+                             automatically recompiles templates when they
+                             change.
+        """
+        global _loader
+        _loader = loader_class(None, template_dir)
+
     def __init__(self, template):
         if _loader is None:  # pragma: no cover
-            init_templates()
+            self.initialize()
         #: The name of the template
         self.name = template
         self.template = _loader.load(template)

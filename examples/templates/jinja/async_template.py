@@ -1,7 +1,7 @@
 from microdot import Microdot, Response
-from microdot.jinja import template, init_templates
+from microdot.jinja import Template
 
-init_templates('templates', enable_async=True)
+Template.initialize('templates', enable_async=True)
 app = Microdot()
 Response.default_content_type = 'text/html'
 
@@ -11,7 +11,7 @@ async def index(req):
     name = None
     if req.method == 'POST':
         name = req.form.get('name')
-    return await template('index.html').render_async(name=name)
+    return await Template('index.html').render_async(name=name)
 
 
 if __name__ == '__main__':

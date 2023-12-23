@@ -1,5 +1,5 @@
 from microdot import Microdot, Response
-from microdot.jinja import template
+from microdot.jinja import Template
 
 app = Microdot()
 Response.default_content_type = 'text/html'
@@ -7,12 +7,12 @@ Response.default_content_type = 'text/html'
 
 @app.route('/')
 async def index(req):
-    return template('page1.html').render(page='Page 1')
+    return Template('page1.html').render(page='Page 1')
 
 
 @app.route('/page2')
 async def page2(req):
-    return template('page2.html').render(page='Page 2')
+    return Template('page2.html').render(page='Page 2')
 
 
 if __name__ == '__main__':

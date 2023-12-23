@@ -129,11 +129,10 @@ are the asynchronous versions of these two methods.
 
 The default location from where templates are loaded is the *templates*
 subdirectory. This location can be changed with the
-:func:`init_templates <microdot.utemplate.init_templates>` function::
+:func:`Template.initialize <microdot.utemplate.Template.initialize>` class
+method::
 
-    from microdot.utemplate import init_templates
-
-    init_templates('my_templates')
+    Template.initialize('my_templates')
 
 Using the Jinja Engine
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -174,17 +173,15 @@ method, which returns a generator instead of a string.
 
 The default location from where templates are loaded is the *templates*
 subdirectory. This location can be changed with the
-:func:`init_templates <microdot.utemplate.init_templates>` function::
+:func:`Template.initialize <microdot.jinja.Template.initialize>` class method::
 
-    from microdot.jinja import init_templates
+    Template.initialize('my_templates')
 
-    init_templates('my_templates')
-
-The ``init_templates()`` function also accepts ``enable_async`` argument, which
+The ``initialize()`` method also accepts ``enable_async`` argument, which
 can be set to ``True`` if asynchronous rendering of templates is desired. If
 this option is enabled, then the
-:func:`render_async() <microdot.utemplate.Template.render_async>` and
-:func:`generate_async() <microdot.utemplate.Template.generate_async>` methods
+:func:`render_async() <microdot.jinja.Template.render_async>` and
+:func:`generate_async() <microdot.jinja.Template.generate_async>` methods
 must be used.
 
 .. note::

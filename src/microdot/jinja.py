@@ -3,36 +3,37 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 _jinja_env = None
 
 
-def init_templates(template_dir='templates', enable_async=False, **kwargs):
-    """Initialize the templating subsystem.
-
-    :param template_dir: the directory where templates are stored. This
-                         argument is optional. The default is to load templates
-                         from a *templates* subdirectory.
-    :param enable_async: set to ``True`` to enable the async rendering engine
-                         in Jinja, and the ``render_async()`` and
-                         ``generate_async()`` methods.
-    :param kwargs: any additional options to be passed to Jinja's
-                   ``Environment`` class.
-    """
-    global _jinja_env
-    _jinja_env = Environment(
-        loader=FileSystemLoader(template_dir),
-        autoescape=select_autoescape(),
-        enable_async=enable_async,
-        **kwargs
-    )
-
-
 class Template:
     """A template object.
 
     :param template: The filename of the template to render, relative to the
                      configured template directory.
     """
+    @classmethod
+    def initialize(cls, template_dir='templates', enable_async=False,
+                   **kwargs):
+        """Initialize the templating subsystem.
+
+        :param template_dir: the directory where templates are stored. This
+                             argument is optional. The default is to load
+                             templates from a *templates* subdirectory.
+        :param enable_async: set to ``True`` to enable the async rendering
+                             engine in Jinja, and the ``render_async()`` and
+                             ``generate_async()`` methods.
+        :param kwargs: any additional options to be passed to Jinja's
+                       ``Environment`` class.
+        """
+        global _jinja_env
+        _jinja_env = Environment(
+            loader=FileSystemLoader(template_dir),
+            autoescape=select_autoescape(),
+            enable_async=enable_async,
+            **kwargs
+        )
+
     def __init__(self, template):
         if _jinja_env is None:  # pragma: no cover
-            init_templates()
+            self.initialize()
         #: The name of the template
         self.name = template
         self.template = _jinja_env.get_template(template)

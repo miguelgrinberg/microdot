@@ -1,5 +1,5 @@
 from microdot import Microdot, Response
-from microdot.utemplate import template
+from microdot.utemplate import Template
 
 app = Microdot()
 Response.default_content_type = 'text/html'
@@ -10,7 +10,7 @@ async def index(req):
     name = None
     if req.method == 'POST':
         name = req.form.get('name')
-    return await template('index.html').render_async(name=name)
+    return await Template('index.html').render_async(name=name)
 
 
 if __name__ == '__main__':

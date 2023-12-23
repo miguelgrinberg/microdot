@@ -2,9 +2,9 @@ import asyncio
 import unittest
 from microdot import Microdot
 from microdot.test_client import TestClient
-from microdot.utemplate import Template, init_templates
+from microdot.utemplate import Template
 
-init_templates('tests/templates')
+Template.initialize('tests/templates')
 
 
 class TestUTemplate(unittest.TestCase):
