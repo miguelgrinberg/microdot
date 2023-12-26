@@ -39,7 +39,7 @@ extension.
 Any applications built using the asyncio extension will need to update their
 imports from this::
 
-    from microdot.asyncio import Microdot
+    from microdot_asyncio import Microdot
 
 to this::
 
@@ -94,7 +94,7 @@ as a single string::
 
 Streamed templates also have an asynchronous version::
 
-    return await Template('index.html').generate_async(title='Home')
+    return Template('index.html').generate_async(title='Home')
 
 Class-based user sessions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -138,5 +138,8 @@ deployed with standard WSGI servers such as Gunicorn.
 
 WebSocket support when using the WSGI extension is enabled when using a
 compatible web server. At this time only Gunicorn is supported for WebSocket.
+Given that WebSocket support is asynchronous, it would be better to switch to
+the ASGI extension, which has full support for WebSocket as defined in the ASGI
+specification.
 
 As before, the WSGI extension is not available under MicroPython.
