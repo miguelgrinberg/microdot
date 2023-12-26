@@ -297,7 +297,7 @@ match and the route will not be called.
 A special type ``path`` can be used to capture the remainder of the path as a
 single argument. The difference between an argument of type ``path`` and one of
 type ``string`` is that the latter stops capturing when a ``/`` appears in the
-URL.
+URL::
 
     @app.get('/tests/<path:path>')
     async def get_test(request, path):
