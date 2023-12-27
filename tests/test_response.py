@@ -1,5 +1,4 @@
 import asyncio
-from datetime import datetime
 import unittest
 from microdot import Response
 from tests.mock_socket import FakeStreamAsync
@@ -186,12 +185,12 @@ class TestResponse(unittest.TestCase):
         res.set_cookie('foo2', 'bar2', path='/', partitioned=True)
         res.set_cookie('foo3', 'bar3', domain='example.com:1234')
         res.set_cookie('foo4', 'bar4',
-                       expires=datetime(2019, 11, 5, 2, 23, 54))
+                       expires='Tue, 05 Nov 2019 02:23:54 GMT')
         res.set_cookie('foo5', 'bar5', max_age=123,
                        expires='Thu, 01 Jan 1970 00:00:00 GMT')
         res.set_cookie('foo6', 'bar6', secure=True, http_only=True)
         res.set_cookie('foo7', 'bar7', path='/foo', domain='example.com:1234',
-                       expires=datetime(2019, 11, 5, 2, 23, 54), max_age=123,
+                       expires='Tue, 05 Nov 2019 02:23:54 GMT', max_age=123,
                        secure=True, http_only=True)
         res.delete_cookie('foo8', http_only=True)
         self.assertEqual(res.headers, {'Set-Cookie': [

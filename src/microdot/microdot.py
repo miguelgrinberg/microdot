@@ -595,7 +595,7 @@ class Response:
         if expires:
             if isinstance(expires, str):
                 http_cookie += '; Expires=' + expires
-            else:
+            else:  # pragma: no cover
                 http_cookie += '; Expires=' + time.strftime(
                     '%a, %d %b %Y %H:%M:%S GMT', expires.timetuple())
         if max_age:
