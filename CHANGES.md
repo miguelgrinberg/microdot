@@ -1,5 +1,12 @@
 # Microdot change log
 
+**Release 2.0.2** - 2023-12-28
+
+- Support binary data in the SSE extension ([commit](https://github.com/miguelgrinberg/microdot/commit/1fc11193da0d298f5539e2ad218836910a13efb2))
+- Upgrade micropython tests to use v1.22 + initial CircuitPython testing work ([commit](https://github.com/miguelgrinberg/microdot/commit/79452a46992351ccad2c0317c20bf50be0d76641))
+- Improvements to migration guide ([commit](https://github.com/miguelgrinberg/microdot/commit/84842e39c360a8b3ddf36feac8af201fb19bbb0b))
+- Remove spurious async in documentation example [#187](https://github.com/miguelgrinberg/microdot/issues/187) ([commit](https://github.com/miguelgrinberg/microdot/commit/ad368be993e2e3007579f1d3880e36d60c71da92)) (thanks **Tak Tran**!)
+
 **Release 2.0.1** - 2023-12-23
 
 - Addressed some inadvertent mistakes in the template extensions ([commit](https://github.com/miguelgrinberg/microdot/commit/bd18ceb4424e9dfb52b1e6d498edd260aa24fc53))
