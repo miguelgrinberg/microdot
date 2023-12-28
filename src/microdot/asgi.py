@@ -45,6 +45,12 @@ class _BodyStream:  # pragma: no cover
 
 
 class Microdot(BaseMicrodot):
+    """A subclass of the core :class:`Microdot <microdot.Microdot>` class that
+    implements the ASGI protocol.
+
+    This class must be used as the application instance when running under an
+    ASGI web server.
+    """
     def __init__(self):
         super().__init__()
         self.embedded_server = False

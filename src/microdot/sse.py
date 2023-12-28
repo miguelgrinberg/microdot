@@ -3,6 +3,11 @@ import json
 
 
 class SSE:
+    """Server-Sent Events object.
+
+    An object of this class is sent to handler functions to manage the SSE
+    connection.
+    """
     def __init__(self):
         self.event = asyncio.Event()
         self.queue = []
@@ -40,19 +45,9 @@ def sse_response(request, event_function, *args, **kwargs):
     :param args: additional positional arguments to be passed to the response.
     :param kwargs: additional keyword arguments to be passed to the response.
 
-    Example::
-
-        @app.route('/events')
-        async def events_route(request):
-            async def events(request, sse):
-                # send an unnamed event with string data
-                await sse.send('hello')
-                # send an unnamed event with JSON data
-                await sse.send({'foo': 'bar'})
-                # send a named event
-                await sse.send('hello', event='greeting')
-
-            return sse_response(request, events)
+    This is a low-level function that can be used to implement a custom SSE
+    endpoint. In general the :func:`microdot.sse.with_sse` decorator should be
+    used instead.
     """
     sse = SSE()
 
@@ -95,9 +90,14 @@ def with_sse(f):
         @app.route('/events')
         @with_sse
         async def events(request, sse):
-            for i in range(10):
-                await asyncio.sleep(1)
-                await sse.send(f'{i}')
+            # send an unnamed event with string data
+            await sse.send('hello')
+
+            # send an unnamed event with JSON data
+            await sse.send({'foo': 'bar'})
+
+            # send a named event
+            await sse.send('hello', event='greeting')
     """
     async def sse_handler(request, *args, **kwargs):
         return sse_response(request, f, *args, **kwargs)

@@ -1,8 +1,8 @@
 API Reference
 =============
 
-``microdot`` module
--------------------
+Core API
+--------
 
 .. autoclass:: microdot.Microdot
    :members:
@@ -14,51 +14,57 @@ API Reference
    :members:
 
 
-``websocket`` extension
------------------------
+WebSocket
+---------
 
 .. automodule:: microdot.websocket
    :members:
 
-``utemplate`` templating extension
-----------------------------------
+Server-Sent Events (SSE)
+------------------------
+
+.. automodule:: microdot.sse
+   :members:
+
+Templates (uTemplate)
+---------------------
 
 .. automodule:: microdot.utemplate
    :members:
 
-``jinja`` templating extension
-------------------------------
+Templates (Jinja)
+-----------------
 
 .. automodule:: microdot.jinja
    :members:
 
-``session`` extension
----------------------
+User Sessions
+-------------
 
 .. automodule:: microdot.session
    :members:
 
-``cors`` extension
-------------------
+Cross-Origin Resource Sharing (CORS)
+------------------------------------
 
 .. automodule:: microdot.cors
    :members:
 
-``test_client`` extension
--------------------------
+Test Client
+-----------
 
 .. automodule:: microdot.test_client
    :members:
 
-``asgi`` extension
-------------------
+ASGI
+----
 
 .. autoclass:: microdot.asgi.Microdot
    :members:
    :exclude-members: shutdown, run
 
-``wsgi`` extension
--------------------
+WSGI
+----
 
 .. autoclass:: microdot.wsgi.Microdot
    :members:

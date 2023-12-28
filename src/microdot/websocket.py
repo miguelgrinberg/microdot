@@ -5,6 +5,11 @@ from microdot.microdot import MUTED_SOCKET_ERRORS
 
 
 class WebSocket:
+    """A WebSocket connection object.
+
+    An instance of this class is sent to handler functions to manage the
+    WebSocket connection.
+    """
     CONT = 0
     TEXT = 1
     BINARY = 2
@@ -26,6 +31,7 @@ class WebSocket:
             b'Sec-WebSocket-Accept: ' + response + b'\r\n\r\n')
 
     async def receive(self):
+        """Receive a message from the client."""
         while True:
             opcode, payload = await self._read_frame()
             send_opcode, data = self._process_websocket_frame(opcode, payload)
@@ -35,12 +41,20 @@ class WebSocket:
                 return data
 
     async def send(self, data, opcode=None):
+        """Send a message to the client.
+
+        :param data: the data to send, given as a string or bytes.
+        :param opcode: a custom frame opcode to use. If not given, the opcode
+                       is ``TEXT`` or ``BINARY`` depending on the type of the
+                       data.
+        """
         frame = self._encode_websocket_frame(
             opcode or (self.TEXT if isinstance(data, str) else self.BINARY),
             data)
         await self.request.sock[1].awrite(frame)
 
     async def close(self):
+        """Close the websocket connection."""
         if not self.closed:  # pragma: no cover
             self.closed = True
             await self.send(b'', self.CLOSE)

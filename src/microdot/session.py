@@ -134,7 +134,7 @@ def with_session(f):
             return 'Hello, World!'
 
     Note that the decorator does not save the session. To update the session,
-    call the :func:`update_session <microdot.session.update_session>` function.
+    call the :func:`session.save() <microdot.session.SessionDict.save>` method.
     """
     async def wrapper(request, *args, **kwargs):
         return await invoke_handler(

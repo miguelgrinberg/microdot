@@ -9,6 +9,12 @@ from microdot.websocket import WebSocket, websocket_upgrade, \
 
 
 class Microdot(BaseMicrodot):
+    """A subclass of the core :class:`Microdot <microdot.Microdot>` class that
+    implements the WSGI protocol.
+
+    This class must be used as the application instance when running under a
+    WSGI web server.
+    """
     def __init__(self):
         super().__init__()
         self.loop = asyncio.new_event_loop()

@@ -25,14 +25,15 @@ and incorporated into a custom MicroPython firmware.
 
 Use the following guidelines to know what files to copy:
 
-- For a minimal setup with only the base web server functionality, copy
+* For a minimal setup with only the base web server functionality, copy
   `microdot.py <https://github.com/miguelgrinberg/microdot/blob/main/src/microdot/microdot.py>`_
   into your project.
-- For a configuration that includes one or more optional extensions, create a
+* For a configuration that includes one or more optional extensions, create a
   *microdot* directory in your device and copy the following files:
-   - `__init__.py <https://github.com/miguelgrinberg/microdot/blob/main/src/microdot/__init__.py>`_
-   - `microdot.py <https://github.com/miguelgrinberg/microdot/blob/main/src/microdot/microdot.py>`_
-   - any needed `extensions <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot>`_.
+
+  * `__init__.py <https://github.com/miguelgrinberg/microdot/blob/main/src/microdot/__init__.py>`_
+  * `microdot.py <https://github.com/miguelgrinberg/microdot/blob/main/src/microdot/microdot.py>`_
+  * any needed `extensions <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot>`_.
 
 
 Getting Started
