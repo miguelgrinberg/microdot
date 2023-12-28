@@ -8,13 +8,23 @@ class SSE:
         self.queue = []
 
     async def send(self, data, event=None):
+        """Send an event to the client.
+
+        :param data: the data to send. It can be given as a string, bytes, dict
+                     or list. Dictionaries and lists are serialized to JSON.
+                     Any other types are converted to string before sending.
+        :param event: an optional event name, to send along with the data. If
+                      given, it must be a string.
+        """
         if isinstance(data, (dict, list)):
-            data = json.dumps(data)
-        elif not isinstance(data, str):
-            data = str(data)
-        data = f'data: {data}\n\n'
+            data = json.dumps(data).encode()
+        elif isinstance(data, str):
+            data = data.encode()
+        elif not isinstance(data, bytes):
+            data = str(data).encode()
+        data = b'data: ' + data + b'\n\n'
         if event:
-            data = f'event: {event}\n{data}'
+            data = b'event: ' + event.encode() + b'\n' + data
         self.queue.append(data)
         self.event.set()
 

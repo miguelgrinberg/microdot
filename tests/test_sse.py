@@ -26,6 +26,7 @@ class TestWebSocket(unittest.TestCase):
             await sse.send({'foo': 'bar'})
             await sse.send([42, 'foo', 'bar'])
             await sse.send(ValueError('foo'))
+            await sse.send(b'foo')
 
         client = TestClient(app)
         response = self._run(client.get('/sse'))
@@ -35,4 +36,5 @@ class TestWebSocket(unittest.TestCase):
                                          'event: test\ndata: bar\n\n'
                                          'data: {"foo": "bar"}\n\n'
                                          'data: [42, "foo", "bar"]\n\n'
+                                         'data: foo\n\n'
                                          'data: foo\n\n'))
