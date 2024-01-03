@@ -292,6 +292,8 @@ class TestClient:
             async def awrite(self, data):
                 if self.started:
                     h = WebSocket._parse_frame_header(data[0:2])
+                    if h[1] not in [WebSocket.TEXT, WebSocket.BINARY]:
+                        return
                     if h[3] < 0:
                         data = data[2 - h[3]:]
                     else:

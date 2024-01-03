@@ -1,7 +1,12 @@
 import binascii
 import hashlib
-from microdot import Response
-from microdot.microdot import MUTED_SOCKET_ERRORS
+from microdot import Request, Response
+from microdot.microdot import MUTED_SOCKET_ERRORS, print_exception
+
+
+class WebSocketError(Exception):
+    """Exception raised when an error occurs in a WebSocket connection."""
+    pass
 
 
 class WebSocket:
@@ -16,6 +21,18 @@ class WebSocket:
     CLOSE = 8
     PING = 9
     PONG = 10
+
+    #: Specify the maximum message size that can be received when calling the
+    #: ``receive()`` method. Messages with payloads that are larger than this
+    #: size will be rejected and the connection closed. Set to 0 to disable
+    #: the size check (be aware of potential security issues if you do this),
+    #: or to -1 to use the value set in
+    #: ``Request.max_body_length``. The default is -1.
+    #:
+    #: Example::
+    #:
+    #:    WebSocket.max_message_length = 4 * 1024  # up to 4KB messages
+    max_message_length = -1
 
     def __init__(self, request):
         self.request = request
@@ -86,7 +103,7 @@ class WebSocket:
         fin = header[0] & 0x80
         opcode = header[0] & 0x0f
         if fin == 0 or opcode == cls.CONT:  # pragma: no cover
-            raise OSError(32, 'Continuation frames not supported')
+            raise WebSocketError('Continuation frames not supported')
         has_mask = header[1] & 0x80
         length = header[1] & 0x7f
         if length == 126:
@@ -101,7 +118,7 @@ class WebSocket:
         elif opcode == self.BINARY:
             pass
         elif opcode == self.CLOSE:
-            raise OSError(32, 'Websocket connection closed')
+            raise WebSocketError('Websocket connection closed')
         elif opcode == self.PING:
             return self.PONG, payload
         elif opcode == self.PONG:  # pragma: no branch
@@ -128,7 +145,7 @@ class WebSocket:
     async def _read_frame(self):
         header = await self.request.sock[0].read(2)
         if len(header) != 2:  # pragma: no cover
-            raise OSError(32, 'Websocket connection closed')
+            raise WebSocketError('Websocket connection closed')
         fin, opcode, has_mask, length = self._parse_frame_header(header)
         if length == -2:
             length = await self.request.sock[0].read(2)
@@ -136,6 +153,10 @@ class WebSocket:
         elif length == -8:
             length = await self.request.sock[0].read(8)
             length = int.from_bytes(length, 'big')
+        max_allowed_length = Request.max_body_length \
+            if self.max_message_length == -1 else self.max_message_length
+        if length > max_allowed_length:
+            raise WebSocketError('Message too large')
         if has_mask:  # pragma: no cover
             mask = await self.request.sock[0].read(4)
         payload = await self.request.sock[0].read(length)
@@ -175,11 +196,19 @@ def websocket_wrapper(f, upgrade_function):
         ws = await upgrade_function(request)
         try:
             await f(request, ws, *args, **kwargs)
-            await ws.close()  # pragma: no cover
         except OSError as exc:
             if exc.errno not in MUTED_SOCKET_ERRORS:  # pragma: no cover
                 raise
-        return ''
+        except WebSocketError:
+            pass
+        except Exception as exc:
+            print_exception(exc)
+        finally:  # pragma: no cover
+            try:
+                await ws.close()
+            except Exception:
+                pass
+        return Response.already_handled
     return wrapper
 
 
