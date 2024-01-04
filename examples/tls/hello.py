@@ -1,4 +1,5 @@
 import ssl
+import sys
 from microdot import Microdot
 
 app = Microdot()
@@ -31,6 +32,7 @@ async def shutdown(request):
     return 'The server is shutting down...'
 
 
+ext = 'der' if sys.implementation.name == 'micropython' else 'pem'
 sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-sslctx.load_cert_chain('cert.pem', 'key.pem')
+sslctx.load_cert_chain('cert.' + ext, 'key.' + ext)
 app.run(port=4443, debug=True, ssl=sslctx)

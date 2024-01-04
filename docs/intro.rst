@@ -172,10 +172,8 @@ configure the web server.
     app.run(port=4443, debug=True, ssl=sslctx)
 
 .. note::
-   The ``ssl`` argument can only be used with CPython at this time, because
-   MicroPython's asyncio module does not currently support SSL certificates or
-   TLS encryption. Work on this is
-   `in progress <https://github.com/micropython/micropython/pull/11897>`_.
+   When using CPython, the certificate and key files must be given in PEM
+   format. When using MicroPython, these files must be given in DER format.
 
 Defining Routes
 ~~~~~~~~~~~~~~~
