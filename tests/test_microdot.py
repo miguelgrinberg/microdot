@@ -25,6 +25,14 @@ class TestMicrodot(unittest.TestCase):
         async def index2(req):
             return 'foo-async'
 
+        @app.route('/arg/<id>')
+        def index3(req, id):
+            return id
+
+        @app.route('/arg/async/<id>')
+        async def index4(req, id):
+            return f'async-{id}'
+
         client = TestClient(app)
 
         res = self._run(client.get('/'))
@@ -43,6 +51,24 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.headers['Content-Length'], '9')
         self.assertEqual(res.text, 'foo-async')
         self.assertEqual(res.body, b'foo-async')
+        self.assertEqual(res.json, None)
+
+        res = self._run(client.get('/arg/123'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.headers['Content-Length'], '3')
+        self.assertEqual(res.text, '123')
+        self.assertEqual(res.body, b'123')
+        self.assertEqual(res.json, None)
+
+        res = self._run(client.get('/arg/async/123'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.headers['Content-Length'], '9')
+        self.assertEqual(res.text, 'async-123')
+        self.assertEqual(res.body, b'async-123')
         self.assertEqual(res.json, None)
 
     def test_post_request(self):

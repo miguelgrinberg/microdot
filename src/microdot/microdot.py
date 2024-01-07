@@ -13,6 +13,7 @@ import time
 
 try:
     from inspect import iscoroutinefunction, iscoroutine
+    from functools import partial
 
     async def invoke_handler(handler, *args, **kwargs):
         """Invoke a handler and return the result.
@@ -23,7 +24,7 @@ try:
             ret = await handler(*args, **kwargs)
         else:
             ret = await asyncio.get_running_loop().run_in_executor(
-                None, handler, *args, **kwargs)
+                None, partial(handler, *args, **kwargs))
         return ret
 except ImportError:  # pragma: no cover
     def iscoroutine(coro):
