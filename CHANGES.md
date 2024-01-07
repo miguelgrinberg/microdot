@@ -1,5 +1,12 @@
 # Microdot change log
 
+**Release 2.0.3** - 2024-01-07
+
+- Add a limit to WebSocket message size [#193](https://github.com/miguelgrinberg/microdot/issues/193) ([commit](https://github.com/miguelgrinberg/microdot/commit/5d188e8c0ddef6ce633ca702dbdd4a90f2799597))
+- Pass keyword arguments to thread executor in the correct way [#195](https://github.com/miguelgrinberg/microdot/issues/195) ([commit](https://github.com/miguelgrinberg/microdot/commit/6712c47400d7c426c88032f65ab74466524eccab))
+- Update uasyncio library used in tests to include new TLS support ([commit](https://github.com/miguelgrinberg/microdot/commit/c8c91e83457d24320f22c9a74e80b15e06b072ca))
+- Documentation improvements ([commit](https://github.com/miguelgrinberg/microdot/commit/b80b6b64d02d21400ca8a5077f5ed1127cc202ae))
+
 **Release 2.0.2** - 2023-12-28
 
 - Support binary data in the SSE extension ([commit](https://github.com/miguelgrinberg/microdot/commit/1fc11193da0d298f5539e2ad218836910a13efb2))
