@@ -134,6 +134,21 @@ method::
 
     Template.initialize('my_templates')
 
+By default templates are automatically compiled the first time they are
+rendered, or when their last modified timestamp is more recent than the
+compiledo file's timestamp. This loading behavior can be changed by switching
+to a different template loader. For example, if the templates are pre-compiled,
+the timestamp check and compile steps can be removed by switching to the
+"compiled" template loader::
+
+    from utemplate import compiled
+    from microdot.utemplate import Template
+
+    Template.initialize(loader_class=compiled.Loader)
+
+Consult the `uTemplate documentation <https://github.com/pfalcon/utemplate>`_
+for additional information regarding template loaders.
+
 Using the Jinja Engine
 ^^^^^^^^^^^^^^^^^^^^^^
 
