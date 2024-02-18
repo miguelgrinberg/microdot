@@ -7,6 +7,8 @@ class TestURLPattern(unittest.TestCase):
         p = URLPattern('/')
         self.assertEqual(p.match('/'), {})
         self.assertIsNone(p.match('/foo'))
+        self.assertIsNone(p.match('foo'))
+        self.assertIsNone(p.match(''))
 
         p = URLPattern('/foo/bar')
         self.assertEqual(p.match('/foo/bar'), {})
@@ -23,6 +25,8 @@ class TestURLPattern(unittest.TestCase):
         p = URLPattern('/<arg>')
         self.assertEqual(p.match('/foo'), {'arg': 'foo'})
         self.assertIsNone(p.match('/'))
+        self.assertIsNone(p.match(''))
+        self.assertIsNone(p.match('foo/'))
         self.assertIsNone(p.match('/foo/'))
 
         p = URLPattern('/<arg>/')
@@ -82,7 +86,10 @@ class TestURLPattern(unittest.TestCase):
         p = URLPattern('/users/<re:[a-c]+:id>')
         self.assertEqual(p.match('/users/ab'), {'id': 'ab'})
         self.assertEqual(p.match('/users/bca'), {'id': 'bca'})
+        self.assertIsNone(p.match('/users'))
+        self.assertIsNone(p.match('/users/'))
         self.assertIsNone(p.match('/users/abcd'))
+        self.assertIsNone(p.match('/users/abcdx'))
 
     def test_many_arguments(self):
         p = URLPattern('/foo/<path:path>/<int:id>/bar/<name>')

@@ -8,7 +8,6 @@ servers for MicroPython and standard Python.
 import asyncio
 import io
 import json
-import re
 import time
 
 try:
@@ -798,8 +797,9 @@ class Response:
 class URLPattern():
     def __init__(self, url_pattern):
         self.url_pattern = url_pattern
-        self.pattern = ''
-        self.args = []
+        self.segments = []
+        self.regex = None
+        pattern = ''
         use_regex = False
         for segment in url_pattern.lstrip('/').split('/'):
             if segment and segment[0] == '<':
@@ -811,41 +811,82 @@ class URLPattern():
                 else:
                     type_ = 'string'
                     name = segment
+                parser = None
                 if type_ == 'string':
-                    pattern = '[^/]+'
+                    parser = self._string_segment
+                    pattern += '/([^/]+)'
                 elif type_ == 'int':
-                    pattern = '-?\\d+'
+                    parser = self._int_segment
+                    pattern += '/(-?\\d+)'
                 elif type_ == 'path':
-                    pattern = '.+'
+                    use_regex = True
+                    pattern += '/(.+)'
                 elif type_.startswith('re:'):
-                    pattern = type_[3:]
+                    use_regex = True
+                    pattern += '/({pattern})'.format(pattern=type_[3:])
                 else:
                     raise ValueError('invalid URL segment type')
-                use_regex = True
-                self.pattern += '/({pattern})'.format(pattern=pattern)
-                self.args.append({'type': type_, 'name': name})
+                self.segments.append({'parser': parser, 'name': name,
+                                      'type': type_})
             else:
-                self.pattern += '/{segment}'.format(segment=segment)
+                pattern += '/' + segment
+                self.segments.append({'parser': self._static_segment(segment)})
         if use_regex:
-            self.pattern = re.compile('^' + self.pattern + '$')
+            import re
+            self.regex = re.compile('^' + pattern + '$')
 
     def match(self, path):
-        if isinstance(self.pattern, str):
-            if path != self.pattern:
-                return
-            return {}
-        g = self.pattern.match(path)
-        if not g:
-            return
         args = {}
-        i = 1
-        for arg in self.args:
-            value = g.group(i)
-            if arg['type'] == 'int':
-                value = int(value)
-            args[arg['name']] = value
-            i += 1
+        if self.regex:
+            g = self.regex.match(path)
+            if not g:
+                return
+            i = 1
+            for segment in self.segments:
+                if 'name' not in segment:
+                    continue
+                value = g.group(i)
+                if segment['type'] == 'int':
+                    value = int(value)
+                args[segment['name']] = value
+                i += 1
+        else:
+            if len(path) == 0 or path[0] != '/':
+                return
+            path = path[1:]
+            args = {}
+            for segment in self.segments:
+                if path is None:
+                    return
+                arg, path = segment['parser'](path)
+                if arg is None:
+                    return
+                if 'name' in segment:
+                    if not arg:
+                        return
+                    args[segment['name']] = arg
+            if path is not None:
+                return
         return args
+
+    def _static_segment(self, segment):
+        def _static(value):
+            s = value.split('/', 1)
+            if s[0] == segment:
+                return '', s[1] if len(s) > 1 else None
+            return None, None
+        return _static
+
+    def _string_segment(self, value):
+        s = value.split('/', 1)
+        return s[0], s[1] if len(s) > 1 else None
+
+    def _int_segment(self, value):
+        s = value.split('/', 1)
+        try:
+            return int(s[0]), s[1] if len(s) > 1 else None
+        except ValueError:
+            return None, None
 
 
 class HTTPException(Exception):
