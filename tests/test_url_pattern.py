@@ -14,6 +14,7 @@ class TestURLPattern(unittest.TestCase):
         self.assertEqual(p.match('/foo/bar'), {})
         self.assertIsNone(p.match('/foo'))
         self.assertIsNone(p.match('/foo/bar/'))
+        self.assertIsNone(p.match('/foo/bar/baz'))
 
         p = URLPattern('/foo//bar/baz/')
         self.assertEqual(p.match('/foo//bar/baz/'), {})
@@ -28,27 +29,37 @@ class TestURLPattern(unittest.TestCase):
         self.assertIsNone(p.match(''))
         self.assertIsNone(p.match('foo/'))
         self.assertIsNone(p.match('/foo/'))
+        self.assertIsNone(p.match('/foo/bar'))
 
         p = URLPattern('/<arg>/')
         self.assertEqual(p.match('/foo/'), {'arg': 'foo'})
         self.assertIsNone(p.match('/'))
         self.assertIsNone(p.match('/foo'))
+        self.assertIsNone(p.match('/foo/bar'))
+        self.assertIsNone(p.match('/foo/bar/'))
 
         p = URLPattern('/<string:arg>')
         self.assertEqual(p.match('/foo'), {'arg': 'foo'})
         self.assertIsNone(p.match('/'))
         self.assertIsNone(p.match('/foo/'))
+        self.assertIsNone(p.match('/foo/bar'))
+        self.assertIsNone(p.match('/foo/bar/'))
 
         p = URLPattern('/<string:arg>/')
         self.assertEqual(p.match('/foo/'), {'arg': 'foo'})
         self.assertIsNone(p.match('/'))
         self.assertIsNone(p.match('/foo'))
+        self.assertIsNone(p.match('/foo/bar'))
+        self.assertIsNone(p.match('/foo/bar/'))
 
         p = URLPattern('/foo/<arg1>/bar/<arg2>')
         self.assertEqual(p.match('/foo/one/bar/two'),
                          {'arg1': 'one', 'arg2': 'two'})
         self.assertIsNone(p.match('/'))
         self.assertIsNone(p.match('/foo/'))
+        self.assertIsNone(p.match('/foo/bar'))
+        self.assertIsNone(p.match('/foo//bar/'))
+        self.assertIsNone(p.match('/foo//bar//'))
 
     def test_int_argument(self):
         p = URLPattern('/users/<int:id>')
