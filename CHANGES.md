@@ -1,5 +1,11 @@
 # Microdot change log
 
+**Release 2.0.4** - 2024-02-20
+
+- Do not use regexes for parsing simple URLs [#207](https://github.com/miguelgrinberg/microdot/issues/207) ([commit #1](https://github.com/miguelgrinberg/microdot/commit/38262c56d34784401659639b482a4a1224e1e59a) [commit #2](https://github.com/miguelgrinberg/microdot/commit/f6cba2c0f7e18e2f32b5adb779fb037b6c473eab))
+- Added documentation on using alternative uTemplate loaders ([commit](https://github.com/miguelgrinberg/microdot/commit/bf519478cbc6e296785241cd7d01edb23c317cd3))
+- Added CircuitPython builds ([commit](https://github.com/miguelgrinberg/microdot/commit/e44c271bae88f4327d3eda16d8780ac264d1ebab))
+
 **Release 2.0.3** - 2024-01-07
 
 - Add a limit to WebSocket message size [#193](https://github.com/miguelgrinberg/microdot/issues/193) ([commit](https://github.com/miguelgrinberg/microdot/commit/5d188e8c0ddef6ce633ca702dbdd4a90f2799597))
