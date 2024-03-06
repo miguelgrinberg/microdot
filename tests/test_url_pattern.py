@@ -26,10 +26,14 @@ class TestURLPattern(unittest.TestCase):
         p = URLPattern('/<arg>')
         self.assertEqual(p.match('/foo'), {'arg': 'foo'})
         self.assertIsNone(p.match('/'))
+        self.assertIsNone(p.match('//'))
         self.assertIsNone(p.match(''))
         self.assertIsNone(p.match('foo/'))
         self.assertIsNone(p.match('/foo/'))
+        self.assertIsNone(p.match('//foo/'))
+        self.assertIsNone(p.match('/foo//'))
         self.assertIsNone(p.match('/foo/bar'))
+        self.assertIsNone(p.match('/foo//bar'))
 
         p = URLPattern('/<arg>/')
         self.assertEqual(p.match('/foo/'), {'arg': 'foo'})
@@ -64,6 +68,8 @@ class TestURLPattern(unittest.TestCase):
     def test_int_argument(self):
         p = URLPattern('/users/<int:id>')
         self.assertEqual(p.match('/users/123'), {'id': 123})
+        self.assertEqual(p.match('/users/-123'), {'id': -123})
+        self.assertEqual(p.match('/users/0'), {'id': 0})
         self.assertIsNone(p.match('/users/'))
         self.assertIsNone(p.match('/users/abc'))
         self.assertIsNone(p.match('/users/123abc'))

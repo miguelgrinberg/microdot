@@ -862,8 +862,6 @@ class URLPattern():
                 if arg is None:
                     return
                 if 'name' in segment:
-                    if not arg:
-                        return
                     args[segment['name']] = arg
             if path is not None:
                 return
@@ -879,6 +877,8 @@ class URLPattern():
 
     def _string_segment(self, value):
         s = value.split('/', 1)
+        if len(s[0]) == 0:
+            return None, None
         return s[0], s[1] if len(s) > 1 else None
 
     def _int_segment(self, value):
