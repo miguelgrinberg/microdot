@@ -1191,7 +1191,7 @@ class Microdot:
         Example::
 
             import asyncio
-            from microdot_asyncio import Microdot
+            from microdot import Microdot
 
             app = Microdot()
 
@@ -1268,7 +1268,7 @@ class Microdot:
 
         Example::
 
-            from microdot_asyncio import Microdot
+            from microdot import Microdot
 
             app = Microdot()
 
