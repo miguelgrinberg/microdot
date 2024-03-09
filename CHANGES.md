@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 2.0.5** - 2024-03-09
+
+- Correct handling of 0 as an integer argument (regression from #207) [#212](https://github.com/miguelgrinberg/microdot/issues/212) ([commit](https://github.com/miguelgrinberg/microdot/commit/d0a4cf8fa7dfb1da7466157b18d3329a8cf9a5df))
+
 **Release 2.0.4** - 2024-02-20
 
 - Do not use regexes for parsing simple URLs [#207](https://github.com/miguelgrinberg/microdot/issues/207) ([commit #1](https://github.com/miguelgrinberg/microdot/commit/38262c56d34784401659639b482a4a1224e1e59a) [commit #2](https://github.com/miguelgrinberg/microdot/commit/f6cba2c0f7e18e2f32b5adb779fb037b6c473eab))
