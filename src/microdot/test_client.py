@@ -77,7 +77,7 @@ class TestClient:
     The following example shows how to create a test client for an application
     and send a test request::
 
-        from microdot_asyncio import Microdot
+        from microdot import Microdot
 
         app = Microdot()
 
