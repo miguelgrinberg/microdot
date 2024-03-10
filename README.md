@@ -32,10 +32,25 @@ describes the backwards incompatible changes that were made.
 
 ## Resources
 
-- Documentation
-    - [Stable](https://microdot.readthedocs.io/en/stable/)
-    - [Latest](https://microdot.readthedocs.io/en/latest/)
-- Still using version 1?
-    - [Code](https://github.com/miguelgrinberg/microdot/tree/v1)
-    - [Documentation](https://microdot.readthedocs.io/en/v1/)
 - [Change Log](https://github.com/miguelgrinberg/microdot/blob/main/CHANGES.md)
+- Documentation
+    - [Latest](https://microdot.readthedocs.io/en/latest/)
+    - [Stable (v2)](https://microdot.readthedocs.io/en/stable/)
+    - [Legacy (v1)](https://microdot.readthedocs.io/en/v1/) ([Code](https://github.com/miguelgrinberg/microdot/tree/v1))
+
+## Roadmap
+
+The following features are planned for future releases of Microdot, both for
+MicroPython and CPython:
+
+- Support for forms encoded in `multipart/form-data` format
+- Authentication support, similar to [Flask-Login](https://github.com/maxcountryman/flask-login) for Flask
+- OpenAPI integration, similar to [APIFairy](https://github.com/miguelgrinberg/apifairy) for Flask
+
+In addition to the above, the following extensions are also under consideration,
+but only for CPython:
+
+- Database integration through [SQLAlchemy](https://github.com/sqlalchemy/sqlalchemy)
+- Socket.IO support through [python-socketio](https://github.com/miguelgrinberg/python-socketio)
+
+Do you have other ideas to propose? Let's [discuss them](https://github.com/miguelgrinberg/microdot/discussions/new?category=ideas)!
