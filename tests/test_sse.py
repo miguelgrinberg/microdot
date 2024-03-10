@@ -23,6 +23,8 @@ class TestWebSocket(unittest.TestCase):
         async def handle_sse(request, sse):
             await sse.send('foo')
             await sse.send('bar', event='test')
+            await sse.send('bar', event='test', event_id='id42')
+            await sse.send('bar', event_id='id42')
             await sse.send({'foo': 'bar'})
             await sse.send([42, 'foo', 'bar'])
             await sse.send(ValueError('foo'))
@@ -34,6 +36,8 @@ class TestWebSocket(unittest.TestCase):
         self.assertEqual(response.headers['Content-Type'], 'text/event-stream')
         self.assertEqual(response.text, ('data: foo\n\n'
                                          'event: test\ndata: bar\n\n'
+                                         'event: test\nid: id42\ndata: bar\n\n'
+                                         'id: id42\ndata: bar\n\n'
                                          'data: {"foo": "bar"}\n\n'
                                          'data: [42, "foo", "bar"]\n\n'
                                          'data: foo\n\n'
