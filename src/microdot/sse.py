@@ -1,5 +1,6 @@
 import asyncio
 import json
+from microdot.helpers import wraps
 
 
 class SSE:
@@ -103,6 +104,7 @@ def with_sse(f):
             # send a named event
             await sse.send('hello', event='greeting')
     """
+    @wraps(f)
     async def sse_handler(request, *args, **kwargs):
         return sse_response(request, f, *args, **kwargs)
 

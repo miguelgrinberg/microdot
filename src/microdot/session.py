@@ -1,7 +1,6 @@
 import jwt
 from microdot.microdot import invoke_handler
-
-secret_key = None
+from microdot.helpers import wraps
 
 
 class SessionDict(dict):
@@ -136,13 +135,9 @@ def with_session(f):
     Note that the decorator does not save the session. To update the session,
     call the :func:`session.save() <microdot.session.SessionDict.save>` method.
     """
+    @wraps(f)
     async def wrapper(request, *args, **kwargs):
         return await invoke_handler(
             f, request, request.app._session.get(request), *args, **kwargs)
 
-    for attr in ['__name__', '__doc__', '__module__', '__qualname__']:
-        try:
-            setattr(wrapper, attr, getattr(f, attr))
-        except AttributeError:  # pragma: no cover
-            pass
     return wrapper
