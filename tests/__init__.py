@@ -9,3 +9,4 @@ from tests.test_sse import *  # noqa: F401, F403
 from tests.test_cors import *  # noqa: F401, F403
 from tests.test_utemplate import *  # noqa: F401, F403
 from tests.test_session import *  # noqa: F401, F403
+from tests.test_auth import *  # noqa: F401, F403
