@@ -56,13 +56,7 @@ class Session:
         if session is None:
             request.g._session = SessionDict(request, {})
             return request.g._session
-        try:
-            session = jwt.decode(session, self.secret_key,
-                                 algorithms=['HS256'])
-        except jwt.exceptions.PyJWTError:  # pragma: no cover
-            request.g._session = SessionDict(request, {})
-        else:
-            request.g._session = SessionDict(request, session)
+        request.g._session = SessionDict(request, self.decode(session))
         return request.g._session
 
     def update(self, request, session):
@@ -88,8 +82,7 @@ class Session:
         if not self.secret_key:
             raise ValueError('The session secret key is not configured')
 
-        encoded_session = jwt.encode(session, self.secret_key,
-                                     algorithm='HS256')
+        encoded_session = self.encode(session)
 
         @request.after_request
         def _update_session(request, response):
@@ -119,6 +112,18 @@ class Session:
             response.set_cookie('session', '', http_only=True,
                                 expires='Thu, 01 Jan 1970 00:00:01 GMT')
             return response
+
+    def encode(self, payload, secret_key=None):
+        return jwt.encode(payload, secret_key or self.secret_key,
+                          algorithm='HS256')
+
+    def decode(self, session, secret_key=None):
+        try:
+            payload = jwt.decode(session, secret_key or self.secret_key,
+                                 algorithms=['HS256'])
+        except jwt.exceptions.PyJWTError:  # pragma: no cover
+            return {}
+        return payload
 
 
 def with_session(f):
