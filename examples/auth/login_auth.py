@@ -1,7 +1,7 @@
 from hashlib import sha1
 from microdot import Microdot, redirect
 from microdot.session import Session
-from microdot.auth import LoginAuth
+from microdot.auth import Login
 
 
 def create_hash(password):
@@ -15,7 +15,7 @@ USERS = {
 
 app = Microdot()
 Session(app, secret_key='top-secret!')
-auth = LoginAuth()
+auth = Login()
 
 
 @auth.id_to_user
@@ -28,29 +28,34 @@ async def get_user_id(user):
     return user
 
 
-@app.route('/')
-@auth
-async def index(request):
-    return f'''
-        <h1>Login Auth Example</h1>
-        <p>Hello, {request.g.current_user}!</p>
-        <form method="POST" action="/logout">
-            <button type="submit">Logout</button>
-        </form>
-    ''', {'Content-Type': 'text/html'}
-
-
 @app.route('/login', methods=['GET', 'POST'])
 async def login(request):
     if request.method == 'GET':
         return '''
-            <h1>Login Auth Example</h1>
-            <form method="POST">
-                <input name="username" placeholder="username" autofocus>
-                <input name="password" type="password" placeholder="password">
-                <br><input name="remember_me" type="checkbox"> Remember me
-                <br><button type="submit">Login</button>
-            </form>
+            <!doctype html>
+            <html>
+              <body>
+                <h1>Please Login</h1>
+                <form method="POST">
+                  <p>
+                    Username<br>
+                    <input name="username" autofocus>
+                  </p>
+                  <p>
+                    Password:<br>
+                    <input name="password" type="password">
+                    <br>
+                  </p>
+                  <p>
+                    <input name="remember_me" type="checkbox"> Remember me
+                    <br>
+                  </p>
+                  <p>
+                    <button type="submit">Login</button>
+                  </p>
+                </form>
+              </body>
+            </html>
         ''', {'Content-Type': 'text/html'}
     username = request.form['username']
     password = request.form['password']
@@ -61,11 +66,37 @@ async def login(request):
         return redirect('/login')
 
 
+@app.route('/')
+@auth
+async def index(request):
+    return f'''
+        <!doctype html>
+        <html>
+          <body>
+            <h1>Hello, {request.g.current_user}!</h1>
+            <p>
+              <a href="/fresh">Click here</a> to access the fresh login page.
+            </p>
+            <form method="POST" action="/logout">
+              <button type="submit">Logout</button>
+            </form>
+          </body>
+        </html>
+    ''', {'Content-Type': 'text/html'}
+
+
 @app.get('/fresh')
 @auth.fresh
 async def fresh(request):
-    return '''
-        <h1>Fresh Login only</h1>
+    return f'''
+        <!doctype html>
+        <html>
+          <body>
+            <h1>Hello, {request.g.current_user}!</h1>
+            <p>This page requires a fresh login session.</p>
+            <p><a href="/">Go back</a> to the main page.</p>
+          </body>
+        </html>
     ''', {'Content-Type': 'text/html'}
 
 

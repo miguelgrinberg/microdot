@@ -2,7 +2,7 @@ import asyncio
 import binascii
 import unittest
 from microdot import Microdot
-from microdot.auth import BasicAuth, TokenAuth, LoginAuth
+from microdot.auth import BasicAuth, TokenAuth, Login
 from microdot.session import Session
 from microdot.test_client import TestClient
 
@@ -128,24 +128,25 @@ class TestAuth(unittest.TestCase):
     def test_login_auth(self):
         app = Microdot()
         Session(app, secret_key='secret')
-        login_auth = LoginAuth()
+        login_auth = Login()
 
         @login_auth.id_to_user
         def id_to_user(user_id):
-            return user_id
+            return {'id': int(user_id), 'name': f'user{user_id}'}
 
         @login_auth.user_to_id
         def user_to_id(user):
-            return user
+            return str(user['id'])
 
         @app.get('/')
         @login_auth
         def index(request):
-            return request.g.current_user
+            return request.g.current_user['name']
 
         @app.post('/login')
         async def login(request):
-            return await login_auth.login_user(request, 'user')
+            return await login_auth.login_user(
+                request, {'id': 123, 'name': 'user123'})
 
         @app.post('/logout')
         async def logout(request):
@@ -160,10 +161,12 @@ class TestAuth(unittest.TestCase):
         res = self._run(client.post('/login?next=/%3Ffoo=bar'))
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.headers['Location'], '/?foo=bar')
+        self.assertEqual(len(res.headers['Set-Cookie']), 1)
+        self.assertIn('session', client.cookies)
 
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.text, 'user')
+        self.assertEqual(res.text, 'user123')
 
         res = self._run(client.post('/logout'))
         self.assertEqual(res.status_code, 200)
@@ -174,7 +177,7 @@ class TestAuth(unittest.TestCase):
     def test_login_auth_bad_redirect(self):
         app = Microdot()
         Session(app, secret_key='secret')
-        login_auth = LoginAuth()
+        login_auth = Login()
 
         @login_auth.id_to_user
         def id_to_user(user_id):
@@ -197,3 +200,65 @@ class TestAuth(unittest.TestCase):
         res = self._run(client.post('/login?next=http://example.com'))
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.headers['Location'], '/')
+
+    def test_login_remember(self):
+        app = Microdot()
+        Session(app, secret_key='secret')
+        login_auth = Login()
+
+        @login_auth.id_to_user
+        def id_to_user(user_id):
+            return user_id
+
+        @login_auth.user_to_id
+        def user_to_id(user):
+            return user
+
+        @app.get('/')
+        @login_auth
+        def index(request):
+            return request.g.current_user
+
+        @app.post('/login')
+        async def login(request):
+            return await login_auth.login_user(request, 'user', remember=True)
+
+        @app.post('/logout')
+        async def logout(request):
+            await login_auth.logout_user(request)
+            return 'ok'
+
+        @app.get('/fresh')
+        @login_auth.fresh
+        async def fresh(request):
+            return f'fresh {request.g.current_user}'
+
+        client = TestClient(app)
+        res = self._run(client.post('/login?next=/%3Ffoo=bar'))
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.headers['Location'], '/?foo=bar')
+        self.assertEqual(len(res.headers['Set-Cookie']), 2)
+        self.assertIn('session', client.cookies)
+        self.assertIn('_remember', client.cookies)
+
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'user')
+        res = self._run(client.get('/fresh'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'fresh user')
+
+        del client.cookies['session']
+        print(client.cookies)
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        res = self._run(client.get('/fresh'))
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.headers['Location'], '/login?next=/fresh')
+
+        res = self._run(client.post('/logout'))
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse('_remember' in client.cookies)
+
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 302)

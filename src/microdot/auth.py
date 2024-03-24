@@ -93,7 +93,7 @@ class TokenAuth(HTTPAuth):
         self.error_callback = f
 
 
-class LoginAuth(BaseAuth):
+class Login(BaseAuth):
     def __init__(self, login_url='/login'):
         super().__init__()
         self.login_url = login_url
@@ -132,6 +132,7 @@ class LoginAuth(BaseAuth):
         async def _set_remember_cookie(request, response):
             response.set_cookie('_remember', remember_payload,
                                 max_age=days * 24 * 60 * 60)
+            print(response.headers)
             return response
 
     def _get_auth(self, request):
@@ -142,7 +143,7 @@ class LoginAuth(BaseAuth):
             remember_payload = request.app._session.decode(
                 request.cookies['_remember'])
             user_id = remember_payload.get('user_id')
-            if user_id:
+            if user_id:  # pragma: no branch
                 self._update_remember_cookie(
                     request, remember_payload.get('_days', 30), user_id)
                 session['_user_id'] = user_id
