@@ -598,7 +598,7 @@ class Response:
             else:  # pragma: no cover
                 http_cookie += '; Expires=' + time.strftime(
                     '%a, %d %b %Y %H:%M:%S GMT', expires.timetuple())
-        if max_age:
+        if max_age is not None:
             http_cookie += '; Max-Age=' + str(max_age)
         if secure:
             http_cookie += '; Secure'
@@ -616,10 +616,10 @@ class Response:
 
         :param cookie: The cookie's name.
         :param kwargs: Any cookie opens and flags supported by
-                       ``set_cookie()`` except ``expires``.
+                       ``set_cookie()`` except ``expires`` and ``max_age``.
         """
         self.set_cookie(cookie, '', expires='Thu, 01 Jan 1970 00:00:01 GMT',
-                        **kwargs)
+                        max_age=0, **kwargs)
 
     def complete(self):
         if isinstance(self.body, bytes) and \

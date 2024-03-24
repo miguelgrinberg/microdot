@@ -203,7 +203,8 @@ class TestResponse(unittest.TestCase):
             'foo7=bar7; Path=/foo; Domain=example.com:1234; '
             'Expires=Tue, 05 Nov 2019 02:23:54 GMT; Max-Age=123; Secure; '
             'HttpOnly',
-            'foo8=; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly',
+            ('foo8=; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0; '
+             'HttpOnly'),
         ]})
 
     def test_redirect(self):
