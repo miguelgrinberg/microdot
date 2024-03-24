@@ -26,6 +26,7 @@ Homepage = "https://github.com/miguelgrinberg/microdot"
 [project.optional-dependencies]
 docs = [
     "sphinx",
+    "pyjwt"
 ]
 
 [tool.setuptools]
