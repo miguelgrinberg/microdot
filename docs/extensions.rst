@@ -5,8 +5,8 @@ Microdot is a highly extensible web application framework. The extensions
 described in this section are maintained as part of the Microdot project in
 the same source code repository.
 
-WebSocket Support
-~~~~~~~~~~~~~~~~~
+WebSocket
+~~~~~~~~~
 
 .. list-table::
    :align: left
@@ -39,8 +39,8 @@ Example::
                 message = await ws.receive()
                 await ws.send(message)
 
-Server-Sent Events Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Server-Sent Events
+~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :align: left
@@ -78,8 +78,8 @@ Example::
    the SSE object. For bidirectional communication with the client, use the
    WebSocket extension.
 
-Rendering Templates
-~~~~~~~~~~~~~~~~~~~
+Templates
+~~~~~~~~~
 
 Many web applications use HTML templates for rendering content to clients.
 Microdot includes extensions to render templates with the
@@ -202,8 +202,8 @@ must be used.
 .. note::
     The Jinja extension is not compatible with MicroPython.
 
-Maintaining Secure User Sessions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Secure User Sessions
+~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :align: left
@@ -270,6 +270,67 @@ The :func:`save() <microdot.session.SessionDict.save>` and
 :func:`delete() <microdot.session.SessionDict.delete>` methods are used to update
 and destroy the user session respectively.
 
+Authentication
+~~~~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     - | `auth.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/auth.py>`_
+
+   * - Required external dependencies
+     - | None
+
+   * - Examples
+     - | `basic_auth.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/auth/basic_auth.py>`_
+       | `token_auth.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/auth/token_auth.py>`_
+
+The authentication extension provides helper classes for two commonly used
+authentication patterns, described below.
+
+Basic Authentication
+^^^^^^^^^^^^^^^^^^^^
+
+`Basic Authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+is a method of authentication that is part of the HTTP specification. It allows
+clients to authenticate to a server using a username and a password.
+
+To use Basic Authentication, create an instance of the :class:`BasicAuth <microdot.auth.BasicAuth>`
+class::
+
+    from microdot.auth import BasicAuth
+
+    auth = BasicAuth(app)
+
+Token Authentication
+^^^^^^^^^^^^^^^^^^^^
+
+User Logins
+~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     - | `login.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/auth.py>`_
+       | `session.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/session.py>`_
+
+   * - Required external dependencies
+     - | CPython: `PyJWT <https://pyjwt.readthedocs.io/>`_
+       | MicroPython: `jwt.py <https://github.com/micropython/micropython-lib/blob/master/python-ecosys/pyjwt/jwt.py>`_,
+                      `hmac.py <https://github.com/micropython/micropython-lib/blob/master/python-stdlib/hmac/hmac.py>`_
+
+   * - Examples
+     - | `login.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/login/login.py>`_
+
+
 Cross-Origin Resource Sharing (CORS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -305,8 +366,8 @@ Example::
     cors = CORS(app, allowed_origins=['https://example.com'],
                 allow_credentials=True)
 
-Testing with the Test Client
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Test Client
+~~~~~~~~~~~
 
 .. list-table::
    :align: left
@@ -342,8 +403,8 @@ Example::
 See the documentation for the :class:`TestClient <microdot.test_client.TestClient>`
 class for more details.
 
-Deploying on a Production Web Server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Production Deployments
+~~~~~~~~~~~~~~~~~~~~~~
 
 The ``Microdot`` class creates its own simple web server. This is enough for an
 application deployed with MicroPython, but when using CPython it may be useful
