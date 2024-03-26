@@ -1,6 +1,5 @@
-from time import time
-from microdot import abort, redirect
-from microdot.microdot import urlencode, invoke_handler
+from microdot import abort
+from microdot.microdot import invoke_handler
 
 
 class BaseAuth:
