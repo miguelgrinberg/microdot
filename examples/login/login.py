@@ -19,6 +19,7 @@ class User:
     def check_password(self, password):
         return self.create_hash(password) == self.password_hash
 
+
 USERS = {
     'user001': User('user001', 'susan', 'hello'),
     'user002': User('user002', 'david', 'bye'),
