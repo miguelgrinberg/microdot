@@ -306,8 +306,47 @@ class::
 
     auth = BasicAuth(app)
 
+Then, create an authentication function that returns a user and decorate it
+with ``@auth.authenticate``::
+
+    @auth.authenticate
+    async def verify_user(request, username, password):
+        user = load_user_from_database(username)
+        if user and user.verify_password(password):
+            return user
+
+Finally, use the ``auth`` instance as a decorator to protect your routes::
+
+    @app.route('/')
+    @auth
+    async def index(request):
+        return f'Hello, {request.g.current_user}!'
+
+Note the use of ``request.g.current_user`` to obtain the authenticate user.
+
 Token Authentication
 ^^^^^^^^^^^^^^^^^^^^
+
+To set up token authentication, create an instance of :class:`TokenAuth <microdot.auth.TokenAuth>`::
+
+    from microdot.auth import TokenAuth
+
+    auth = TokenAuth()
+
+Then add a function that verifies the token and returns the user it belongs to,
+or ``None`` if the token is invalid or expired::
+
+    @auth.authenticate
+    async def verify_token(request, token):
+        return load_user_from_token(token)
+
+As with Basic authentication, the ``auth`` instance is used as a decorator to
+protect your routes::
+
+    @app.route('/')
+    @auth
+    async def index(request):
+        return f'Hello, {request.g.current_user}!'
 
 User Logins
 ~~~~~~~~~~~
@@ -329,6 +368,7 @@ User Logins
 
    * - Examples
      - | `login.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/login/login.py>`_
+
 
 
 Cross-Origin Resource Sharing (CORS)
