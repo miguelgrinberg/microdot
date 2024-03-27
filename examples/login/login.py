@@ -1,16 +1,27 @@
 from hashlib import sha1
 from microdot import Microdot, redirect
 from microdot.session import Session
-from microdot.auth import Login
+from microdot.login import Login
 
 
-def create_hash(password):
-    return sha1(password).hexdigest()
+class User:
+    def __init__(self, id, username, password):
+        self.id = id
+        self.username = username
+        self.password_hash = self.create_hash(password)
 
+    def create_hash(self, password):
+        # note: to keep this example simple, passwords are hashed with the SHA1
+        # algorithm. In a real application, you should use a stronger
+        # algorithm, such as bcrypt.
+        return sha1(password.encode()).hexdigest()
+
+    def check_password(self, password):
+        return self.create_hash(password) == self.password_hash
 
 USERS = {
-    'susan': create_hash(b'hello'),
-    'david': create_hash(b'bye'),
+    'user001': User('user001', 'susan', 'hello'),
+    'user002': User('user002', 'david', 'bye'),
 }
 
 app = Microdot()
@@ -20,12 +31,8 @@ auth = Login()
 
 @auth.id_to_user
 async def get_user(user_id):
-    return user_id
-
-
-@auth.user_to_id
-async def get_user_id(user):
-    return user
+    print('get_user', user_id)
+    return USERS.get(user_id)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -60,10 +67,13 @@ async def login(request):
     username = request.form['username']
     password = request.form['password']
     remember_me = bool(request.form.get('remember_me'))
-    if USERS.get(username) == create_hash(password.encode()):
-        return await auth.login_user(request, username, remember=remember_me)
-    else:
-        return redirect('/login')
+
+    for user in USERS.values():
+        if user.username == username:
+            if user.check_password(password):
+                return await auth.login_user(request, user,
+                                             remember=remember_me)
+    return redirect('/login')
 
 
 @app.route('/')
@@ -73,7 +83,7 @@ async def index(request):
         <!doctype html>
         <html>
           <body>
-            <h1>Hello, {request.g.current_user}!</h1>
+            <h1>Hello, {request.g.current_user.username}!</h1>
             <p>
               <a href="/fresh">Click here</a> to access the fresh login page.
             </p>
@@ -92,7 +102,7 @@ async def fresh(request):
         <!doctype html>
         <html>
           <body>
-            <h1>Hello, {request.g.current_user}!</h1>
+            <h1>Hello, {request.g.current_user.username}!</h1>
             <p>This page requires a fresh login session.</p>
             <p><a href="/">Go back</a> to the main page.</p>
           </body>
