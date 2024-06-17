@@ -29,14 +29,21 @@ class Session:
     """
     secret_key = None
 
-    def __init__(self, app=None, secret_key=None):
+    def __init__(self, app=None, secret_key=None, cookie_options=None):
         self.secret_key = secret_key
+        self.cookie_options = cookie_options or {}
         if app is not None:
             self.initialize(app)
 
-    def initialize(self, app, secret_key=None):
+    def initialize(self, app, secret_key=None, cookie_options=None):
         if secret_key is not None:
             self.secret_key = secret_key
+        if cookie_options is not None:
+            self.cookie_options = cookie_options
+        if 'path' not in self.cookie_options:
+            self.cookie_options['path'] = '/'
+        if 'http_only' not in self.cookie_options:
+            self.cookie_options['http_only'] = True
         app._session = self
 
     def get(self, request):
@@ -86,7 +93,8 @@ class Session:
 
         @request.after_request
         def _update_session(request, response):
-            response.set_cookie('session', encoded_session, http_only=True)
+            response.set_cookie('session', encoded_session,
+                                **self.cookie_options)
             return response
 
     def delete(self, request):
@@ -109,8 +117,7 @@ class Session:
         """
         @request.after_request
         def _delete_session(request, response):
-            response.set_cookie('session', '', http_only=True,
-                                expires='Thu, 01 Jan 1970 00:00:01 GMT')
+            response.delete_cookie('session')
             return response
 
     def encode(self, payload, secret_key=None):

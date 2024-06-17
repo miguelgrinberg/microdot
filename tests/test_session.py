@@ -82,3 +82,55 @@ class TestSession(unittest.TestCase):
 
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
+
+    def test_session_default_path(self):
+        app = Microdot()
+        session_ext.initialize(app, secret_key='some-other-secret')
+        client = TestClient(app)
+
+        @app.get('/')
+        @with_session
+        def index(req, session):
+            session['foo'] = 'bar'
+            session.save()
+            return ''
+
+        @app.get('/child')
+        @with_session
+        def child(req, session):
+            return str(session.get('foo'))
+
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        res = self._run(client.get('/child'))
+        self.assertEqual(res.text, 'bar')
+
+    def test_session_custom_path(self):
+        app = Microdot()
+        session_ext.initialize(app, secret_key='some-other-secret',
+                               cookie_options={'path': '/child'})
+        client = TestClient(app)
+
+        @app.get('/')
+        @with_session
+        def index(req, session):
+            return str(session.get('foo'))
+
+        @app.get('/child')
+        @with_session
+        def child(req, session):
+            session['foo'] = 'bar'
+            session.save()
+            return ''
+
+        @app.get('/child/foo')
+        @with_session
+        def foo(req, session):
+            return str(session.get('foo'))
+
+        res = self._run(client.get('/child'))
+        self.assertEqual(res.status_code, 200)
+        res = self._run(client.get('/'))
+        self.assertEqual(res.text, 'None')
+        res = self._run(client.get('/child/foo'))
+        self.assertEqual(res.text, 'bar')

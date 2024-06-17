@@ -112,9 +112,13 @@ class TestClient:
             headers['Host'] = 'example.com:1234'
         return body, headers
 
-    def _process_cookies(self, headers):
+    def _process_cookies(self, path, headers):
         cookies = ''
         for name, value in self.cookies.items():
+            if isinstance(value, tuple):
+                value, cookie_path = value
+                if not path.startswith(cookie_path):
+                    continue
             if cookies:
                 cookies += '; '
             cookies += name + '=' + value
@@ -123,7 +127,7 @@ class TestClient:
                 headers['Cookie'] += '; ' + cookies
             else:
                 headers['Cookie'] = cookies
-        return cookies, headers
+        return headers
 
     def _render_request(self, method, path, headers, body):
         request_bytes = '{method} {path} HTTP/1.0\n'.format(
@@ -139,11 +143,13 @@ class TestClient:
         for cookie in cookies:
             cookie_name, cookie_value = cookie.split('=', 1)
             cookie_options = cookie_value.split(';')
+            path = '/'
             delete = False
             for option in cookie_options[1:]:
-                if option.strip().lower().startswith(
+                option = option.strip().lower()
+                if option.startswith(
                         'max-age='):  # pragma: no cover
-                    _, age = option.strip().split('=', 1)
+                    _, age = option.split('=', 1)
                     try:
                         age = int(age)
                     except ValueError:  # pragma: no cover
@@ -151,24 +157,29 @@ class TestClient:
                     if age <= 0:
                         delete = True
                         break
-                elif option.strip().lower().startswith('expires='):
-                    _, e = option.strip().split('=', 1)
+                elif option.startswith('expires='):
+                    _, e = option.split('=', 1)
                     # this is a very limited parser for cookie expiry
                     # that only detects a cookie deletion request when
                     # the date is 1/1/1970
                     if '1 jan 1970' in e.lower():  # pragma: no branch
                         delete = True
                         break
+                elif option.startswith('path='):
+                    _, path = option.split('=', 1)
             if delete:
                 if cookie_name in self.cookies:  # pragma: no branch
                     del self.cookies[cookie_name]
             else:
-                self.cookies[cookie_name] = cookie_options[0]
+                if path == '/':
+                    self.cookies[cookie_name] = cookie_options[0]
+                else:
+                    self.cookies[cookie_name] = (cookie_options[0], path)
 
     async def request(self, method, path, headers=None, body=None, sock=None):
         headers = headers or {}
         body, headers = self._process_body(body, headers)
-        cookies, headers = self._process_cookies(headers)
+        headers = self._process_cookies(path, headers)
         request_bytes = self._render_request(method, path, headers, body)
         if sock:
             reader = sock[0]
