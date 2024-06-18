@@ -1,5 +1,16 @@
 # Microdot change log
 
+**Release 2.0.6** - 2024-06-18
+
+- Add event ID to the SSE implementation [#213](https://github.com/miguelgrinberg/microdot/issues/213) ([commit](https://github.com/miguelgrinberg/microdot/commit/904d5fcaa2d19d939a719b8e68c4dee3eb470739)) (thanks **Hamsanger**!)
+- Configurable session cookie options [#242](https://github.com/miguelgrinberg/microdot/issues/242) ([commit](https://github.com/miguelgrinberg/microdot/commit/0151611fc84fec450820d673f4c4d70c32c990a7))
+- Improved cookie support in the test client ([commit](https://github.com/miguelgrinberg/microdot/commit/4cb155ee411dc2d9c9f15714cb32b25ba79b156a))
+- Cookie path support in session extension and test client ([commit](https://github.com/miguelgrinberg/microdot/commit/6ffb8a8fe920111c4d8c16e98715a0d5ee2d1da3))
+- Refactor `Session` class to make it more reusable ([commit](https://github.com/miguelgrinberg/microdot/commit/dea79c5ce224dec7858ffef45a42bed442fd3a5a))
+- Use `@functools.wraps` on decorated functions ([commit](https://github.com/miguelgrinberg/microdot/commit/f6876c0d154adcae96098405fb6a1fdf1ea4ec28))
+- Removed outdated import from documentation [#216](https://github.com/miguelgrinberg/microdot/issues/216) ([commit](https://github.com/miguelgrinberg/microdot/commit/6b1fd6191702e7a9ad934fddfcdd0a3cebea7c94)) (thanks **Carlo Colombo**!)
+- Add roadmap details to readme ([commit](https://github.com/miguelgrinberg/microdot/commit/a0ea439def238084c4d68309c0992b66ffd28ad6))
+
 **Release 2.0.5** - 2024-03-09
 
 - Correct handling of 0 as an integer argument (regression from #207) [#212](https://github.com/miguelgrinberg/microdot/issues/212) ([commit](https://github.com/miguelgrinberg/microdot/commit/d0a4cf8fa7dfb1da7466157b18d3329a8cf9a5df))
