@@ -193,6 +193,7 @@ class TestResponse(unittest.TestCase):
                        expires='Tue, 05 Nov 2019 02:23:54 GMT', max_age=123,
                        secure=True, http_only=True)
         res.delete_cookie('foo8', http_only=True)
+        res.delete_cookie('foo9', path='/s')
         self.assertEqual(res.headers, {'Set-Cookie': [
             'foo1=bar1',
             'foo2=bar2; Path=/; Partitioned',
@@ -205,6 +206,8 @@ class TestResponse(unittest.TestCase):
             'HttpOnly',
             ('foo8=; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0; '
              'HttpOnly'),
+            ('foo9=; Path=/s; Expires=Thu, 01 Jan 1970 00:00:01 GMT; '
+             'Max-Age=0'),
         ]})
 
     def test_redirect(self):

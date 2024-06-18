@@ -85,7 +85,7 @@ class TestSession(unittest.TestCase):
 
     def test_session_default_path(self):
         app = Microdot()
-        session_ext.initialize(app, secret_key='some-other-secret')
+        Session(app, secret_key='some-other-secret')
         client = TestClient(app)
 
         @app.get('/')
@@ -100,15 +100,26 @@ class TestSession(unittest.TestCase):
         def child(req, session):
             return str(session.get('foo'))
 
+        @app.get('/delete')
+        @with_session
+        def delete(req, session):
+            session.delete()
+            return ''
+
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 200)
         res = self._run(client.get('/child'))
         self.assertEqual(res.text, 'bar')
+        res = self._run(client.get('/delete'))
+        res = self._run(client.get('/child'))
+        self.assertEqual(res.text, 'None')
 
     def test_session_custom_path(self):
         app = Microdot()
+        session_ext = Session()
         session_ext.initialize(app, secret_key='some-other-secret',
-                               cookie_options={'path': '/child'})
+                               cookie_options={'path': '/child',
+                                               'http_only': False})
         client = TestClient(app)
 
         @app.get('/')
@@ -128,9 +139,20 @@ class TestSession(unittest.TestCase):
         def foo(req, session):
             return str(session.get('foo'))
 
+        @app.get('/child/delete')
+        @with_session
+        def delete(req, session):
+            session.delete()
+            return ''
+
         res = self._run(client.get('/child'))
         self.assertEqual(res.status_code, 200)
         res = self._run(client.get('/'))
         self.assertEqual(res.text, 'None')
         res = self._run(client.get('/child/foo'))
         self.assertEqual(res.text, 'bar')
+        res = self._run(client.get('/child/delete'))
+        res = self._run(client.get('/'))
+        self.assertEqual(res.text, 'None')
+        res = self._run(client.get('/child/foo'))
+        self.assertEqual(res.text, 'None')

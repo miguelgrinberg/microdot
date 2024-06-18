@@ -117,7 +117,7 @@ class Session:
         """
         @request.after_request
         def _delete_session(request, response):
-            response.delete_cookie('session')
+            response.delete_cookie('session', **self.cookie_options)
             return response
 
     def encode(self, payload, secret_key=None):

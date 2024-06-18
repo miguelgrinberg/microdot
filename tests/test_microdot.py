@@ -203,6 +203,7 @@ class TestMicrodot(unittest.TestCase):
                 req.cookies['one'] + req.cookies['two'] + req.cookies['three'])
             res.set_cookie('four', '4')
             res.delete_cookie('two', path='/')
+            res.delete_cookie('one', path='/bad')
             return res
 
         client = TestClient(app, cookies={'one': '1', 'two': '2'})

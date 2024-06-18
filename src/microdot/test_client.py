@@ -156,7 +156,6 @@ class TestClient:
                         age = 0
                     if age <= 0:
                         delete = True
-                        break
                 elif option.startswith('expires='):
                     _, e = option.split('=', 1)
                     # this is a very limited parser for cookie expiry
@@ -164,12 +163,15 @@ class TestClient:
                     # the date is 1/1/1970
                     if '1 jan 1970' in e.lower():  # pragma: no branch
                         delete = True
-                        break
                 elif option.startswith('path='):
                     _, path = option.split('=', 1)
             if delete:
                 if cookie_name in self.cookies:  # pragma: no branch
-                    del self.cookies[cookie_name]
+                    cookie_path = self.cookies[cookie_name][1] \
+                        if isinstance(self.cookies[cookie_name], tuple) \
+                        else '/'
+                    if path == cookie_path:
+                        del self.cookies[cookie_name]
             else:
                 if path == '/':
                     self.cookies[cookie_name] = cookie_options[0]
