@@ -774,7 +774,7 @@ class Response:
         first.
         """
         if content_type is None:
-            if filename.endswith(".gz"):
+            if filename.endswith('.gz'):
                 ext = filename[:-3].split('.')[-1]
             else:
                 ext = filename.split('.')[-1]
