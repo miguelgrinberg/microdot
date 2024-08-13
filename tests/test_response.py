@@ -280,12 +280,13 @@ class TestResponse(unittest.TestCase):
                          'application/octet-stream')
         self.assertEqual(res.headers['Content-Encoding'], 'gzip')
 
-    def test_send_file_with_correct_mime_type_and_content_encoding(self):
-        res = Response.send_file('tests/files/test.txt')
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.headers['Content-Type'], 'text/plain')
-
+    def test_send_file_gzip_handling(self):
         res = Response.send_file('tests/files/test.txt.gz')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'application/octet-stream')
+
+        res = Response.send_file('tests/files/test.txt.gz', compressed=True)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'], 'text/plain')
         self.assertEqual(res.headers['Content-Encoding'], 'gzip')

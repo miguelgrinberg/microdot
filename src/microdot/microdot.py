@@ -774,7 +774,7 @@ class Response:
         first.
         """
         if content_type is None:
-            if filename.endswith('.gz'):
+            if compressed and filename.endswith('.gz'):
                 ext = filename[:-3].split('.')[-1]
             else:
                 ext = filename.split('.')[-1]
@@ -789,7 +789,7 @@ class Response:
         if max_age is not None:
             headers['Cache-Control'] = 'max-age={}'.format(max_age)
 
-        if compressed or filename.endswith('.gz'):
+        if compressed:
             headers['Content-Encoding'] = compressed \
                 if isinstance(compressed, str) else 'gzip'
 
