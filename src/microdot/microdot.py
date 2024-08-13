@@ -778,7 +778,6 @@ class Response:
                 ext = filename[:-3].split('.')[-1]
             else:
                 ext = filename.split('.')[-1]
-                
             if ext in Response.types_map:
                 content_type = Response.types_map[ext]
             else:
