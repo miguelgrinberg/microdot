@@ -27,10 +27,11 @@ Homepage = "https://github.com/miguelgrinberg/microdot"
 
 [project.optional-dependencies]
 dev = [
+    "tox",
 ]
 docs = [
     "sphinx",
-    "pyjwt"
+    "pyjwt",
 ]
 
 [tool.setuptools]
