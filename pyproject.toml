@@ -14,6 +14,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 requires-python = ">=3.8"
+dependencies = [
+]
 
 [project.readme]
 file = "README.md"
@@ -24,6 +26,8 @@ Homepage = "https://github.com/miguelgrinberg/microdot"
 "Bug Tracker" = "https://github.com/miguelgrinberg/microdot/issues"
 
 [project.optional-dependencies]
+dev = [
+]
 docs = [
     "sphinx",
     "pyjwt"

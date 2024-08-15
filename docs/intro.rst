@@ -82,8 +82,34 @@ handler functions can be defined as ``async def`` or ``def`` functions, but
 ``async def`` functions are recommended for performance.
 
 The :func:`run() <microdot.Microdot.run>` method starts the application's web
-server on port 5000 by default. This method blocks while it waits for
-connections from clients.
+server on port 5000 by default, and creates its own asynchronous loop. This
+method blocks while it waits for connections from clients.
+
+For some applications it may be necessary to run the web server alongside other
+asynchronous tasks, on an already running loop. In that case, instead of
+``app.run()`` the web server can be started by invoking the
+:func:`start_server() <microdot.Microdot.start_server>` coroutine as shown in
+the following example::
+
+    import asyncio
+    from microdot import Microdot
+
+    app = Microdot()
+
+    @app.route('/')
+    async def index(request):
+        return 'Hello, world!'
+
+    async def main():
+        # start the server in a background task
+        server = asyncio.create_task(app.start_server())
+
+        # ... do other asynchronous work here ...
+
+        # cleanup before ending the application
+        await server
+
+    asyncio.run(main())
 
 Running with CPython
 ^^^^^^^^^^^^^^^^^^^^
@@ -145,8 +171,9 @@ changed by passing the ``port`` argument to the ``run()`` method.
 Web Server Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :func:`run() <microdot.Microdot.run>` method supports a few arguments to
-configure the web server.
+The :func:`run() <microdot.Microdot.run>` and
+:func:`start_server() <microdot.Microdot.start_server>` methods support a few
+arguments to configure the web server.
 
 - ``port``: The port number to listen on. Pass the desired port number in this
   argument to use a port different than the default of 5000. For example::
