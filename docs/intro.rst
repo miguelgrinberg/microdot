@@ -118,7 +118,7 @@ Running with CPython
    :align: left
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
+     - | `microdot.py <https://github.com/miguelgrinberg/microdot/blob/main/src/microdot/microdot.py>`_
 
    * - Required external dependencies
      - | None
@@ -144,7 +144,7 @@ Running with MicroPython
    :align: left
 
    * - Required Microdot source files
-     - | `microdot.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot.py>`_
+     - | `microdot.py <https://github.com/miguelgrinberg/microdot/blob/main/src/microdot/microdot.py>`_
 
    * - Required external dependencies
      - | None

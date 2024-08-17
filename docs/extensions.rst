@@ -286,7 +286,7 @@ Cross-Origin Resource Sharing (CORS)
      - | None
 
    * - Examples
-     - | `cors.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/cors/cors.py>`_
+     - | `app.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/cors/app.py>`_
 
 The CORS extension provides support for `Cross-Origin Resource Sharing
 (CORS) <https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS>`_. CORS is a
@@ -363,7 +363,7 @@ Using an ASGI Web Server
      - | `asgi.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/asgi.py>`_
 
    * - Required external dependencies
-     - | An ASGI web server, such as `Uvicorn <https://uvicorn.org/>`_.
+     - | An ASGI web server, such as `Uvicorn <https://www.uvicorn.org/>`_.
 
    * - Examples
      - | `hello_asgi.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/hello/hello_asgi.py>`_
