@@ -82,7 +82,7 @@ pydantic-core==2.14.5
     # via pydantic
 pyproject-hooks==1.0.0
     # via build
-quart==0.19.4
+quart==0.19.7
     # via -r requirements.in
 requests==2.32.0
     # via -r requirements.in
