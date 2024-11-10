@@ -1,5 +1,12 @@
 # Microdot change log
 
+**Release 2.0.7** - 2024-11-10
+
+- Accept responses with just a status code [#263](https://github.com/miguelgrinberg/microdot/issues/263) ([commit #1](https://github.com/miguelgrinberg/microdot/commit/4eac013087f807cafa244b8a6b7b0ed4c82ff150) [commit #2](https://github.com/miguelgrinberg/microdot/commit/c46e4291061046f1be13f300dd08645b71c16635))
+- Fixed compressed file content-type assignment [#251](https://github.com/miguelgrinberg/microdot/issues/251) ([commit](https://github.com/miguelgrinberg/microdot/commit/482ab6d5ca068d71ea6301f45918946161e9fcc1)) (thanks **Lukas Kremla**!)
+- Better documentation for start_server[#252](https://github.com/miguelgrinberg/microdot/issues/252) ([commit](https://github.com/miguelgrinberg/microdot/commit/0a021462e0c42c249d587a2d600f5a21a408adfc))
+- Fix URLs in documentation [#253](https://github.com/miguelgrinberg/microdot/issues/253) ([commit](https://github.com/miguelgrinberg/microdot/commit/5e5fc5e93e11cbf6e3dc8036494e8732d1815d3e)) (thanks **Stanislav Garanzha**!)
+
 **Release 2.0.6** - 2024-06-18
 
 - Add event ID to the SSE implementation [#213](https://github.com/miguelgrinberg/microdot/issues/213) ([commit](https://github.com/miguelgrinberg/microdot/commit/904d5fcaa2d19d939a719b8e68c4dee3eb470739)) (thanks **Hamsanger**!)
