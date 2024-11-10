@@ -274,6 +274,14 @@ class TestMicrodot(unittest.TestCase):
             return '<p>four</p>', 202, \
                 {'Content-Type': 'text/html; charset=UTF-8'}
 
+        @app.route('/status')
+        def five(req):
+            return 202
+
+        @app.route('/status-headers')
+        def six(req):
+            return 202, {'Content-Type': 'text/html; charset=UTF-8'}
+
         client = TestClient(app)
 
         res = self._run(client.get('/body'))
@@ -298,6 +306,18 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.headers['Content-Type'],
                          'text/html; charset=UTF-8')
         self.assertEqual(res.text, '<p>four</p>')
+
+        res = self._run(client.get('/status'))
+        self.assertEqual(res.text, '')
+        self.assertEqual(res.status_code, 202)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+
+        res = self._run(client.get('/status-headers'))
+        self.assertEqual(res.text, '')
+        self.assertEqual(res.status_code, 202)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/html; charset=UTF-8')
 
     def test_before_after_request(self):
         app = Microdot()

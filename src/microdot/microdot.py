@@ -520,10 +520,8 @@ class Response:
     :param body: The body of the response. If a dictionary or list is given,
                  a JSON formatter is used to generate the body. If a file-like
                  object or an async generator is given, a streaming response is
-                 used. If a string is given, it is encoded from UTF-8. If an
-                 integer is given and ``status_code`` isn't given, then the
-                 status code is assigned and the body is kept empty. Else, the
-                 body should be a byte sequence.
+                 used. If a string is given, it is encoded from UTF-8. Else,
+                 the body should be a byte sequence.
     :param status_code: The numeric HTTP status code of the response. The
                         default is 200.
     :param headers: A dictionary of headers to include in the response.
@@ -556,14 +554,11 @@ class Response:
     #: written to the client. Used to exit WebSocket connections cleanly.
     already_handled = None
 
-    def __init__(self, body='', status_code=None, headers=None, reason=None):
-        if body is None and status_code is None:
+    def __init__(self, body='', status_code=200, headers=None, reason=None):
+        if body is None and status_code == 200:
             body = ''
             status_code = 204
-        elif isinstance(body, int) and status_code is None:
-            status_code = int(body)
-            body = ''
-        self.status_code = status_code or 200
+        self.status_code = status_code
         self.headers = NoCaseDict(headers or {})
         self.reason = reason
         if isinstance(body, (dict, list)):
@@ -1374,7 +1369,12 @@ class Microdot:
                         if res is None:
                             res = await invoke_handler(
                                 f, req, **req.url_args)
+                        if isinstance(res, int):
+                            res = '', res
                         if isinstance(res, tuple):
+                            if isinstance(res[0], int):
+                                res = ('', res[0],
+                                       res[1] if len(res) > 1 else {})
                             body = res[0]
                             if isinstance(res[1], int):
                                 status_code = res[1]

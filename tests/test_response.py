@@ -109,18 +109,6 @@ class TestResponse(unittest.TestCase):
                       fd.response)
         self.assertTrue(fd.response.endswith(b'\r\n\r\n[1, "2"]'))
 
-    def test_create_status_code(self):
-        res = Response(202)
-        self.assertEqual(res.status_code, 202)
-        self.assertEqual(res.body, b'')
-        fd = FakeStreamAsync()
-        self._run(res.write(fd))
-        self.assertIn(b'HTTP/1.0 202 N/A\r\n', fd.response)
-        self.assertIn(b'Content-Length: 0\r\n', fd.response)
-        self.assertIn(b'Content-Type: text/plain; charset=UTF-8\r\n',
-                      fd.response)
-        self.assertTrue(fd.response.endswith(b'\r\n\r\n'))
-
     def test_create_from_none(self):
         res = Response(None)
         self.assertEqual(res.status_code, 204)
