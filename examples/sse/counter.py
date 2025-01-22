@@ -50,4 +50,4 @@ async def events(request, sse):
         i += 1
         await sse.send({'counter': i})
 
-app.run()
+app.run(debug=True)
