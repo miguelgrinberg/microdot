@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Microdot SSE Example</title>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <h1>Microdot SSE Example</h1>
+    <div id="log"></div>
+    <script>
+      const log = (text, color) => {
+        document.getElementById('log').innerHTML += `<span style="color: ${color}">${text}</span><br>`;
+      };
+
+      const eventSource = new EventSource('/events');
+
+      eventSource.onopen = () => {
+        log('Connection to server opened.', 'black');
+      };
+
+      eventSource.onmessage = (event) => {
+        log(`Received message: ${event.data}`, 'blue');
+      };
+
+      eventSource.onerror = (event) => {
+        log(`EventSource failed: ${event.type}`, 'red');
+      };
+    </script>
+  </body>
+</html>
