@@ -329,7 +329,8 @@ class Request:
         pass
 
     def __init__(self, app, client_addr, method, url, http_version, headers,
-                 body=None, stream=None, sock=None):
+                 body=None, stream=None, sock=None, url_prefix='',
+                 subapp=None):
         #: The application instance to which this request belongs.
         self.app = app
         #: The address of the client, as a tuple (host, port).
@@ -338,6 +339,12 @@ class Request:
         self.method = method
         #: The request URL, including the path and query string.
         self.url = url
+        #: The URL prefix, if the endpoint comes from a mounted
+        #: sub-application, or else ''.
+        self.url_prefix = url_prefix
+        #: The sub-application instance, or `None` if this isn't a mounted
+        #: endpoint.
+        self.subapp = subapp
         #: The path portion of the URL.
         self.path = url
         #: The query string portion of the URL.
@@ -959,7 +966,7 @@ class Microdot:
         def decorated(f):
             self.url_map.append(
                 ([m.upper() for m in (methods or ['GET'])],
-                 URLPattern(url_pattern), f))
+                 URLPattern(url_pattern), f, '', None))
             return f
         return decorated
 
@@ -1127,24 +1134,33 @@ class Microdot:
             return f
         return decorated
 
-    def mount(self, subapp, url_prefix=''):
+    def mount(self, subapp, url_prefix='', local=False):
         """Mount a sub-application, optionally under the given URL prefix.
 
         :param subapp: The sub-application to mount.
         :param url_prefix: The URL prefix to mount the application under.
+        :param local: When set to ``True``, the before, after and error request
+                      handlers only apply to endpoints defined in the
+                      sub-application. When ``False``, they apply to the entire
+                      application. The default is ``False``.
         """
-        for methods, pattern, handler in subapp.url_map:
+        for methods, pattern, handler, _prefix, _subapp in subapp.url_map:
             self.url_map.append(
                 (methods, URLPattern(url_prefix + pattern.url_pattern),
-                 handler))
-        for handler in subapp.before_request_handlers:
-            self.before_request_handlers.append(handler)
-        for handler in subapp.after_request_handlers:
-            self.after_request_handlers.append(handler)
-        for handler in subapp.after_error_request_handlers:
-            self.after_error_request_handlers.append(handler)
-        for status_code, handler in subapp.error_handlers.items():
-            self.error_handlers[status_code] = handler
+                 handler, url_prefix + _prefix, _subapp or subapp))
+        if not local:
+            for handler in subapp.before_request_handlers:
+                self.before_request_handlers.append(handler)
+            subapp.before_request_handlers = []
+            for handler in subapp.after_request_handlers:
+                self.after_request_handlers.append(handler)
+            subapp.after_request_handlers = []
+            for handler in subapp.after_error_request_handlers:
+                self.after_error_request_handlers.append(handler)
+            subapp.after_error_request_handlers = []
+            for status_code, handler in subapp.error_handlers.items():
+                self.error_handlers[status_code] = handler
+            subapp.error_handlers = {}
 
     @staticmethod
     def abort(status_code, reason=None):
@@ -1302,23 +1318,28 @@ class Microdot:
     def find_route(self, req):
         method = req.method.upper()
         if method == 'OPTIONS' and self.options_handler:
-            return self.options_handler(req)
+            return self.options_handler(req), '', None
         if method == 'HEAD':
             method = 'GET'
         f = 404
-        for route_methods, route_pattern, route_handler in self.url_map:
+        p = ''
+        s = None
+        for route_methods, route_pattern, route_handler, url_prefix, subapp \
+                in self.url_map:
             req.url_args = route_pattern.match(req.path)
             if req.url_args is not None:
+                p = url_prefix
+                s = subapp
                 if method in route_methods:
                     f = route_handler
                     break
                 else:
                     f = 405
-        return f
+        return f, p, s
 
     def default_options_handler(self, req):
         allow = []
-        for route_methods, route_pattern, route_handler in self.url_map:
+        for route_methods, route_pattern, _, _, _ in self.url_map:
             if route_pattern.match(req.path) is not None:
                 allow.extend(route_methods)
         if 'GET' in allow:
@@ -1349,43 +1370,76 @@ class Microdot:
                 method=req.method, path=req.path,
                 status_code=res.status_code))
 
+    def get_request_handlers(self, req, attr, local_first=True):
+        handlers = getattr(self, attr + '_handlers')
+        local_handlers = getattr(req.subapp, attr + '_handlers') \
+            if req and req.subapp else []
+        return local_handlers + handlers if local_first \
+            else handlers + local_handlers
+
+    async def error_response(self, req, status_code, reason=None):
+        if req and req.subapp and status_code in req.subapp.error_handlers:
+            return await invoke_handler(
+                req.subapp.error_handlers[status_code], req)
+        elif status_code in self.error_handlers:
+            return await invoke_handler(self.error_handlers[status_code], req)
+        return reason or 'N/A', status_code
+
     async def dispatch_request(self, req):
         after_request_handled = False
         if req:
             if req.content_length > req.max_content_length:
-                if 413 in self.error_handlers:
-                    res = await invoke_handler(self.error_handlers[413], req)
-                else:
-                    res = 'Payload too large', 413
+                # the request body is larger than allowed
+                res = await self.error_response(req, 413, 'Payload too large')
             else:
-                f = self.find_route(req)
+                # find the route in the app's URL map
+                f, req.url_prefix, req.subapp = self.find_route(req)
+
                 try:
                     res = None
                     if callable(f):
-                        for handler in self.before_request_handlers:
+                        # invoke the before request handlers
+                        for handler in self.get_request_handlers(
+                                req, 'before_request', False):
                             res = await invoke_handler(handler, req)
                             if res:
                                 break
+
+                        # invoke the endpoint handler
                         if res is None:
-                            res = await invoke_handler(
-                                f, req, **req.url_args)
+                            res = await invoke_handler(f, req, **req.url_args)
+
+                        # process the response
                         if isinstance(res, int):
+                            # an integer response is taken as a status code
+                            # with an empty body
                             res = '', res
                         if isinstance(res, tuple):
+                            # handle a tuple response
                             if isinstance(res[0], int):
+                                # a tuple that starts with an int has an empty
+                                # body
                                 res = ('', res[0],
                                        res[1] if len(res) > 1 else {})
                             body = res[0]
                             if isinstance(res[1], int):
+                                # extract the status code and headers (if
+                                # available)
                                 status_code = res[1]
                                 headers = res[2] if len(res) > 2 else {}
                             else:
+                                # if the status code is missing, assume 200
                                 status_code = 200
                                 headers = res[1]
                             res = Response(body, status_code, headers)
                         elif not isinstance(res, Response):
+                            # any other response types are wrapped in a
+                            # Response object
                             res = Response(res)
-                        for handler in self.after_request_handlers:
+
+                        # invoke the after request handlers
+                        for handler in self.get_request_handlers(
+                                req, 'after_request', True):
                             res = await invoke_handler(
                                 handler, req, res) or res
                         for handler in req.after_request_handlers:
@@ -1393,50 +1447,62 @@ class Microdot:
                                 handler, req, res) or res
                         after_request_handled = True
                     elif isinstance(f, dict):
+                        # the response from an OPTIONS request is a dict with
+                        # headers
                         res = Response(headers=f)
-                    elif f in self.error_handlers:
-                        res = await invoke_handler(self.error_handlers[f], req)
                     else:
-                        res = 'Not found', f
+                        # if the route is not found, return a 404 or 405
+                        # response as appropriate
+                        res = await self.error_response(req, f, 'Not found')
                 except HTTPException as exc:
-                    if exc.status_code in self.error_handlers:
-                        res = self.error_handlers[exc.status_code](req)
-                    else:
-                        res = exc.reason, exc.status_code
+                    # an HTTP exception was raised while handling this request
+                    res = await self.error_response(req, exc.status_code,
+                                                    exc.reason)
                 except Exception as exc:
+                    # an unexpected exception was raised while handling this
+                    # request
                     print_exception(exc)
-                    exc_class = None
+
+                    # invoke the error handler for the exception class if one
+                    # exists
+                    handler = None
                     res = None
-                    if exc.__class__ in self.error_handlers:
-                        exc_class = exc.__class__
+                    if req.subapp and exc.__class__ in \
+                            req.subapp.error_handlers:
+                        handler = req.subapp.error_handlers[exc.__class__]
+                    elif exc.__class__ in self.error_handlers:
+                        handler = self.error_handlers[exc.__class__]
                     else:
+                        # walk up the exception class hierarchy to try to find
+                        # a handler
                         for c in mro(exc.__class__)[1:]:
-                            if c in self.error_handlers:
-                                exc_class = c
+                            if req.subapp and c in req.subapp.error_handlers:
+                                handler = req.subapp.error_handlers[c]
                                 break
-                    if exc_class:
+                            elif c in self.error_handlers:
+                                handler = self.error_handlers[c]
+                                break
+                    if handler:
                         try:
-                            res = await invoke_handler(
-                                self.error_handlers[exc_class], req, exc)
+                            res = await invoke_handler(handler, req, exc)
                         except Exception as exc2:  # pragma: no cover
                             print_exception(exc2)
                     if res is None:
-                        if 500 in self.error_handlers:
-                            res = await invoke_handler(
-                                self.error_handlers[500], req)
-                        else:
-                            res = 'Internal server error', 500
+                        # if there is still no response, issue a 500 error
+                        res = await self.error_response(
+                            req, 500, 'Internal server error')
         else:
-            if 400 in self.error_handlers:
-                res = await invoke_handler(self.error_handlers[400], req)
-            else:
-                res = 'Bad request', 400
+            # if the request could not be parsed, issue a 400 error
+            res = await self.error_response(req, 400, 'Bad request')
         if isinstance(res, tuple):
             res = Response(*res)
         elif not isinstance(res, Response):
             res = Response(res)
         if not after_request_handled:
-            for handler in self.after_error_request_handlers:
+            # if the request did not finish due to an error, invoke the after
+            # error request handler
+            for handler in self.get_request_handlers(
+                    req, 'after_error_request', True):
                 res = await invoke_handler(
                     handler, req, res) or res
         res.is_head = (req and req.method == 'HEAD')

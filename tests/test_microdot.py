@@ -794,7 +794,7 @@ class TestMicrodot(unittest.TestCase):
 
         @subapp.route('/app')
         def index(req):
-            return req.g.before + ':foo'
+            return req.g.before + ':' + req.url_prefix
 
         app = Microdot()
         app.mount(subapp, url_prefix='/sub')
@@ -811,4 +811,107 @@ class TestMicrodot(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'],
                          'text/plain; charset=UTF-8')
-        self.assertEqual(res.text, 'before:foo:after')
+        self.assertEqual(res.text, 'before:/sub:after')
+
+    def test_mount_local(self):
+        subapp1 = Microdot()
+        subapp2 = Microdot()
+
+        @subapp1.before_request
+        def before1(req):
+            req.g.before += ':before1'
+
+        @subapp1.after_error_request
+        def after_error1(req, res):
+            res.body += b':errorafter'
+
+        @subapp1.errorhandler(ValueError)
+        def value_error(req, exc):
+            return str(exc), 400
+
+        @subapp1.route('/')
+        def index1(req):
+            raise ZeroDivisionError()
+
+        @subapp1.route('/foo')
+        def foo(req):
+            return req.g.before + ':foo:' + req.url_prefix
+
+        @subapp1.route('/err')
+        def err(req):
+            raise ValueError('err')
+
+        @subapp1.route('/err2')
+        def err2(req):
+            class MyErr(ValueError):
+                pass
+
+            raise MyErr('err')
+
+        @subapp2.before_request
+        def before2(req):
+            req.g.before += ':before2'
+
+        @subapp2.after_request
+        def after2(req, res):
+            res.body += b':after'
+
+        @subapp2.errorhandler(405)
+        def method_not_found2(req):
+            return '405', 405
+
+        @subapp2.route('/bar')
+        def bar(req):
+            return req.g.before + ':bar:' + req.url_prefix
+
+        @subapp2.route('/baz')
+        def baz(req):
+            abort(405)
+
+        app = Microdot()
+
+        @app.before_request
+        def before(req):
+            req.g.before = 'before-app'
+
+        @app.after_request
+        def after(req, res):
+            res.body += b':after-app'
+
+        app.mount(subapp1, local=True)
+        app.mount(subapp2, url_prefix='/sub', local=True)
+
+        client = TestClient(app)
+
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 500)
+        self.assertEqual(res.text, 'Internal server error:errorafter')
+
+        res = self._run(client.get('/foo'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.text, 'before-app:before1:foo::after-app')
+
+        res = self._run(client.get('/err'))
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.text, 'err:errorafter')
+
+        res = self._run(client.get('/err2'))
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.text, 'err:errorafter')
+
+        res = self._run(client.get('/sub/bar'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers['Content-Type'],
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(res.text,
+                         'before-app:before2:bar:/sub:after:after-app')
+
+        res = self._run(client.post('/sub/bar'))
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(res.text, '405')
+
+        res = self._run(client.get('/sub/baz'))
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(res.text, '405')

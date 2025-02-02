@@ -445,7 +445,7 @@ Mounting a Sub-Application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Small Microdot applications can be written as a single source file, but this
-is not the best option for applications that past a certain size. To make it
+is not the best option for applications that pass a certain size. To make it
 simpler to write large applications, Microdot supports the concept of
 sub-applications that can be "mounted" on a larger application, possibly with
 a common URL prefix applied to all of its routes. For developers familiar with
@@ -501,11 +501,25 @@ The resulting application will have the customer endpoints available at
 */customers/* and the order endpoints available at */orders/*.
 
 .. note::
-   Before-request, after-request and error handlers defined in the
-   sub-application are also copied over to the main application at mount time.
-   Once installed in the main application, these handlers will apply to the
-   whole application and not just the sub-application in which they were
-   created.
+   During the handling of a request, the
+   :attr:`Request.url_prefix <microdot.Microdot.url_prefix>` attribute is
+   set to the URL prefix under which the sub-application was mounted, or an
+   empty string if the endpoint did not come from a sub-application or the
+   sub-application was mounted without a URL prefix. It is possible to issue a
+   redirect that is relative to the sub-application as follows::
+
+      return redirect(request.url_prefix + '/relative-url')
+
+When mounting an application as shown above, before-request, after-request and
+error handlers defined in the sub-application are copied over to the main
+application at mount time. Once installed in the main application, these
+handlers will apply to the whole application and not just the sub-application
+in which they were created.
+
+The :func:`mount() <microdot.Microdot.mount>` method has a ``local`` argument
+that defaults to ``False``. When this argument is set to ``True``, the
+before-request, after-request and error handlers defined in the sub-application
+will only apply to the sub-application.
 
 Shutting Down the Server
 ^^^^^^^^^^^^^^^^^^^^^^^^
