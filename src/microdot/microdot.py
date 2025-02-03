@@ -898,6 +898,9 @@ class URLPattern():
         except ValueError:
             return None, None
 
+    def __repr__(self):  # pragma: no cover
+        return 'URLPattern: {}'.format(self.url_pattern)
+
 
 class HTTPException(Exception):
     def __init__(self, status_code, reason=None):

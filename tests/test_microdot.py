@@ -915,3 +915,99 @@ class TestMicrodot(unittest.TestCase):
         res = self._run(client.get('/sub/baz'))
         self.assertEqual(res.status_code, 405)
         self.assertEqual(res.text, '405')
+
+    def test_many_mounts(self):
+        subsubapp = Microdot()
+
+        @subsubapp.before_request
+        def subsubapp_before(req):
+            req.g.before = 'subsubapp'
+
+        @subsubapp.route('/')
+        def subsubapp_index(req):
+            return f'{req.g.before}:{req.subapp == subsubapp}:{req.url_prefix}'
+
+        subapp = Microdot()
+
+        @subapp.before_request
+        def subapp_before(req):
+            req.g.before = 'subapp'
+
+        @subapp.route('/')
+        def subapp_index(req):
+            return f'{req.g.before}:{req.subapp == subapp}:{req.url_prefix}'
+
+        app = Microdot()
+
+        @app.before_request
+        def app_before(req):
+            req.g.before = 'app'
+
+        @app.route('/')
+        def app_index(req):
+            return f'{req.g.before}:{req.subapp is None}:{req.url_prefix}'
+
+        subapp.mount(subsubapp, url_prefix='/subsub')
+        app.mount(subapp, url_prefix='/sub')
+
+        client = TestClient(app)
+
+        res = self._run(client.get('/sub/subsub/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'subsubapp:True:/sub/subsub')
+
+        res = self._run(client.get('/sub/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'subsubapp:True:/sub')
+
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'subsubapp:True:')
+
+    def test_many_local_mounts(self):
+        subsubapp = Microdot()
+
+        @subsubapp.before_request
+        def subsubapp_before(req):
+            req.g.before = 'subsubapp'
+
+        @subsubapp.route('/')
+        def subsubapp_index(req):
+            return f'{req.g.before}:{req.subapp == subsubapp}:{req.url_prefix}'
+
+        subapp = Microdot()
+
+        @subapp.before_request
+        def subapp_before(req):
+            req.g.before = 'subapp'
+
+        @subapp.route('/')
+        def subapp_index(req):
+            return f'{req.g.before}:{req.subapp == subapp}:{req.url_prefix}'
+
+        app = Microdot()
+
+        @app.before_request
+        def app_before(req):
+            req.g.before = 'app'
+
+        @app.route('/')
+        def app_index(req):
+            return f'{req.g.before}:{req.subapp is None}:{req.url_prefix}'
+
+        subapp.mount(subsubapp, url_prefix='/subsub', local=True)
+        app.mount(subapp, url_prefix='/sub', local=True)
+
+        client = TestClient(app)
+
+        res = self._run(client.get('/sub/subsub/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'subsubapp:True:/sub/subsub')
+
+        res = self._run(client.get('/sub/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'subapp:True:/sub')
+
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'app:True:')
