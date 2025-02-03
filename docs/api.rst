@@ -44,6 +44,14 @@ User Sessions
 .. automodule:: microdot.session
    :members:
 
+Authentication
+--------------
+
+.. automodule:: microdot.auth
+   :inherited-members:
+   :special-members: __call__
+   :members:
+
 Cross-Origin Resource Sharing (CORS)
 ------------------------------------
 
