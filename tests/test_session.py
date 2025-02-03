@@ -37,7 +37,7 @@ class TestSession(unittest.TestCase):
 
         @app.post('/set')
         @with_session
-        async def save_session(req, session):
+        def save_session(req, session):
             session['name'] = 'joe'
             session.save()
             return 'OK'
