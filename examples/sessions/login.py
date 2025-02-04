@@ -1,3 +1,6 @@
+# This is a simple example that demonstrates how to use the user session, but
+# is not intended as a complete login solution. See the login subdirectory for
+# a more complete example.
 from microdot import Microdot, Response, redirect
 from microdot.session import Session, with_session
 
