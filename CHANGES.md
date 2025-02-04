@@ -1,5 +1,14 @@
 # Microdot change log
 
+**Release 2.1.0** - 2025-02-04
+
+- User login support ([commit](https://github.com/miguelgrinberg/microdot/commit/d807011ad006e53e70c4594d7eac04d03bb08681))
+- Basic and token authentication support ([commit](https://github.com/miguelgrinberg/microdot/commit/675c9787974da926af446974cd96ef224e0ee27f))
+- Added `local` argument to the `app.mount()` method, to define sub-application specific before and after request handlers ([commit](https://github.com/miguelgrinberg/microdot/commit/fd7931e1aec173c60f81dad18c1a102ed8f0e081))
+- Added `Request.url_prefix`, `Request.subapp` and local mounts ([commit](https://github.com/miguelgrinberg/microdot/commit/fd7931e1aec173c60f81dad18c1a102ed8f0e081))
+- Added a front end to the SSE example [#281](https://github.com/miguelgrinberg/microdot/issues/281) ([commit](https://github.com/miguelgrinberg/microdot/commit/d487a73c1ea5b3467e23907618b348ca52e0235c)) (thanks **Maxi**!)
+- Additional ``app.mount()`` unit tests ([commit](https://github.com/miguelgrinberg/microdot/commit/cd87abba30206ec6d3928e0aabacb2fccf7baf70))
+
 **Release 2.0.7** - 2024-11-10
 
 - Accept responses with just a status code [#263](https://github.com/miguelgrinberg/microdot/issues/263) ([commit #1](https://github.com/miguelgrinberg/microdot/commit/4eac013087f807cafa244b8a6b7b0ed4c82ff150) [commit #2](https://github.com/miguelgrinberg/microdot/commit/c46e4291061046f1be13f300dd08645b71c16635))
