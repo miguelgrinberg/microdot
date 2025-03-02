@@ -1,18 +1,25 @@
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-_jinja_env = None
-
 
 class Template:
     """A template object.
 
     :param template: The filename of the template to render, relative to the
                      configured template directory.
+    :param kwargs: any additional options to be passed to the Jinja
+                   environment's ``get_template()`` method.
     """
+    #: The Jinja environment.
+    jinja_env = None
+
     @classmethod
     def initialize(cls, template_dir='templates', enable_async=False,
                    **kwargs):
         """Initialize the templating subsystem.
+
+        This method is automatically invoked when the first template is
+        created. The application can call it explicitly if custom options need
+        to be provided.
 
         :param template_dir: the directory where templates are stored. This
                              argument is optional. The default is to load
@@ -23,20 +30,19 @@ class Template:
         :param kwargs: any additional options to be passed to Jinja's
                        ``Environment`` class.
         """
-        global _jinja_env
-        _jinja_env = Environment(
+        cls.jinja_env = Environment(
             loader=FileSystemLoader(template_dir),
             autoescape=select_autoescape(),
             enable_async=enable_async,
             **kwargs
         )
 
-    def __init__(self, template):
-        if _jinja_env is None:  # pragma: no cover
+    def __init__(self, template, **kwargs):
+        if self.jinja_env is None:  # pragma: no cover
             self.initialize()
-        #: The name of the template
+        #: The name of the template.
         self.name = template
-        self.template = _jinja_env.get_template(template)
+        self.template = self.jinja_env.get_template(template, **kwargs)
 
     def generate(self, *args, **kwargs):
         """Return a generator that renders the template in chunks, with the
