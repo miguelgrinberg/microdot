@@ -9,7 +9,8 @@ class Template:
     :param kwargs: any additional options to be passed to the Jinja
                    environment's ``get_template()`` method.
     """
-    #: The Jinja environment.
+    #: The Jinja environment. The ``initialize()`` method must be called before
+    #: this attribute is accessed.
     jinja_env = None
 
     @classmethod

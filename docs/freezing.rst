@@ -1,5 +1,8 @@
-Cross-Compiling and Freezing Microdot (MicroPython Only)
---------------------------------------------------------
+Cross-Compiling and Freezing Microdot
+-------------------------------------
+
+.. note::
+   This section only applies when using Microdot on MicroPython.
 
 Microdot is a fairly small framework, so its size is not something you need to
 be concerned about unless you are working with MicroPython on hardware with a
@@ -36,7 +39,7 @@ Cross-Compiling
 
 An issue that is common with low-end microcontroller boards is that they do not
 have enough RAM for the MicroPython compiler to compile the source files, but
-once the code is compiled they are able to run it without problems.
+once the code is compiled they are able to run it just fine.
 
 To address this, MicroPython allows you to cross-compile source files on your
 desktop or laptop computer and then upload their compiled versions to the
@@ -82,8 +85,8 @@ imported directly from the device's ROM, leaving more RAM available for
 application use.
 
 The process to create a custom firmware is unfortunately non-trivial and
-different depending on the device, so you will need to consult the MicroPython
-documentation that applies to your device to learn how to do this.
+different for each microcontroller platform, so you will need to consult the
+MicroPython documentation that applies to your device to learn how to do this.
 
 The part of the process that is common to all devices is the creation of a
 `manifest file <https://docs.micropython.org/en/latest/reference/manifest.html>`_

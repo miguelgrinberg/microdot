@@ -339,10 +339,11 @@ of letters or numbers::
         return 'User: ' + username
 
 The ``re`` type returns the URL component as a string, which sometimes may not
-be the most convenient. In such cases, the application can register a custom
-URL component type and provide a parser function. In the following example,
-a ``hex`` custom type is registered to automatically convert the arguments to
-numbers::
+be the most convenient. To convert a path component to something more
+meaningful than a string, the application can register a custom URL component
+type and provide a parser function that performs the conversion. In the
+following example, a ``hex`` custom type is registered to automatically
+convert hex numbers given in the path to numbers::
 
     from microdot import URLPattern
 
@@ -353,18 +354,18 @@ numbers::
         user = get_user_by_id(user_id)
         # ...
 
-In addition to the parser, the custom URL component can include a valid pattern
-as a regular expression. When a pattern is provided, the URL component will
-only match if the regular expression matches the value passed in the URL. The
-``hex`` example above can be expanded with a pattern as follows::
+In addition to the parser, the custom URL component can include a pattern,
+given as a regular expression. When a pattern is provided, the URL component
+will only match if the regular expression matches the value passed in the URL.
+The ``hex`` example above can be expanded with a pattern as follows::
 
     URLPattern.register_type('hex', pattern='[0-9a-fA-F]+',
                              parser=lambda value: int(value, 16))
 
 In cases where a pattern isn't provided, or when the pattern is unable to
-filter all invalid values, the parser function can return ``None`` to indicate
-a failed match. The next example shows how the ``hex`` type can be expanded to
-do that::
+filter out all invalid values, the parser function can return ``None`` to
+indicate a failed match. The next example shows how the parser for the ``hex``
+type can be expanded to do that::
 
     def hex_parser(value):
         try:
@@ -372,7 +373,7 @@ do that::
         except ValueError:
             return None
 
-    URLPattern.register_type('hex', pattern='[0-9a-fA-F]+', parser=hex_parser)
+    URLPattern.register_type('hex', parser=hex_parser)
 
 .. note::
    Dynamic path components are passed to route functions as keyword arguments,
@@ -931,18 +932,36 @@ Another option is to create a response object directly in the route function::
 Concurrency
 ~~~~~~~~~~~
 
-Microdot implements concurrency through the ``asyncio`` package. Applications
-must ensure their handlers do not block, as this will prevent other concurrent
-requests from being handled.
+Microdot implements concurrency through the ``asyncio`` package, which means
+that applications must be careful to prevent blocking in their handlers.
 
-When running under CPython, ``async def`` handler functions run as native 
-asyncio tasks, while ``def`` handler functions are executed in a
-`thread executor <https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor>`_
-to prevent them from blocking the asynchronous loop.
+"async def" handlers
+^^^^^^^^^^^^^^^^^^^^
+
+The recommendation for route handlers in Microdot is to use asynchronous
+functions, declared as ``async def``. Microdot executes these handler
+functions as native asynchronous tasks. The standard considerations for writing
+asynchronous code apply, and in particular blocking calls should be avoided to
+ensure the application runs smoothly and is always responsive.
+
+"def" handlers
+^^^^^^^^^^^^^^
+
+Microdot also supports the use of synchronous route handlers, declared as
+standard ``def`` functions. These handlers are handled differently under
+CPython and MicroPython.
+
+When running on CPython, Microdot executes synchronous handlers in a
+`thread executor <https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor>`_,
+which uses a thread pool. The use of blocking or CPU intensive code in these
+handlers does not have such a negative effect on the application, because
+handlers do not run on the same thread as the asynchronous loop. On the other
+hand, the application will be affected by threading issues such as those caused
+by the Global Interpreter Lock.
 
 Under MicroPython the situation is different. Most microcontroller boards
-implementing MicroPython do not have threading support or executors, so ``def``
-handler functions in this platform can only run in the main and only thread.
-These functions will block the asynchronous loop when they take too long to
-complete so ``async def`` handlers properly written to allow other handlers to
-run in parallel should be preferred.
+do not have or have very limited threading support, so Microdot executes
+synchronous handlers in the main and often only thread available. This means
+that these functions will block the asynchronous loop when they take too long
+to complete. The use of properly written asynchronous handlers should be
+preferred.
