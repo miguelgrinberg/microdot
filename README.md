@@ -44,7 +44,6 @@ The following features are planned for future releases of Microdot, both for
 MicroPython and CPython:
 
 - Support for forms encoded in `multipart/form-data` format
-- Authentication support, similar to [Flask-Login](https://github.com/maxcountryman/flask-login) for Flask
 - OpenAPI integration, similar to [APIFairy](https://github.com/miguelgrinberg/apifairy) for Flask
 
 In addition to the above, the following extensions are also under consideration,
