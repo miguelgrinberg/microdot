@@ -329,14 +329,50 @@ URL::
     async def get_test(request, path):
         return 'Test: ' + path
 
-For the most control, the ``re`` type allows the application to provide a
-custom regular expression for the dynamic component. The next example defines
-a route that only matches usernames that begin with an upper or lower case
-letter, followed by a sequence of letters or numbers::
+The ``re`` type allows the application to provide a custom regular expression
+for the dynamic component. The next example defines a route that only matches
+usernames that begin with an upper or lower case letter, followed by a sequence
+of letters or numbers::
 
     @app.get('/users/<re:[a-zA-Z][a-zA-Z0-9]*:username>')
     async def get_user(request, username):
         return 'User: ' + username
+
+The ``re`` type returns the URL component as a string, which sometimes may not
+be the most convenient. In such cases, the application can register a custom
+URL component type and provide a parser function. In the following example,
+a ``hex`` custom type is registered to automatically convert the arguments to
+numbers::
+
+    from microdot import URLPattern
+
+    URLPattern.register_type('hex', parser=lambda value: int(value, 16))
+
+    @app.get('/users/<hex:user_id>')
+    async def get_user(request, user_id):
+        user = get_user_by_id(user_id)
+        # ...
+
+In addition to the parser, the custom URL component can include a valid pattern
+as a regular expression. When a pattern is provided, the URL component will
+only match if the regular expression matches the value passed in the URL. The
+``hex`` example above can be expanded with a pattern as follows::
+
+    URLPattern.register_type('hex', pattern='[0-9a-fA-F]+',
+                             parser=lambda value: int(value, 16))
+
+In cases where a pattern isn't provided, or when the pattern is unable to
+filter all invalid values, the parser function can return ``None`` to indicate
+a failed match. The next example shows how the ``hex`` type can be expanded to
+do that::
+
+    def hex_parser(value):
+        try:
+            return int(value, 16)
+        except ValueError:
+            return None
+
+    URLPattern.register_type('hex', pattern='[0-9a-fA-F]+', parser=hex_parser)
 
 .. note::
    Dynamic path components are passed to route functions as keyword arguments,

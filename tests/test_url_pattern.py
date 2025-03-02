@@ -121,3 +121,26 @@ class TestURLPattern(unittest.TestCase):
     def test_invalid_url_patterns(self):
         self.assertRaises(ValueError, URLPattern, '/users/<foo/bar')
         self.assertRaises(ValueError, URLPattern, '/users/<badtype:id>')
+
+    def test_custom_url_pattern(self):
+        URLPattern.register_type('hex', '[0-9a-f]+')
+        p = URLPattern('/users/<hex:id>')
+        self.assertEqual(p.match('/users/a1'), {'id': 'a1'})
+        self.assertIsNone(p.match('/users/ab12z'))
+
+        URLPattern.register_type('hex', '[0-9a-f]+',
+                                 parser=lambda value: int(value, 16))
+        p = URLPattern('/users/<hex:id>')
+        self.assertEqual(p.match('/users/a1'), {'id': 161})
+        self.assertIsNone(p.match('/users/ab12z'))
+
+        def hex_parser(value):
+            try:
+                return int(value, 16)
+            except ValueError:
+                return None
+
+        URLPattern.register_type('hex', parser=hex_parser)
+        p = URLPattern('/users/<hex:id>')
+        self.assertEqual(p.match('/users/a1'), {'id': 161})
+        self.assertIsNone(p.match('/users/ab12z'))

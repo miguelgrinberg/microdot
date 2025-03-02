@@ -8,6 +8,7 @@ servers for MicroPython and standard Python.
 import asyncio
 import io
 import json
+import re
 import time
 
 try:
@@ -805,12 +806,20 @@ class Response:
 
 
 class URLPattern():
+    segment_patterns = {
+        'string': '/([^/]+)',
+        'int': '/(-?\\d+)',
+        'path': '/(.+)',
+    }
+    segment_parsers = {
+        'int': lambda value: int(value),
+    }
+
     def __init__(self, url_pattern):
         self.url_pattern = url_pattern
         self.segments = []
         self.regex = None
         pattern = ''
-        use_regex = False
         for segment in url_pattern.lstrip('/').split('/'):
             if segment and segment[0] == '<':
                 if segment[-1] != '>':
@@ -822,81 +831,42 @@ class URLPattern():
                     type_ = 'string'
                     name = segment
                 parser = None
-                if type_ == 'string':
-                    parser = self._string_segment
-                    pattern += '/([^/]+)'
-                elif type_ == 'int':
-                    parser = self._int_segment
-                    pattern += '/(-?\\d+)'
-                elif type_ == 'path':
-                    use_regex = True
-                    pattern += '/(.+)'
-                elif type_.startswith('re:'):
-                    use_regex = True
+                if type_.startswith('re:'):
                     pattern += '/({pattern})'.format(pattern=type_[3:])
                 else:
-                    raise ValueError('invalid URL segment type')
+                    if type_ not in self.segment_patterns:
+                        raise ValueError('invalid URL segment type')
+                    pattern += self.segment_patterns[type_]
+                    parser = self.segment_parsers.get(type_)
                 self.segments.append({'parser': parser, 'name': name,
                                       'type': type_})
             else:
                 pattern += '/' + segment
-                self.segments.append({'parser': self._static_segment(segment)})
-        if use_regex:
-            import re
-            self.regex = re.compile('^' + pattern + '$')
+                self.segments.append({'parser': None})
+        self.regex = re.compile('^' + pattern + '$')
+
+    @classmethod
+    def register_type(cls, type_name, pattern='[^/]+', parser=None):
+        cls.segment_patterns[type_name] = '/({})'.format(pattern)
+        cls.segment_parsers[type_name] = parser
 
     def match(self, path):
         args = {}
-        if self.regex:
-            g = self.regex.match(path)
-            if not g:
-                return
-            i = 1
-            for segment in self.segments:
-                if 'name' not in segment:
-                    continue
-                value = g.group(i)
-                if segment['type'] == 'int':
-                    value = int(value)
-                args[segment['name']] = value
-                i += 1
-        else:
-            if len(path) == 0 or path[0] != '/':
-                return
-            path = path[1:]
-            args = {}
-            for segment in self.segments:
-                if path is None:
-                    return
-                arg, path = segment['parser'](path)
+        g = self.regex.match(path)
+        if not g:
+            return
+        i = 1
+        for segment in self.segments:
+            if 'name' not in segment:
+                continue
+            arg = g.group(i)
+            if segment['parser']:
+                arg = self.segment_parsers[segment['type']](arg)
                 if arg is None:
                     return
-                if 'name' in segment:
-                    args[segment['name']] = arg
-            if path is not None:
-                return
+            args[segment['name']] = arg
+            i += 1
         return args
-
-    def _static_segment(self, segment):
-        def _static(value):
-            s = value.split('/', 1)
-            if s[0] == segment:
-                return '', s[1] if len(s) > 1 else None
-            return None, None
-        return _static
-
-    def _string_segment(self, value):
-        s = value.split('/', 1)
-        if len(s[0]) == 0:
-            return None, None
-        return s[0], s[1] if len(s) > 1 else None
-
-    def _int_segment(self, value):
-        s = value.split('/', 1)
-        try:
-            return int(s[0]), s[1] if len(s) > 1 else None
-        except ValueError:
-            return None, None
 
     def __repr__(self):  # pragma: no cover
         return 'URLPattern: {}'.format(self.url_pattern)
