@@ -1,2 +1,2 @@
 from microdot.microdot import Microdot, Request, Response, abort, redirect, \
-    send_file  # noqa: F401
+    send_file, URLPattern  # noqa: F401

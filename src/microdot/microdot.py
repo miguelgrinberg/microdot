@@ -819,8 +819,10 @@ class URLPattern():
         self.url_pattern = url_pattern
         self.segments = []
         self.regex = None
+
+    def compile(self):
         pattern = ''
-        for segment in url_pattern.lstrip('/').split('/'):
+        for segment in self.url_pattern.lstrip('/').split('/'):
             if segment and segment[0] == '<':
                 if segment[-1] != '>':
                     raise ValueError('invalid URL pattern')
@@ -844,6 +846,7 @@ class URLPattern():
                 pattern += '/' + segment
                 self.segments.append({'parser': None})
         self.regex = re.compile('^' + pattern + '$')
+        return self.regex
 
     @classmethod
     def register_type(cls, type_name, pattern='[^/]+', parser=None):
@@ -852,7 +855,7 @@ class URLPattern():
 
     def match(self, path):
         args = {}
-        g = self.regex.match(path)
+        g = (self.regex or self.compile()).match(path)
         if not g:
             return
         i = 1
