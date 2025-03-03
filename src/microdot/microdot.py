@@ -57,7 +57,9 @@ MUTED_SOCKET_ERRORS = [
 ]
 
 
-def urldecode_str(s):
+def urldecode(s):
+    if isinstance(s, bytes):
+        s = s.decode()
     s = s.replace('+', ' ')
     parts = s.split('%')
     if len(parts) == 1:
@@ -71,22 +73,6 @@ def urldecode_str(s):
             result.append(chr(int(code, 16)))
             result.append(item[2:])
     return ''.join(result)
-
-
-def urldecode_bytes(s):
-    s = s.replace(b'+', b' ')
-    parts = s.split(b'%')
-    if len(parts) == 1:
-        return s.decode()
-    result = [parts[0]]
-    for item in parts[1:]:
-        if item == b'':
-            result.append(b'%')
-        else:
-            code = item[:2]
-            result.append(bytes([int(code, 16)]))
-            result.append(item[2:])
-    return b''.join(result).decode()
 
 
 def urlencode(s):
@@ -441,12 +427,12 @@ class Request:
             if isinstance(urlencoded, str):
                 for kv in [pair.split('=', 1)
                            for pair in urlencoded.split('&') if pair]:
-                    data[urldecode_str(kv[0])] = urldecode_str(kv[1]) \
+                    data[urldecode(kv[0])] = urldecode(kv[1]) \
                         if len(kv) > 1 else ''
             elif isinstance(urlencoded, bytes):  # pragma: no branch
                 for kv in [pair.split(b'=', 1)
                            for pair in urlencoded.split(b'&') if pair]:
-                    data[urldecode_bytes(kv[0])] = urldecode_bytes(kv[1]) \
+                    data[urldecode(kv[0])] = urldecode(kv[1]) \
                         if len(kv) > 1 else b''
         return data
 
