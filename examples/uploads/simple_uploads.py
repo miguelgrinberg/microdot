@@ -6,7 +6,7 @@ Request.max_content_length = 1024 * 1024  # 1MB (change as needed)
 
 @app.get('/')
 async def index(request):
-    return send_file('index.html')
+    return send_file('simple_uploads.html')
 
 
 @app.post('/upload')
