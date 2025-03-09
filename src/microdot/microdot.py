@@ -371,6 +371,7 @@ class Request:
         self.sock = sock
         self._json = None
         self._form = None
+        self._files = None
         self.after_request_handlers = []
 
     @staticmethod
@@ -474,6 +475,12 @@ class Request:
                 return None
             self._form = self._parse_urlencoded(self.body)
         return self._form
+
+    @property
+    def files(self):
+        """The files uploaded in the request, as a dictionary, or ``None`` if
+        the request does not have any files."""
+        return self._files
 
     def after_request(self, f):
         """Register a request-specific function to run after the request is
