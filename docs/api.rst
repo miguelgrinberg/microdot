@@ -14,6 +14,12 @@ Core API
    :members:
 
 
+Multipart Forms
+---------------
+
+.. automodule:: microdot.multipart
+   :members:
+
 WebSocket
 ---------
 

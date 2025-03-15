@@ -5,8 +5,51 @@ Microdot is a highly extensible web application framework. The extensions
 described in this section are maintained as part of the Microdot project in
 the same source code repository.
 
+Multipart Forms
+~~~~~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     -  | `multipart.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/multipart.py>`_
+
+   * - Required external dependencies
+     - | None
+
+   * - Examples
+     - | `formdata.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/uploads/formdata.py>`_
+
+The multipart extension handles multipart form uploads in an efficient manner.
+
+For simple forms that have at most one file upload as the last field, the
+:func:`with_form_data <microdot.multipart.with_form_data>` decorator is added
+to the route, and that causes the :attr:`request.form <microdot.Request.form>`
+and :attr:`request.files <microdot.Request.files>` properties to be populated::
+
+    from microdot.multipart import with_form_data
+
+    @app.post('/upload')
+    @with_form_data
+    async def upload(request):
+        print('form fields:', request.form)
+        print('file:', request.files)
+
+It is unfortunately impossible to parse a multipart body efficiently when it
+contains multiple files, or when the file field is not the last of the form.
+For these forms, the :class:`FormDataIter <microdot.multipart.FormDataIter>`
+class can be used to iterate over the form data::
+
+    from microdot.multipart import FormDataIter
+
+    async for name, value in FormDataIter(request):
+        print(name, value)
+
 WebSocket
-~~~~~~~~-
+~~~~~~~~~
 
 .. list-table::
    :align: left
@@ -32,12 +75,14 @@ messages respectively.
 
 Example::
 
-        @app.route('/echo')
-        @with_websocket
-        async def echo(request, ws):
-            while True:
-                message = await ws.receive()
-                await ws.send(message)
+    from microdot.websocket import with_websocket
+
+    @app.route('/echo')
+    @with_websocket
+    async def echo(request, ws):
+        while True:
+            message = await ws.receive()
+            await ws.send(message)
 
 Server-Sent Events
 ~~~~~~~~~~~~~~~~~~
@@ -64,6 +109,8 @@ an SSE object as second argument. The SSE object provides a ``send()``
 asynchronous method to send an event to the client.
 
 Example::
+
+    from microdot.sse import with_sse
 
     @app.route('/events')
     @with_sse

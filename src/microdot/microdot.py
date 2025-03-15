@@ -479,7 +479,16 @@ class Request:
     @property
     def files(self):
         """The files uploaded in the request, as a dictionary, or ``None`` if
-        the request does not have any files."""
+        the request does not have any files.
+
+        The :func:`with_form_data <microdot.multipart.with_form_data>`
+        decorator must be added to the route that receives a file upload for
+        this property to be set.
+
+        Note that only one file upload per form is supported when using this
+        property. The :class:`FormDataIter <microdot.multipart.FormDataIter>`
+        iterator is provided to handle more complex form uploads.
+        """
         return self._files
 
     def after_request(self, f):
