@@ -9,3 +9,5 @@ class TestURLEncode(unittest.TestCase):
     def test_urldecode(self):
         self.assertEqual(urldecode('%3Ffoo%3Dbar%26x'), '?foo=bar&x')
         self.assertEqual(urldecode(b'%3Ffoo%3Dbar%26x'), '?foo=bar&x')
+        self.assertEqual(urldecode('dot%e2%80%a2dot'), 'dot•dot')
+        self.assertEqual(urldecode(b'dot%e2%80%a2dot'), 'dot•dot')
