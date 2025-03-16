@@ -58,21 +58,21 @@ MUTED_SOCKET_ERRORS = [
 
 
 def urldecode(s):
-    if isinstance(s, bytes):
-        s = s.decode()
-    s = s.replace('+', ' ')
-    parts = s.split('%')
+    if isinstance(s, str):
+        s = s.encode()
+    s = s.replace(b'+', b' ')
+    parts = s.split(b'%')
     if len(parts) == 1:
-        return s
+        return s.decode()
     result = [parts[0]]
     for item in parts[1:]:
-        if item == '':
-            result.append('%')
+        if item == b'':
+            result.append(b'%')
         else:
             code = item[:2]
-            result.append(chr(int(code, 16)))
+            result.append(bytes([int(code, 16)]))
             result.append(item[2:])
-    return ''.join(result)
+    return b''.join(result).decode()
 
 
 def urlencode(s):
