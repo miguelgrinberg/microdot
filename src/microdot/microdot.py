@@ -372,6 +372,7 @@ class Request:
         self._json = None
         self._form = None
         self.after_request_handlers = []
+        self.after_completed_request_handlers = []
 
     @staticmethod
     async def create(app, client_reader, client_writer, client_addr):
@@ -498,6 +499,10 @@ class Request:
         exception and an error response is returned instead.
         """
         self.after_request_handlers.append(f)
+        return f
+
+    def after_completed_request(self, f):
+        self.after_completed_request_handlers.append(f)
         return f
 
     @staticmethod
@@ -888,6 +893,7 @@ class Microdot:
         self.url_map = []
         self.before_request_handlers = []
         self.after_request_handlers = []
+        self.after_completed_request_handlers = []
         self.after_error_request_handlers = []
         self.error_handlers = {}
         self.shutdown_requested = False
@@ -1052,6 +1058,10 @@ class Microdot:
         self.after_request_handlers.append(f)
         return f
 
+    def after_completed_request(self, f):
+        self.after_completed_request_handlers.append(f)
+        return f
+
     def after_error_request(self, f):
         """Decorator to register a function to run after an error response is
         generated. The decorated function must take two arguments, the request
@@ -1117,6 +1127,9 @@ class Microdot:
             for handler in subapp.after_request_handlers:
                 self.after_request_handlers.append(handler)
             subapp.after_request_handlers = []
+            for handler in subapp.after_completed_request_handlers:
+                self.after_completed_request_handlers.append(handler)
+            subapp.after_completed_request_handlers = []
             for handler in subapp.after_error_request_handlers:
                 self.after_error_request_handlers.append(handler)
             subapp.after_error_request_handlers = []
@@ -1331,6 +1344,13 @@ class Microdot:
             print('{method} {path} {status_code}'.format(
                 method=req.method, path=req.path,
                 status_code=res.status_code))
+
+        # invoke the after completed request handlers
+        for handler in self.get_request_handlers(
+                req, 'after_completed_request', True):
+            await invoke_handler(handler)
+        for handler in req.after_completed_request_handlers:
+            await invoke_handler(handler)
 
     def get_request_handlers(self, req, attr, local_first=True):
         handlers = getattr(self, attr + '_handlers')
