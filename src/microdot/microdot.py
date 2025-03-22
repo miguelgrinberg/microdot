@@ -371,6 +371,7 @@ class Request:
         self.sock = sock
         self._json = None
         self._form = None
+        self._files = None
         self.after_request_handlers = []
 
     @staticmethod
@@ -465,7 +466,13 @@ class Request:
     def form(self):
         """The parsed form submission body, as a
         :class:`MultiDict <microdot.MultiDict>` object, or ``None`` if the
-        request does not have a form submission."""
+        request does not have a form submission.
+
+        Forms that are URL encoded are processed by default. For multipart
+        forms to be processed, the
+        :func:`with_form_data <microdot.multipart.with_form_data>`
+        decorator must be added to the route.
+        """
         if self._form is None:
             if self.content_type is None:
                 return None
@@ -474,6 +481,17 @@ class Request:
                 return None
             self._form = self._parse_urlencoded(self.body)
         return self._form
+
+    @property
+    def files(self):
+        """The files uploaded in the request as a dictionary, or ``None`` if
+        the request does not have any files.
+
+        The :func:`with_form_data <microdot.multipart.with_form_data>`
+        decorator must be added to the route that receives file uploads for
+        this property to be set.
+        """
+        return self._files
 
     def after_request(self, f):
         """Register a request-specific function to run after the request is

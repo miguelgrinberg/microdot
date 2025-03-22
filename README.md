@@ -43,7 +43,8 @@ describes the backwards incompatible changes that were made.
 The following features are planned for future releases of Microdot, both for
 MicroPython and CPython:
 
-- Support for forms encoded in `multipart/form-data` format
+- Authentication support, similar to [Flask-Login](https://github.com/maxcountryman/flask-login) for Flask (**Added in version 2.1**)
+- Support for forms encoded in `multipart/form-data` format (**Added in version 2.2**)
 - OpenAPI integration, similar to [APIFairy](https://github.com/miguelgrinberg/apifairy) for Flask
 
 In addition to the above, the following extensions are also under consideration,
@@ -52,4 +53,4 @@ but only for CPython:
 - Database integration through [SQLAlchemy](https://github.com/sqlalchemy/sqlalchemy)
 - Socket.IO support through [python-socketio](https://github.com/miguelgrinberg/python-socketio)
 
-Do you have other ideas to propose? Let's [discuss them](https://github.com/miguelgrinberg/microdot/discussions/new?category=ideas)!
+Do you have other ideas to propose? Let's [discuss them](https://github.com/:miguelgrinberg/microdot/discussions/new?category=ideas)!
