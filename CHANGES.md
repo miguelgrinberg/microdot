@@ -1,5 +1,17 @@
 # Microdot change log
 
+**Release 2.2.0** - 2025-03-22
+
+- Support for multipart/form-data requests [#287](https://github.com/miguelgrinberg/microdot/issues/287) ([commit](https://github.com/miguelgrinberg/microdot/commit/11a91a60350518e426b557fae8dffe75912f8823))
+- Support custom path components in URLs ([commit](https://github.com/miguelgrinberg/microdot/commit/c92b5ae28222af5a1094f5d2f70a45d4d17653d5))
+- Expose the Jinja environment as Template.jinja_env ([commit](https://github.com/miguelgrinberg/microdot/commit/953dd9432122defe943f0637bbe7e01f2fc7743f))
+- Delay route compilation to allow late register_type calls ([commit](https://github.com/miguelgrinberg/microdot/commit/aa76e6378b37faab52008a8aab8db75f81b29323))
+- urldecoding should always be done in bytes ([commit](https://github.com/miguelgrinberg/microdot/commit/d203df75fef32c7cc0fe7cc6525e77522b37a289))
+- Simplified urldecode logic ([commit](https://github.com/miguelgrinberg/microdot/commit/3bc31f10b2b2d4460c62366013278d87665f0f97))
+- Additional urldecode tests ([commit](https://github.com/miguelgrinberg/microdot/commit/99f65c0198590c0dfb402c24685b6f8dfba1935d))
+- Update micropython version used in tests to 1.24.1 ([commit](https://github.com/miguelgrinberg/microdot/commit/4cc2e95338a7de3b03742389004147ee21285621))
+- Documentation improvements ([commit](https://github.com/miguelgrinberg/microdot/commit/c6b99b6d8117d4e40e16d5b953dbf4deb023d24d))
+
 **Release 2.1.0** - 2025-02-04
 
 - User login support ([commit](https://github.com/miguelgrinberg/microdot/commit/d807011ad006e53e70c4594d7eac04d03bb08681))
