@@ -466,7 +466,13 @@ class Request:
     def form(self):
         """The parsed form submission body, as a
         :class:`MultiDict <microdot.MultiDict>` object, or ``None`` if the
-        request does not have a form submission."""
+        request does not have a form submission.
+
+        Forms that are URL encoded are processed by default. For multipart
+        forms to be processed, the
+        :func:`with_form_data <microdot.multipart.with_form_data>`
+        decorator must be added to the route.
+        """
         if self._form is None:
             if self.content_type is None:
                 return None
@@ -478,16 +484,12 @@ class Request:
 
     @property
     def files(self):
-        """The files uploaded in the request, as a dictionary, or ``None`` if
+        """The files uploaded in the request as a dictionary, or ``None`` if
         the request does not have any files.
 
         The :func:`with_form_data <microdot.multipart.with_form_data>`
-        decorator must be added to the route that receives a file upload for
+        decorator must be added to the route that receives file uploads for
         this property to be set.
-
-        Note that only one file upload per form is supported when using this
-        property. The :class:`FormDataIter <microdot.multipart.FormDataIter>`
-        iterator is provided to handle more complex form uploads.
         """
         return self._files
 

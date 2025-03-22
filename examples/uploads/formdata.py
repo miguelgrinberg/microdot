@@ -13,9 +13,12 @@ async def index(request):
 @app.post('/')
 @with_form_data
 async def upload(request):
-    print(request.form)
-    for file in request.files.values():
-        print(file.filename, await file.read())
+    print('Form fields:')
+    for field, value in request.form.items():
+        print(f'- {field}: {value}')
+    print('\nFile uploads:')
+    for field, value in request.files.items():
+        print(f'- {field}: {value.filename}, {await value.read()}')
     return 'We have received your data!'
 
 

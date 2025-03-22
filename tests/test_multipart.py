@@ -59,14 +59,16 @@ class TestMultipart(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json, {'foo': 'bar', 'baz': 'baz'})
 
-    def test_simple_upload(self):
+    def test_form_with_files(self):
+        saved_max_memory_size = FileUpload.max_memory_size
+        FileUpload.max_memory_size = 5
+
         app = Microdot()
 
         @app.post('/async')
         @with_form_data
         async def async_route(req):
             d = dict(req.form)
-            print(d)
             for name, file in req.files.items():
                 d[name] = '{}|{}|{}'.format(file.filename, file.content_type,
                                             (await file.read()).decode())
@@ -85,12 +87,17 @@ class TestMultipart(unittest.TestCase):
                 b'Content-Disposition: form-data; name="f"; filename="f"\r\n'
                 b'Content-Type: text/plain\r\n\r\nbaz\r\n'
                 b'--boundary\r\n'
-                # anything beyond the file field will be ignored
+                b'Content-Disposition: form-data; name="g"; filename="g"\r\n'
+                b'Content-Type: text/html\r\n\r\n<p>hello</p>\r\n'
+                b'--boundary\r\n'
                 b'Content-Disposition: form-data; name="x"\r\n\r\ny\r\n'
                 b'--boundary--\r\n')
         ))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json, {'foo': 'bar', 'f': 'f|text/plain|baz'})
+        self.assertEqual(res.json, {'foo': 'bar', 'x': 'y',
+                                    'f': 'f|text/plain|baz',
+                                    'g': 'g|text/html|<p>hello</p>'})
+        FileUpload.max_memory_size = saved_max_memory_size
 
     def test_file_save(self):
         app = Microdot()
