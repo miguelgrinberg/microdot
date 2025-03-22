@@ -1336,9 +1336,9 @@ class Microdot:
             print_exception(exc)
 
         res = await self.dispatch_request(req)
-        if res != Response.already_handled:  # pragma: no branch
-            await res.write(writer)
         try:
+            if res != Response.already_handled:  # pragma: no branch
+                await res.write(writer)
             await writer.aclose()
         except OSError as exc:  # pragma: no cover
             if exc.errno in MUTED_SOCKET_ERRORS:
