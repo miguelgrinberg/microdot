@@ -414,10 +414,25 @@ decorator::
 While running an authenticated request, the user object returned by the
 authenticaction function is accessible as ``request.g.current_user``.
 
+If an endpoint is intended to work with or without authentication, then it can
+be protected with the ``auth.optional`` decorator::
+
+    @app.route('/')
+    @auth.optional
+    async def index(request):
+        if g.current_user:
+            return f'Hello, {request.g.current_user}!'
+        else:
+            return 'Hello, anonymous user!'
+
+As shown in the example, a route can check ``g.current_user`` to determine if
+the user is authenticated or not.
+
 Token Authentication
 ^^^^^^^^^^^^^^^^^^^^
 
-To set up token authentication, create an instance of :class:`TokenAuth <microdot.auth.TokenAuth>`::
+To set up token authentication, create an instance of
+:class:`TokenAuth <microdot.auth.TokenAuth>`::
 
     from microdot.auth import TokenAuth
 
@@ -437,7 +452,17 @@ protect your routes::
     @auth
     async def index(request):
         return f'Hello, {request.g.current_user}!'
-        
+
+Optional authentication can also be used with tokens::
+
+    @app.route('/')
+    @auth.optional
+    async def index(request):
+        if g.current_user:
+            return f'Hello, {request.g.current_user}!'
+        else:
+            return 'Hello, anonymous user!'
+
 User Logins
 ~~~~~~~~~~~
 

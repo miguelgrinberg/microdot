@@ -45,6 +45,38 @@ class TestAuth(unittest.TestCase):
                 b'foo:baz').decode()}))
         self.assertEqual(res.status_code, 401)
 
+    def test_basic_optional_auth(self):
+        app = Microdot()
+        basic_auth = BasicAuth()
+
+        @basic_auth.authenticate
+        def authenticate(request, username, password):
+            if username == 'foo' and password == 'bar':
+                return {'username': username}
+
+        @app.route('/')
+        @basic_auth.optional
+        def index(request):
+            return request.g.current_user['username'] \
+                if request.g.current_user else ''
+
+        client = TestClient(app)
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, '')
+
+        res = self._run(client.get('/', headers={
+            'Authorization': 'Basic ' + binascii.b2a_base64(
+                b'foo:bar').decode()}))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'foo')
+
+        res = self._run(client.get('/', headers={
+            'Authorization': 'Basic ' + binascii.b2a_base64(
+                b'foo:baz').decode()}))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, '')
+
     def test_token_auth(self):
         app = Microdot()
         token_auth = TokenAuth()
@@ -67,8 +99,41 @@ class TestAuth(unittest.TestCase):
             'Authorization': 'Basic foo'}))
         self.assertEqual(res.status_code, 401)
 
-        res = self._run(client.get('/', headers={'Authorization': 'foo'}))
+        res = self._run(client.get('/', headers={'Authorization': 'invalid'}))
         self.assertEqual(res.status_code, 401)
+
+        res = self._run(client.get('/', headers={
+            'Authorization': 'Bearer foo'}))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'user')
+
+    def test_token_optional_auth(self):
+        app = Microdot()
+        token_auth = TokenAuth()
+
+        @token_auth.authenticate
+        def authenticate(request, token):
+            if token == 'foo':
+                return 'user'
+
+        @app.route('/')
+        @token_auth.optional
+        def index(request):
+            return request.g.current_user or ''
+
+        client = TestClient(app)
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, '')
+
+        res = self._run(client.get('/', headers={
+            'Authorization': 'Basic foo'}))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, '')
+
+        res = self._run(client.get('/', headers={'Authorization': 'foo'}))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, '')
 
         res = self._run(client.get('/', headers={
             'Authorization': 'Bearer foo'}))

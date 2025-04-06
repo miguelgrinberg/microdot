@@ -36,6 +36,24 @@ class BaseAuth:
 
         return wrapper
 
+    def optional(self, f):
+        """Decorator to protect a route with optional authentication.
+
+        This decorator makes authentication for the decorated route optional,
+        meaning that the route is allowed to run with or with
+        authentication given in the request.
+        """
+        async def wrapper(request, *args, **kwargs):
+            auth = self._get_auth(request)
+            if not auth:
+                request.g.current_user = None
+            else:
+                request.g.current_user = await invoke_handler(
+                    self.auth_callback, request, *auth)
+            return await invoke_handler(f, request, *args, **kwargs)
+
+        return wrapper
+
 
 class BasicAuth(BaseAuth):
     """Basic Authentication.
