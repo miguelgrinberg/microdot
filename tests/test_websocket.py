@@ -46,11 +46,11 @@ class TestWebSocket(unittest.TestCase):
 
         client = TestClient(app)
         res = self._run(client.websocket('/echo', ws))
-        self.assertIsNone(res)
+        self.assertIsNone(res.body)
         self.assertEqual(results, ['hello', b'bye', b'*' * 300, b'+' * 65537])
 
         res = self._run(client.websocket('/divzero', ws))
-        self.assertIsNone(res)
+        self.assertIsNone(res.body)
         WebSocket.max_message_length = -1
 
     @unittest.skipIf(sys.implementation.name == 'micropython',
@@ -74,7 +74,7 @@ class TestWebSocket(unittest.TestCase):
 
         client = TestClient(app)
         res = self._run(client.websocket('/echo', ws))
-        self.assertIsNone(res)
+        self.assertIsNone(res.body)
         self.assertEqual(results, [])
         Request.max_body_length = saved_max_body_length
 

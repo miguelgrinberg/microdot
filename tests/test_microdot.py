@@ -771,7 +771,7 @@ class TestMicrodot(unittest.TestCase):
 
         client = TestClient(app)
         res = self._run(client.get('/'))
-        self.assertEqual(res, None)
+        self.assertEqual(res.body, None)
 
     def test_mount(self):
         subapp = Microdot()

@@ -19,7 +19,7 @@ class TestResponse:
         #: explicitly sets it on the response object.
         self.reason = None
         #: A dictionary with the response headers.
-        self.headers = None
+        self.headers = {}
         #: The body of the response, as a bytes object.
         self.body = None
         #: The body of the response, decoded to a UTF-8 string. Set to
@@ -195,7 +195,7 @@ class TestClient:
                                    ('127.0.0.1', 1234))
         res = await self.app.dispatch_request(req)
         if res == Response.already_handled:
-            return None
+            return TestResponse()
         res.complete()
 
         self._update_cookies(res)
