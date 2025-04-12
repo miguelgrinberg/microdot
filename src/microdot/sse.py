@@ -29,8 +29,8 @@ class SSE:
                       given, it must be a string.
         """
         if isinstance(data, (dict, list)):
-            data = json.dumps(data).encode()
-        elif isinstance(data, str):
+            data = json.dumps(data)
+        if isinstance(data, str):
             data = data.encode()
         elif not isinstance(data, bytes):
             data = str(data).encode()

@@ -1,12 +1,8 @@
 import binascii
 import hashlib
 import hmac
+import json
 from time import time
-
-try:
-    import orjson as json
-except ImportError:
-    import json
 
 def _to_b64url(data):
     return (

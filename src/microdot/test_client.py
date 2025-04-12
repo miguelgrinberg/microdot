@@ -105,10 +105,10 @@ class TestClient:
         if body is None:
             body = b''
         elif isinstance(body, (dict, list)):
-            body = json.dumps(body).encode()
+            body = json.dumps(body)
             if 'Content-Type' not in headers:  # pragma: no cover
                 headers['Content-Type'] = 'application/json'
-        elif isinstance(body, str):
+        if isinstance(body, str):
             body = body.encode()
         if body and 'Content-Length' not in headers:
             headers['Content-Length'] = str(len(body))

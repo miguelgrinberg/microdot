@@ -578,9 +578,9 @@ class Response:
         self.headers = NoCaseDict(headers or {})
         self.reason = reason
         if isinstance(body, (dict, list)):
-            self.body = json.dumps(body).encode()
+            body = json.dumps(body)
             self.headers['Content-Type'] = 'application/json; charset=UTF-8'
-        elif isinstance(body, str):
+        if isinstance(body, str):
             self.body = body.encode()
         else:
             # this applies to bytes, file-like objects or generators
