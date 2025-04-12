@@ -1,6 +1,10 @@
 import asyncio
-import json
 from microdot.helpers import wraps
+
+try:
+    import orjson as json
+except ImportError:
+    import json
 
 
 class SSE:

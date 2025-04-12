@@ -7,9 +7,13 @@ servers for MicroPython and standard Python.
 """
 import asyncio
 import io
-import json
 import re
 import time
+
+try:
+    import orjson as json
+except ImportError:
+    import json
 
 try:
     from inspect import iscoroutinefunction, iscoroutine

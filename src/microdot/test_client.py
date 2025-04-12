@@ -1,10 +1,14 @@
-import json
 from microdot.microdot import Request, Response, AsyncBytesIO
 
 try:
     from microdot.websocket import WebSocket
 except:  # pragma: no cover  # noqa: E722
     WebSocket = None
+
+try:
+    import orjson as json
+except ImportError:
+    import json
 
 __all__ = ['TestClient', 'TestResponse']
 
