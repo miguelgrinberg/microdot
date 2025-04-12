@@ -1,5 +1,12 @@
 # Microdot change log
 
+**Release 2.3.0** - 2025-04-12
+
+- Support optional authentication methods ([commit](https://github.com/miguelgrinberg/microdot/commit/f317b15bdbf924007e5e3414e0c626baccc3ede6))
+- Catch SSL exceptions while writing the response [#206](https://github.com/miguelgrinberg/microdot/issues/206) ([commit](https://github.com/miguelgrinberg/microdot/commit/e7ee74d6bba74cfd89b9ddc38f28e02514eb1791))
+- Use `orjson` instead of `json` if available ([commit](https://github.com/miguelgrinberg/microdot/commit/086f2af3deab86d4340f3f1feb9e019de59f351d))
+- Addressed typing warnings from pyright ([commit](https://github.com/miguelgrinberg/microdot/commit/b6f232db1125045d79c444c736a2ae59c5501fdd))
+
 **Release 2.2.0** - 2025-03-22
 
 - Support for `multipart/form-data` requests [#287](https://github.com/miguelgrinberg/microdot/issues/287) ([commit](https://github.com/miguelgrinberg/microdot/commit/11a91a60350518e426b557fae8dffe75912f8823))
