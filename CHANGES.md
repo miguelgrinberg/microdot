@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 2.3.1** - 2025-04-13
+
+- Additional support needed when using `orjson` ([commit](https://github.com/miguelgrinberg/microdot/commit/cd0b3234ddb0c8ff4861d369836ec2aed77494db))
+
 **Release 2.3.0** - 2025-04-12
 
 - Support optional authentication methods ([commit](https://github.com/miguelgrinberg/microdot/commit/f317b15bdbf924007e5e3414e0c626baccc3ede6))
