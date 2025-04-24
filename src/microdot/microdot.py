@@ -1349,8 +1349,9 @@ class Microdot:
         for handler in self.get_request_handlers(
                 req, 'after_completed_request', True):
             await invoke_handler(handler)
-        for handler in req.after_completed_request_handlers:
-            await invoke_handler(handler)
+        if req:
+            for handler in req.after_completed_request_handlers:
+                await invoke_handler(handler)
 
     def get_request_handlers(self, req, attr, local_first=True):
         handlers = getattr(self, attr + '_handlers')
