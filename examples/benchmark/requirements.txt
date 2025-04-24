@@ -34,7 +34,7 @@ flask==3.0.0
     #   quart
 gunicorn==23.0.0
     # via -r requirements.in
-h11==0.14.0
+h11==0.16.0
     # via
     #   hypercorn
     #   uvicorn
