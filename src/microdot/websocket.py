@@ -160,7 +160,12 @@ class WebSocket:
             raise WebSocketError('Message too large')
         if has_mask:  # pragma: no cover
             mask = await self.request.sock[0].read(4)
-        payload = await self.request.sock[0].read(length)
+        payload = bytearray()
+        while len(payload) < length:
+            chunk = await self.request.sock[0].read(length - len(payload))
+            if not chunk:
+                raise WebSocketError("Unexpected end of stream") # pragma: no cover
+            payload.extend(chunk)
         if has_mask:  # pragma: no cover
             payload = bytes(x ^ mask[i % 4] for i, x in enumerate(payload))
         return opcode, payload
