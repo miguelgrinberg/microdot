@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 2.3.2** - 2025-05-08
+
+- Use async error handlers in auth module [#298](https://github.com/miguelgrinberg/microdot/issues/298) ([commit](https://github.com/miguelgrinberg/microdot/commit/d9d7ff0825e4c5fbed6564d3684374bf3937df11))
+
 **Release 2.3.1** - 2025-04-13
 
 - Additional support needed when using `orjson` ([commit](https://github.com/miguelgrinberg/microdot/commit/cd0b3234ddb0c8ff4861d369836ec2aed77494db))
