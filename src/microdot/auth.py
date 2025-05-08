@@ -85,7 +85,7 @@ class BasicAuth(BaseAuth):
                 return None
             return username, password
 
-    def authentication_error(self, request):
+    async def authentication_error(self, request):
         return '', self.error_status, {
             'WWW-Authenticate': '{} realm="{}", charset="{}"'.format(
                 self.scheme, self.realm, self.charset)}
@@ -158,5 +158,5 @@ class TokenAuth(BaseAuth):
         """
         self.error_callback = f
 
-    def authentication_error(self, request):
+    async def authentication_error(self, request):
         abort(self.error_status)
