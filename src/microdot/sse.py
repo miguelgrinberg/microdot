@@ -61,7 +61,12 @@ def sse_response(request, event_function, *args, **kwargs):
     sse = SSE()
 
     async def sse_task_wrapper():
-        await event_function(request, sse, *args, **kwargs)
+        try:
+            await event_function(request, sse, *args, **kwargs)
+        except Exception as exc:
+            # the SSE task raised an exception so we need to pass it to the
+            # main route so that it is re-raised there
+            sse.queue.append(exc)
         sse.event.set()
 
     task = asyncio.create_task(sse_task_wrapper())
@@ -79,7 +84,11 @@ def sse_response(request, event_function, *args, **kwargs):
                 except IndexError:
                     await sse.event.wait()
                     sse.event.clear()
-            if event is None:
+            if isinstance(event, Exception):
+                # if the event is an exception we re-raise it here so that it
+                # can be handled appropriately
+                raise event
+            elif event is None:
                 raise StopAsyncIteration
             return event
 

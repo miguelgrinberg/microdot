@@ -42,3 +42,15 @@ class TestWebSocket(unittest.TestCase):
                                          'data: [42, "foo", "bar"]\n\n'
                                          'data: foo\n\n'
                                          'data: foo\n\n'))
+
+    def test_sse_exception(self):
+        app = Microdot()
+
+        @app.route('/sse')
+        @with_sse
+        async def handle_sse(request, sse):
+            await sse.send('foo')
+            await sse.send(1 / 0)
+
+        client = TestClient(app)
+        self.assertRaises(ZeroDivisionError, self._run, client.get('/sse'))
