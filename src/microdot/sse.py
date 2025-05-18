@@ -63,6 +63,8 @@ def sse_response(request, event_function, *args, **kwargs):
     async def sse_task_wrapper():
         try:
             await event_function(request, sse, *args, **kwargs)
+        except asyncio.CancelledError:  # pragma: no cover
+            pass
         except Exception as exc:
             # the SSE task raised an exception so we need to pass it to the
             # main route so that it is re-raised there

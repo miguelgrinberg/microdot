@@ -42,6 +42,31 @@ class TestWebSocket(unittest.TestCase):
                                          'data: [42, "foo", "bar"]\n\n'
                                          'data: foo\n\n'
                                          'data: foo\n\n'))
+        self.assertEqual(len(response.events), 8)
+        self.assertEqual(response.events[0], {
+            'data': b'foo', 'data_json': None, 'event': None,
+            'event_id': None})
+        self.assertEqual(response.events[1], {
+            'data': b'bar', 'data_json': None, 'event': 'test',
+            'event_id': None})
+        self.assertEqual(response.events[2], {
+            'data': b'bar', 'data_json': None, 'event': 'test',
+            'event_id': 'id42'})
+        self.assertEqual(response.events[3], {
+            'data': b'bar', 'data_json': None, 'event': None,
+            'event_id': 'id42'})
+        self.assertEqual(response.events[4], {
+            'data': b'{"foo": "bar"}', 'data_json': {'foo': 'bar'},
+            'event': None, 'event_id': None})
+        self.assertEqual(response.events[5], {
+            'data': b'[42, "foo", "bar"]', 'data_json': [42, 'foo', 'bar'],
+            'event': None, 'event_id': None})
+        self.assertEqual(response.events[6], {
+            'data': b'foo', 'data_json': None, 'event': None,
+            'event_id': None})
+        self.assertEqual(response.events[7], {
+            'data': b'foo', 'data_json': None, 'event': None,
+            'event_id': None})
 
     def test_sse_exception(self):
         app = Microdot()

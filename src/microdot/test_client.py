@@ -1,3 +1,4 @@
+import asyncio
 from microdot.microdot import Request, Response, AsyncBytesIO
 
 try:
@@ -32,6 +33,11 @@ class TestResponse:
         #: The body of the JSON response, decoded to a dictionary or list. Set
         #: ``Note`` if the response does not have a JSON payload.
         self.json = None
+        #: The body of the SSE response, decoded to a list of events, each
+        #: given as a dictionary with a ``data`` key and optionally also
+        #: ``event`` and ``id`` keys. Set to ``None`` if the response does not
+        #: have an SSE payload.
+        self.events = None
 
     def _initialize_response(self, res):
         self.status_code = res.status_code
@@ -41,10 +47,13 @@ class TestResponse:
     async def _initialize_body(self, res):
         self.body = b''
         iter = res.body_iter()
-        async for body in iter:  # pragma: no branch
-            if isinstance(body, str):
-                body = body.encode()
-            self.body += body
+        try:
+            async for body in iter:  # pragma: no branch
+                if isinstance(body, str):
+                    body = body.encode()
+                self.body += body
+        except asyncio.CancelledError:  # pragma: no cover
+            pass
         if hasattr(iter, 'aclose'):  # pragma: no branch
             await iter.aclose()
 
@@ -60,6 +69,32 @@ class TestResponse:
             if content_type.split(';')[0] == 'application/json':
                 self.json = json.loads(self.text)
 
+    def _process_sse_body(self):
+        if 'Content-Type' in self.headers:  # pragma: no branch
+            content_type = self.headers['Content-Type']
+            if content_type.split(';')[0] == 'text/event-stream':
+                self.events = []
+                for sse_event in self.body.split(b'\n\n'):
+                    data = None
+                    event = None
+                    event_id = None
+                    for line in sse_event.split(b'\n'):
+                        if line.startswith(b'data:'):
+                            data = line[5:].strip()
+                        elif line.startswith(b'event:'):
+                            event = line[6:].strip().decode()
+                        elif line.startswith(b'id:'):
+                            event_id = line[3:].strip().decode()
+                    if data:
+                        data_json = None
+                        try:
+                            data_json = json.loads(data)
+                        except ValueError:
+                            pass
+                        self.events.append({
+                            "data": data, "data_json": data_json,
+                            "event": event, "event_id": event_id})
+
     @classmethod
     async def create(cls, res):
         test_res = cls()
@@ -68,6 +103,7 @@ class TestResponse:
             await test_res._initialize_body(res)
             test_res._process_text_body()
             test_res._process_json_body()
+            test_res._process_sse_body()
         return test_res
 
 
