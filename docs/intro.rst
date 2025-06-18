@@ -601,6 +601,13 @@ The request object provides access to the request attributes, including:
   specified by the client, or ``None`` if no content type was specified.
 - :attr:`content_length <microdot.Request.content_length>`: The content
   length of the request, or 0 if no content length was specified.
+- :attr:`json <microdot.Request.json>`: The parsed JSON data in the request
+  body. See :ref:`below <JSON Payloads>` for additional details.
+- :attr:`form <microdot.Request.form>`: The parsed form data in the request
+  body, as a dictionary. See :ref:`below <Form Data>` for additional details.
+- :attr:`files <microdot.Request.files>`: A dictionary with the file uploads
+  included in the request body. Note that file uploads are only supported when
+  the :ref:`Multipart Forms` extension is used.
 - :attr:`client_addr <microdot.Request.client_addr>`: The network address of
   the client, as a tuple (host, port).
 - :attr:`app <microdot.Request.app>`: The application instance that created the
@@ -627,8 +634,8 @@ to use this attribute::
    The client must set the ``Content-Type`` header to ``application/json`` for
    the ``json`` attribute of the request object to be populated.
 
-URLEncoded Form Data
-^^^^^^^^^^^^^^^^^^^^
+Form Data
+^^^^^^^^^
 
 The request object also supports standard HTML form submissions through the
 :attr:`form <microdot.Request.form>` attribute, which presents the form data
@@ -642,9 +649,10 @@ as a :class:`MultiDict <microdot.MultiDict>` object. Example::
         return f'Hello {name}'
 
 .. note::
-   Form submissions are only parsed when the ``Content-Type`` header is set by
-   the client to ``application/x-www-form-urlencoded``. Form submissions using
-   the ``multipart/form-data`` content type are currently not supported.
+   Form submissions automatically parsed when the ``Content-Type`` header is
+   set by the client to ``application/x-www-form-urlencoded``. For form
+   submissions that use the ``multipart/form-data`` content type the
+   :ref:`Multipart Forms` extension must be used.
 
 Accessing the Raw Request Body
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
