@@ -21,7 +21,7 @@ async def hello(request):
                 </div>
             </body>
         </html>
-    ''', 200, {'Content-Type': 'text/html'}
+    ''', 200, {'Content-Type': 'text/html'}  # noqa: E501
 
 
 @subapp.route('/second')
@@ -41,4 +41,4 @@ async def second(request):
                 </div>
             </body>
         </html>
-    ''', 200, {'Content-Type': 'text/html'}
+    ''', 200, {'Content-Type': 'text/html'}  # noqa: E501
