@@ -116,6 +116,33 @@ Example::
             message = await ws.receive()
             await ws.send(message)
 
+To end the WebSocket connection, the route handler can exit, without returning
+anything::
+
+    @app.route('/echo')
+    @with_websocket
+    async def echo(request, ws):
+        while True:
+            message = await ws.receive()
+            if message == 'exit':
+                break
+            await ws.send(message)
+        await ws.send('goodbye')
+
+If the client ends the WebSocket connection from their side, the route function
+is cancelled. The route function can catch the ``CancelledError`` exception
+from asyncio to perform cleanup tasks::
+
+    @app.route('/echo')
+    @with_websocket
+    async def echo(request, ws):
+        try:
+            while True:
+                message = await ws.receive()
+                await ws.send(message)
+        except asyncio.CancelledError:
+            print('Client disconnected!')
+
 Server-Sent Events
 ~~~~~~~~~~~~~~~~~~
 
@@ -152,6 +179,25 @@ Example::
             await asyncio.sleep(1)
             await sse.send({'counter': i})  # unnamed event
         await sse.send('end', event='comment')  # named event
+
+To end the SSE connection, the route handler can exit, without returning
+anything, as shown in the above examples.
+
+If the client ends the SSE connection from their side, the route function is
+cancelled. The route function can catch the ``CancelledError`` exception from
+asyncio to perform cleanup tasks::
+
+    @app.route('/events')
+    @with_sse
+    async def events(request, sse):
+        try:
+            i = 0
+            while True:
+                await asyncio.sleep(1)
+                await sse.send({'counter': i})
+                i += 1
+        except asyncio.CancelledError:
+            print('Client disconnected!')
 
 .. note::
    The SSE protocol is unidirectional, so there is no ``receive()`` method in
