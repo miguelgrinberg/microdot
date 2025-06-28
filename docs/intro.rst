@@ -757,15 +757,18 @@ sections describe the different types of responses that are supported.
 The Three Parts of a Response
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Route functions can return one, two or three values. The first or only value is
-always returned to the client in the response body::
+Route functions can return one, two or three values. The first and most
+important value is the response body::
 
     @app.get('/')
     async def index(request):
         return 'Hello, World!'
 
-In the above example, Microdot issues a standard 200 status code response, and
-inserts default headers.
+In the above example, Microdot issues a standard 200 status code response
+indicating a successful request. The body of the response is the
+``'Hello, World!'`` string returned by the function. Microdot includes default
+headers with this response, including the ``Content-Type`` header set to
+``text/plain`` to indicate a response in plain text.
 
 The application can provide its own status code as a second value returned from
 the route to override the 200 default. The example below returns a 202 status
@@ -777,22 +780,30 @@ code::
 
 The application can also return a third value, a dictionary with additional
 headers that are added to, or replace the default ones included by Microdot.
-The next example returns an HTML response, instead of a default text response::
+The next example returns an HTML response, instead of the default plain text
+response::
 
     @app.get('/')
     async def index(request):
         return '<h1>Hello, World!</h1>', 202, {'Content-Type': 'text/html'}
 
-If the application needs to return custom headers, but does not need to change
-the default status code, then it can return two values, omitting the status
-code::
+If the application does not need to return a body, then it can omit it and
+have the status code as the first or only returned value::
+
+    @app.get('/')
+    async def index(request):
+        return 204
+
+Likewise, if the application needs to return a body and custom headers, but
+does not need to change the default status code, then it can return two values,
+omitting the status code::
 
     @app.get('/')
     async def index(request):
         return '<h1>Hello, World!</h1>', {'Content-Type': 'text/html'}
 
-The application can also return a :class:`Response <microdot.Response>` object
-containing all the details of the response as a single value.
+Lastly, the application can also return a :class:`Response <microdot.Response>`
+object containing all the details of the response as a single value.
 
 JSON Responses
 ^^^^^^^^^^^^^^
