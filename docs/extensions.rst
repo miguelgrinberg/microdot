@@ -420,13 +420,13 @@ be protected with the ``auth.optional`` decorator::
     @app.route('/')
     @auth.optional
     async def index(request):
-        if g.current_user:
+        if request.g.current_user:
             return f'Hello, {request.g.current_user}!'
         else:
             return 'Hello, anonymous user!'
 
-As shown in the example, a route can check ``g.current_user`` to determine if
-the user is authenticated or not.
+As shown in the example, a route can check ``request.g.current_user`` to
+determine if the user is authenticated or not.
 
 Token Authentication
 ^^^^^^^^^^^^^^^^^^^^
@@ -446,7 +446,8 @@ or ``None`` if the token is invalid or expired::
         return load_user_from_token(token)
 
 As with Basic authentication, the ``auth`` instance is used as a decorator to
-protect your routes::
+protect your routes, and the authenticated user is accessible from the request
+object as ``request.g.current_user``::
 
     @app.route('/')
     @auth
@@ -458,7 +459,7 @@ Optional authentication can also be used with tokens::
     @app.route('/')
     @auth.optional
     async def index(request):
-        if g.current_user:
+        if request.g.current_user:
             return f'Hello, {request.g.current_user}!'
         else:
             return 'Hello, anonymous user!'
