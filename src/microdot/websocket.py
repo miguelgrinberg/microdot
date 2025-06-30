@@ -149,18 +149,18 @@ class WebSocket:
             raise WebSocketError('Websocket connection closed')
         fin, opcode, has_mask, length = self._parse_frame_header(header)
         if length == -2:
-            length = await self.request.sock[0].read(2)
+            length = await self.request.sock[0].readexactly(2)
             length = int.from_bytes(length, 'big')
         elif length == -8:
-            length = await self.request.sock[0].read(8)
+            length = await self.request.sock[0].readexactly(8)
             length = int.from_bytes(length, 'big')
         max_allowed_length = Request.max_body_length \
             if self.max_message_length == -1 else self.max_message_length
         if length > max_allowed_length:
             raise WebSocketError('Message too large')
         if has_mask:  # pragma: no cover
-            mask = await self.request.sock[0].read(4)
-        payload = await self.request.sock[0].read(length)
+            mask = await self.request.sock[0].readexactly(4)
+        payload = await self.request.sock[0].readexactly(length)
         if has_mask:  # pragma: no cover
             payload = bytes(x ^ mask[i % 4] for i, x in enumerate(payload))
         return opcode, payload
