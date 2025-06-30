@@ -13,6 +13,8 @@ Core API
 .. autoclass:: microdot.Response
    :members:
 
+.. autoclass:: microdot.URLPattern
+   :members:
 
 Multipart Forms
 ---------------

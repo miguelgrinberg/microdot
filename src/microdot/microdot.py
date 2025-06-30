@@ -815,6 +815,17 @@ class Response:
 
 
 class URLPattern():
+    """A class that represents the URL pattern for a route.
+
+    :param url_pattern: The route URL pattern, which can include static and
+                        dynamic path segments. Dynamic segments are enclosed in
+                        ``<`` and ``>``. The type of the segment can be given
+                        as a prefix, separated from the name with a colon.
+                        Supported types are ``string`` (the default),
+                        ``int`` and ``path``. Custom types can be registered
+                        using the :meth:`URLPattern.register_type` method.
+    """
+
     segment_patterns = {
         'string': '/([^/]+)',
         'int': '/(-?\\d+)',
@@ -824,12 +835,32 @@ class URLPattern():
         'int': lambda value: int(value),
     }
 
+    @classmethod
+    def register_type(cls, type_name, pattern='[^/]+', parser=None):
+        """Register a new URL segment type.
+
+        :param type_name: The name of the segment type to register.
+        :param pattern: The regular expression pattern to use when matching
+                        this segment type. If not given, a default matcher for
+                        a single path segment is used.
+        :param parser: A callable that will be used to parse and transform the
+                       value of the segment. If omitted, the value is returned
+                       as a string.
+        """
+        cls.segment_patterns[type_name] = '/({})'.format(pattern)
+        cls.segment_parsers[type_name] = parser
+
     def __init__(self, url_pattern):
         self.url_pattern = url_pattern
         self.segments = []
         self.regex = None
 
     def compile(self):
+        """Generate a regular expression for the URL pattern.
+
+        This method is automatically invoked the first time the URL pattern is
+        matched against a path.
+        """
         pattern = ''
         for segment in self.url_pattern.lstrip('/').split('/'):
             if segment and segment[0] == '<':
@@ -857,12 +888,12 @@ class URLPattern():
         self.regex = re.compile('^' + pattern + '$')
         return self.regex
 
-    @classmethod
-    def register_type(cls, type_name, pattern='[^/]+', parser=None):
-        cls.segment_patterns[type_name] = '/({})'.format(pattern)
-        cls.segment_parsers[type_name] = parser
-
     def match(self, path):
+        """Match a path against the URL pattern.
+
+        Returns a dictionary with the values of all dynamic path segments if a
+        matche is found, or ``None`` if the path does not match this pattern.
+        """
         args = {}
         g = (self.regex or self.compile()).match(path)
         if not g:
