@@ -554,6 +554,7 @@ class Response:
         'json': 'application/json',
         'png': 'image/png',
         'txt': 'text/plain',
+        'svg': 'image/svg+xml',
     }
 
     send_file_buffer_size = 1024
