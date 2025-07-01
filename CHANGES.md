@@ -1,5 +1,18 @@
 # Microdot change log
 
+**Release 2.3.3** - 2025-07-01
+
+- Handle partial reads in WebSocket class [#294](https://github.com/miguelgrinberg/microdot/issues/294) ([commit](https://github.com/miguelgrinberg/microdot/commit/9bc3dced6c1f582dde0496961d25170b448ad8d7))
+- Add SVG to supported mimetypes [#302](https://github.com/miguelgrinberg/microdot/issues/302) ([commit](https://github.com/miguelgrinberg/microdot/commit/1d419ce59bf7006617109c05dc2d6fc6d1dc8235)) (thanks **Ozuba**!)
+- Do not silence exceptions that occur in the SSE task ([commit](https://github.com/miguelgrinberg/microdot/commit/654a85f46b7dd7a1e94f81193c4a78a8a1e99936))
+- Add Support for SSE responses in the test client ([commit](https://github.com/miguelgrinberg/microdot/commit/f5d3d931edfbacedebf5fdf938ef77c5ee910380))
+- Documentation improvements for the `Request` class ([commit](https://github.com/miguelgrinberg/microdot/commit/3dffa05ffb229813156b71e10a85283bdaa26d5e))
+- Additional documentation for the `URLPattern` class ([commit](https://github.com/miguelgrinberg/microdot/commit/786e5e533748e1343612c97123773aec9a1a99fc))
+- More detailed documentation for route responses ([commit](https://github.com/miguelgrinberg/microdot/commit/dc61470fa959549bb43313906ba6ed9f686babc2))
+- Additional documentation on WebSocket and SSE disconnections ([commit](https://github.com/miguelgrinberg/microdot/commit/7c98c4589de4774a88381b393444c75094532550))
+- More detailed documentation for `current_user` ([commit](https://github.com/miguelgrinberg/microdot/commit/e146e2d08deddf9b924c7657f04db28d71f34221))
+- Add a sub-application example ([commit](https://github.com/miguelgrinberg/microdot/commit/d7a9c535639268e415714b12ac898ae38e516308))
+
 **Release 2.3.2** - 2025-05-08
 
 - Use async error handlers in auth module [#298](https://github.com/miguelgrinberg/microdot/issues/298) ([commit](https://github.com/miguelgrinberg/microdot/commit/d9d7ff0825e4c5fbed6564d3684374bf3937df11))
