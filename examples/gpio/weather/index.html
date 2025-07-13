@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Microdot Weather Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.9/gauge.min.js" integrity="sha512-/gkYCBz4KVyJb3Shz6Z1kKu9Za5EdInNezzsm2O/DPvAYhCeIOounTzi7yuIF526z3rNZfIDxcx+rJAD07p8aA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+      html, body {
+        height: 95%;
+        font-family: Arial, sans-serif;
+      }
+      #container {
+        position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+      h1, p {
+        text-align: center;
+      }
+      table {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      table h1 {
+        margin-top: 0;
+      }
+      table p {
+        margin: 0;
+      }
+      #temperature, #humidity {
+        width: 100%;
+        max-width: 400px;
+        aspect-ratio: 2;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h1>Microdot Weather Dashboard</h1>
+      <table cellspacing="0" cellpadding="0">
+        <tr>
+          <td>
+            <canvas id="temperature" width="400" height="200"></canvas>
+          </td>
+          <td>
+            <canvas id="humidity" width="400" height="200"></canvas>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>Temperature</p>
+            <h1><span id="temperature-text">??</span>°C</h1>
+          </td>
+          <td>
+            <p>Humidity</p>
+            <h1><span id="humidity-text">??</span>%</h1>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <p><i>Last updated: <span id="time-text">...</span></i></p>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <script>
+      // create the temperature gauge
+      let temperatureGauge = new Gauge(document.getElementById('temperature')).setOptions({
+        angle: 0,
+        lineWidth: 0.3,
+        radiusScale: 1,
+        pointer: {
+          length: 0.6,
+          strokeWidth: 0.035,
+          color: '#000000',
+        },
+        limitMax: false,
+        limitMin: false,
+        highDpiSupport: true,
+        staticLabels: {
+          font: "14px sans-serif",
+          labels: [-30, -20, -10, 0, 10, 20, 30, 40, 50],
+          color: "#000000",
+          fractionDigits: 0,
+        },
+        staticZones: [
+          {strokeStyle: "#85a6e8", min: -30, max: 0},
+          {strokeStyle: "#a5dde8", min: 0, max: 10},
+          {strokeStyle: "#a5e8a6", min: 10, max: 20},
+          {strokeStyle: "#e8d8a5", min: 20, max: 30},
+          {strokeStyle: "#e8a8a5", min: 30, max: 50},
+        ],  
+        renderTicks: {
+          divisions: 8,
+          divWidth: 1.1,
+          divLength: 0.7,
+          divColor: '#333333',
+          subDivisions: 4,
+          subLength: 0.3,
+          subWidth: 0.6,
+          subColor: '#666666'
+        }
+      });
+      temperatureGauge.maxValue = 50;
+      temperatureGauge.setMinValue(-30);
+      temperatureGauge.animationSpeed = 36;
+      temperatureGauge.set(0);
+
+      let humidityGauge = new Gauge(document.getElementById('humidity')).setOptions({
+        angle: 0,
+        lineWidth: 0.3,
+        radiusScale: 1,
+        pointer: {
+          length: 0.6,
+          strokeWidth: 0.035,
+          color: '#000000',
+        },
+        limitMax: false,
+        limitMin: false,
+        highDpiSupport: true,
+        staticLabels: {
+          font: "14px sans-serif",
+          labels: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+          color: "#000000",
+          fractionDigits: 0,
+        },
+        staticZones: [
+          {strokeStyle: "#85a6e8", min: 0, max: 40},
+          {strokeStyle: "#a5e8a6", min: 40, max: 70},
+          {strokeStyle: "#e8a8a5", min: 70, max: 100},
+        ],  
+        renderTicks: {
+          divisions: 10,
+          divWidth: 1.1,
+          divLength: 0.7,
+          divColor: '#333333',
+          subDivisions: 4,
+          subLength: 0.3,
+          subWidth: 0.6,
+          subColor: '#666666'
+        }
+      });
+      humidityGauge.maxValue = 100;
+      humidityGauge.setMinValue(0);
+      humidityGauge.animationSpeed = 36;
+      humidityGauge.set(0);
+
+      async function update() {
+        const response = await fetch('/api');
+        if (response.ok) {
+          const data = await response.json();
+          temperatureGauge.set(data.temperature);
+          humidityGauge.set(data.humidity);
+          document.getElementById('temperature-text').textContent = data.temperature;
+          document.getElementById('humidity-text').textContent = data.humidity;
+          document.getElementById('time-text').textContent = new Date(data.time * 1000).toLocaleString();
+        }
+        setTimeout(update, 60000); // refresh every minute
+      }
+      update();
+    </script>
+
+  </body>
+</html>
