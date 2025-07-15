@@ -104,7 +104,8 @@ class CORS:
 
     def after_request(self, request, response):
         saved_vary = response.headers.get('Vary')
-        response.headers.update(self.get_cors_headers(request))
+        if request:  # pragma: no branch
+            response.headers.update(self.get_cors_headers(request))
         if saved_vary and saved_vary != response.headers.get('Vary'):
             response.headers['Vary'] = (
                 saved_vary + ', ' + response.headers['Vary'])
