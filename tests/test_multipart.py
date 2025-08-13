@@ -99,6 +99,37 @@ class TestMultipart(unittest.TestCase):
                                     'g': 'g|text/html|<p>hello</p>'})
         FileUpload.max_memory_size = saved_max_memory_size
 
+    def test_large_file_upload(self):
+        saved_buffer_size = FormDataIter.buffer_size
+        FormDataIter.buffer_size = 100
+        saved_max_memory_size = FileUpload.max_memory_size
+        FileUpload.max_memory_size = 200
+
+        app = Microdot()
+
+        @app.post('/')
+        @with_form_data
+        async def index(req):
+            return {"len": len(await req.files['f'].read())}
+
+        client = TestClient(app)
+
+        res = self._run(client.post(
+            '/', headers={
+                'Content-Type': 'multipart/form-data; boundary=boundary',
+            },
+            body=(
+                b'--boundary\r\n'
+                b'Content-Disposition: form-data; name="f"; filename="f"\r\n'
+                b'Content-Type: text/plain\r\n\r\n' + b'*' * 398 + b'\r\n'
+                b'--boundary--\r\n')
+        ))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json, {'len': 398})
+
+        FormDataIter.buffer_size = saved_buffer_size
+        FileUpload.max_memory_size = saved_max_memory_size
+
     def test_file_save(self):
         app = Microdot()
 
