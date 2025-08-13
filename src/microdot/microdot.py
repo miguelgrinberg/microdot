@@ -366,8 +366,8 @@ class Request:
             self.content_type = self.headers['Content-Type']
         if 'Cookie' in self.headers:
             for cookie in self.headers['Cookie'].split(';'):
-                name, value = cookie.strip().split('=', 1)
-                self.cookies[name] = value
+                c = cookie.strip().split('=', 1)
+                self.cookies[c[0]] = c[1] if len(c) > 1 else ''
 
         self._body = body
         self.body_used = False

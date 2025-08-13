@@ -35,16 +35,17 @@ class TestRequest(unittest.TestCase):
     def test_headers(self):
         fd = get_async_request_fd('GET', '/foo', headers={
             'Content-Type': 'application/json',
-            'Cookie': 'foo=bar;abc=def',
+            'Cookie': 'foo=bar;nothing;abc=def;',
             'Content-Length': '3'}, body='aaa')
         req = self._run(Request.create('app', fd, 'writer', 'addr'))
         self.assertEqual(req.headers, {
             'Host': 'example.com:1234',
             'Content-Type': 'application/json',
-            'Cookie': 'foo=bar;abc=def',
+            'Cookie': 'foo=bar;nothing;abc=def;',
             'Content-Length': '3'})
         self.assertEqual(req.content_type, 'application/json')
-        self.assertEqual(req.cookies, {'foo': 'bar', 'abc': 'def'})
+        self.assertEqual(req.cookies, {'foo': 'bar', 'nothing': '',
+                                       'abc': 'def', '': ''})
         self.assertEqual(req.content_length, 3)
         self.assertEqual(req.body, b'aaa')
 
