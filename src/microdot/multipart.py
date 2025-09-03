@@ -31,7 +31,10 @@ class FormDataIter:
     the next iteration, as the internal stream stored in ``FileUpload``
     instances is invalidated at the end of the iteration.
     """
-    #: The size of the buffer used to read chunks of the request body.
+    #: The size of the buffer used to read chunks of the request body. This
+    #: size must be large enough to hold at least one complete header or
+    #: boundary line, so it is not recommended to lower it, but it can be made
+    #: higher to improve performance at the expense of RAM.
     buffer_size = 256
 
     def __init__(self, request):
@@ -59,6 +62,7 @@ class FormDataIter:
             pass
 
         # make sure we are at a boundary
+        await self._fill_buffer()
         s = self.buffer.split(self.boundary, 1)
         if len(s) != 2 or s[0] != b'':
             abort(400)  # pragma: no cover
@@ -111,6 +115,9 @@ class FormDataIter:
         return name, FileUpload(filename, content_type, self._read_buffer)
 
     async def _fill_buffer(self):
+        if self.buffer[-len(self.boundary) - 4:] == self.boundary + b'--\r\n':
+            # we have reached the end of the body
+            return
         self.buffer += await self.request.stream.read(
             self.buffer_size + self.extra_size - len(self.buffer))
 
