@@ -62,8 +62,10 @@ class FormDataIter:
             pass
 
         # make sure we are at a boundary
-        await self._fill_buffer()
         s = self.buffer.split(self.boundary, 1)
+        if len(s) != 2:
+            await self._fill_buffer()
+            s = self.buffer.split(self.boundary, 1)
         if len(s) != 2 or s[0] != b'':
             abort(400)  # pragma: no cover
         self.buffer = s[1]
@@ -115,17 +117,17 @@ class FormDataIter:
         return name, FileUpload(filename, content_type, self._read_buffer)
 
     async def _fill_buffer(self):
-        if self.buffer[-len(self.boundary) - 4:] == self.boundary + b'--\r\n':
-            # we have reached the end of the body
-            return
         self.buffer += await self.request.stream.read(
             self.buffer_size + self.extra_size - len(self.buffer))
 
     async def _read_buffer(self, n=-1):
         data = b''
         while n == -1 or len(data) < n:
-            await self._fill_buffer()
             s = self.buffer.split(self.boundary, 1)
+            if len(s) != 2:
+                # boundary not found, need more data
+                await self._fill_buffer()
+                s = self.buffer.split(self.boundary, 1)
             data += s[0][:n] if n != -1 else s[0]
             self.buffer = s[0][n:] if n != -1 else b''
             if len(s) == 2:  # pragma: no branch
