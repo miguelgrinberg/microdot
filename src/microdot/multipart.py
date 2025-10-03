@@ -117,8 +117,12 @@ class FormDataIter:
         return name, FileUpload(filename, content_type, self._read_buffer)
 
     async def _fill_buffer(self):
-        self.buffer += await self.request.stream.read(
+        data = await self.request.stream.read(
             self.buffer_size + self.extra_size - len(self.buffer))
+        if len(data) == 0:
+            # Stream closed before finding boundary
+            raise EOFError("Stream ended before multipart boundary found")
+        self.buffer += data
 
     async def _read_buffer(self, n=-1):
         data = b''
