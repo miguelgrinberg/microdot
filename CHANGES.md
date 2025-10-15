@@ -1,5 +1,14 @@
 # Microdot change log
 
+**Release 2.3.4** - 2025-10-16
+
+- Prevent reading past EOF in multipart parser [#309](https://github.com/miguelgrinberg/microdot/issues/309) ([commit](https://github.com/miguelgrinberg/microdot/commit/6045390cef8735cbbc9f5f7eee7a3912f00e284d))
+- Generate a valid CORS response when the request is badly formatted [#305](https://github.com/miguelgrinberg/microdot/issues/305) ([commit](https://github.com/miguelgrinberg/microdot/commit/cca0b0f693c909134bc19eb41dfb5a86226e032b))
+- Faster HTTP streaming when using ASGI [#318](https://github.com/miguelgrinberg/microdot/issues/318) ([commit](https://github.com/miguelgrinberg/microdot/commit/7addcf4bb51f1caf57663c5bb4d8cc16ee6391e1))
+- Parse empty cookies [#308](https://github.com/miguelgrinberg/microdot/issues/308) ([commit](https://github.com/miguelgrinberg/microdot/commit/c12d4658091ff7eec1ac67c83bcd51eb38af9db7))
+- Add weather dashboard example [#303](https://github.com/miguelgrinberg/microdot/issues/303) ([commit](https://github.com/miguelgrinberg/microdot/commit/7071358b1f95892b1342226b43411e036be67d3a))
+- Add Python 3.13 and 3.14 to the CI builds ([commit](https://github.com/miguelgrinberg/microdot/commit/e9c9937b41e652876241307307f3e855f4f07379))
+
 **Release 2.3.3** - 2025-07-01
 
 - Handle partial reads in WebSocket class [#294](https://github.com/miguelgrinberg/microdot/issues/294) ([commit](https://github.com/miguelgrinberg/microdot/commit/9bc3dced6c1f582dde0496961d25170b448ad8d7))
