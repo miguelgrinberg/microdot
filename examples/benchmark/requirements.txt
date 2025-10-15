@@ -39,15 +39,15 @@ h11==0.16.0
     #   hypercorn
     #   uvicorn
     #   wsproto
-h2==4.1.0
+h2==4.3.0
     # via hypercorn
-hpack==4.0.0
+hpack==4.1.0
     # via h2
 humanize==4.9.0
     # via -r requirements.in
 hypercorn==0.15.0
     # via quart
-hyperframe==6.0.1
+hyperframe==6.1.0
     # via h2
 idna==3.7
     # via
