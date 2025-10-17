@@ -1,5 +1,10 @@
 # Microdot change log
 
+**Release 2.3.5** - 2025-10-18
+
+- Always encode ASGI response bodies to bytes ([commit](https://github.com/miguelgrinberg/microdot/commit/f70c524fb0bdc8c5fef2223c82f5e339445bc5fa))
+- Remove unused instance variable in `Microdot` class ([commit](https://github.com/miguelgrinberg/microdot/commit/27fc03f10047e4483f8d19559025d728b14a27c8))
+
 **Release 2.3.4** - 2025-10-16
 
 - Prevent reading past EOF in multipart parser [#309](https://github.com/miguelgrinberg/microdot/issues/309) ([commit](https://github.com/miguelgrinberg/microdot/commit/6045390cef8735cbbc9f5f7eee7a3912f00e284d))
