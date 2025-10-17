@@ -130,6 +130,8 @@ class Microdot(BaseMicrodot):
         try:
             while not cancelled:  # pragma: no branch
                 res_body = await body_iter.__anext__()
+                if isinstance(res_body, str):
+                    res_body = res_body.encode()
                 await send({'type': 'http.response.body',
                             'body': res_body,
                             'more_body': True})

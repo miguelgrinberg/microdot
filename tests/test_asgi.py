@@ -35,7 +35,7 @@ class TestASGI(unittest.TestCase):
             class R:
                 def __init__(self):
                     self.i = 0
-                    self.body = [b're', b'sp', b'on', b'se', b'']
+                    self.body = [b're', b'sp', b'on', 'se', b'']
 
                 async def read(self, n):
                     data = self.body[self.i]
