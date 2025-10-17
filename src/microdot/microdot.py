@@ -944,7 +944,6 @@ class Microdot:
         self.after_request_handlers = []
         self.after_error_request_handlers = []
         self.error_handlers = {}
-        self.shutdown_requested = False
         self.options_handler = self.default_options_handler
         self.debug = False
         self.server = None
