@@ -632,9 +632,13 @@ class Response:
         """Delete a cookie.
 
         :param cookie: The cookie's name.
-        :param kwargs: Any cookie opens and flags supported by
-                       ``set_cookie()`` except ``expires`` and ``max_age``.
+        :param kwargs: Any cookie options and flags supported by
+                       :meth:`set_cookie() <microdot.Response.set_cookie>`.
+                       Values given for ``expires`` and ``max_age`` are
+                       ignored.
         """
+        kwargs.pop('expires', None)
+        kwargs.pop('max_age', None)
         self.set_cookie(cookie, '', expires='Thu, 01 Jan 1970 00:00:01 GMT',
                         max_age=0, **kwargs)
 

@@ -204,9 +204,10 @@ class TestMicrodot(unittest.TestCase):
             res.set_cookie('four', '4')
             res.delete_cookie('two', path='/')
             res.delete_cookie('one', path='/bad')
+            res.delete_cookie('five', max_age=123, expires='foo')
             return res
 
-        client = TestClient(app, cookies={'one': '1', 'two': '2'})
+        client = TestClient(app, cookies={'one': '1', 'two': '2', 'five': '5'})
         res = self._run(client.get('/', headers={'Cookie': 'three=3'}))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers['Content-Type'],
