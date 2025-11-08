@@ -1,5 +1,12 @@
 # Microdot change log
 
+**Release 2.4.0** - 2025-11-08
+
+- SSE: Add support for the retry command and keepalive comments ([commit](https://github.com/miguelgrinberg/microdot/commit/d0808efa6b32e00992596f1bb3d4c3a372df2168))
+- Ignore `expires` and `max_age` arguments if passed to `Response.delete_cookie` [#323](https://github.com/miguelgrinberg/microdot/issues/323) ([commit](https://github.com/miguelgrinberg/microdot/commit/d61785b2e8d18438e5031de9c49e61642e5cfb3f))
+- Ignore "muted" errors during request creation ([commit](https://github.com/miguelgrinberg/microdot/commit/ce9de6e37a6323664eb7666b817932f371f1e099))
+- Add package version to `microdot/__init__.py` file [#312](https://github.com/miguelgrinberg/microdot/issues/312) ([commit](https://github.com/miguelgrinberg/microdot/commit/38f5a27b33c7968fc7414b67742e034e2b9a09ca))
+
 **Release 2.3.5** - 2025-10-18
 
 - Always encode ASGI response bodies to bytes ([commit](https://github.com/miguelgrinberg/microdot/commit/f70c524fb0bdc8c5fef2223c82f5e339445bc5fa))
