@@ -25,7 +25,9 @@ class TestWebSocket(unittest.TestCase):
             await sse.send('bar', event='test')
             await sse.send('bar', event='test', event_id='id42')
             await sse.send('bar', event_id='id42')
+            await sse.send('bar', retry=2.5)
             await sse.send({'foo': 'bar'})
+            await sse.send('ping', comment=True)
             await sse.send([42, 'foo', 'bar'])
             await sse.send(ValueError('foo'))
             await sse.send(b'foo')
@@ -38,35 +40,40 @@ class TestWebSocket(unittest.TestCase):
                                          'event: test\ndata: bar\n\n'
                                          'event: test\nid: id42\ndata: bar\n\n'
                                          'id: id42\ndata: bar\n\n'
+                                         'retry: 2500\ndata: bar\n\n'
                                          'data: {"foo": "bar"}\n\n'
+                                         ': ping\n\n'
                                          'data: [42, "foo", "bar"]\n\n'
                                          'data: foo\n\n'
                                          'data: foo\n\n'))
-        self.assertEqual(len(response.events), 8)
+        self.assertEqual(len(response.events), 9)
         self.assertEqual(response.events[0], {
             'data': b'foo', 'data_json': None, 'event': None,
-            'event_id': None})
+            'event_id': None, "retry": None})
         self.assertEqual(response.events[1], {
             'data': b'bar', 'data_json': None, 'event': 'test',
-            'event_id': None})
+            'event_id': None, "retry": None})
         self.assertEqual(response.events[2], {
             'data': b'bar', 'data_json': None, 'event': 'test',
-            'event_id': 'id42'})
+            'event_id': 'id42', "retry": None})
         self.assertEqual(response.events[3], {
             'data': b'bar', 'data_json': None, 'event': None,
-            'event_id': 'id42'})
+            'event_id': 'id42', "retry": None})
         self.assertEqual(response.events[4], {
-            'data': b'{"foo": "bar"}', 'data_json': {'foo': 'bar'},
-            'event': None, 'event_id': None})
+            'data': b'bar', 'data_json': None, 'event': None, 'event_id': None,
+            'retry': 2.5})
         self.assertEqual(response.events[5], {
-            'data': b'[42, "foo", "bar"]', 'data_json': [42, 'foo', 'bar'],
-            'event': None, 'event_id': None})
+            'data': b'{"foo": "bar"}', 'data_json': {'foo': 'bar'},
+            'event': None, 'event_id': None, "retry": None})
         self.assertEqual(response.events[6], {
-            'data': b'foo', 'data_json': None, 'event': None,
-            'event_id': None})
+            'data': b'[42, "foo", "bar"]', 'data_json': [42, 'foo', 'bar'],
+            'event': None, 'event_id': None, "retry": None})
         self.assertEqual(response.events[7], {
             'data': b'foo', 'data_json': None, 'event': None,
-            'event_id': None})
+            'event_id': None, "retry": None})
+        self.assertEqual(response.events[8], {
+            'data': b'foo', 'data_json': None, 'event': None,
+            'event_id': None, "retry": None})
 
     def test_sse_exception(self):
         app = Microdot()

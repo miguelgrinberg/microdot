@@ -78,6 +78,7 @@ class TestResponse:
                     data = None
                     event = None
                     event_id = None
+                    retry = None
                     for line in sse_event.split(b'\n'):
                         if line.startswith(b'data:'):
                             data = line[5:].strip()
@@ -85,6 +86,8 @@ class TestResponse:
                             event = line[6:].strip().decode()
                         elif line.startswith(b'id:'):
                             event_id = line[3:].strip().decode()
+                        elif line.startswith(b'retry:'):
+                            retry = int(line[7:].strip()) / 1000
                     if data:
                         data_json = None
                         try:
@@ -92,8 +95,9 @@ class TestResponse:
                         except ValueError:
                             pass
                         self.events.append({
-                            "data": data, "data_json": data_json,
-                            "event": event, "event_id": event_id})
+                            'data': data, 'data_json': data_json,
+                            'event': event, 'event_id': event_id,
+                            'retry': retry})
 
     @classmethod
     async def create(cls, res):

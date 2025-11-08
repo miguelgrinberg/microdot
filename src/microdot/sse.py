@@ -17,7 +17,8 @@ class SSE:
         self.event = asyncio.Event()
         self.queue = []
 
-    async def send(self, data, event=None, event_id=None):
+    async def send(self, data, event=None, event_id=None, retry=None,
+                   comment=False):
         """Send an event to the client.
 
         :param data: the data to send. It can be given as a string, bytes, dict
@@ -27,6 +28,12 @@ class SSE:
                       given, it must be a string.
         :param event_id: an optional event id, to send along with the data. If
                       given, it must be a string.
+        :param retry: an optional reconnection time (in seconds) that the
+                      client should use when the connection is lost.
+        :param comment: when set to ``True``, the data is sent as a comment
+                        line, and all other parameters are ignored. This is
+                        useful as a heartbeat mechanism that keeps the
+                        connection alive.
         """
         if isinstance(data, (dict, list)):
             data = json.dumps(data)
@@ -34,11 +41,17 @@ class SSE:
             data = data.encode()
         elif not isinstance(data, bytes):
             data = str(data).encode()
-        data = b'data: ' + data + b'\n\n'
-        if event_id:
-            data = b'id: ' + event_id.encode() + b'\n' + data
-        if event:
-            data = b'event: ' + event.encode() + b'\n' + data
+        if comment:
+            data = b': ' + data + b'\n\n'
+        else:
+            data = b'data: ' + data + b'\n\n'
+            if event_id:
+                data = b'id: ' + event_id.encode() + b'\n' + data
+            if event:
+                data = b'event: ' + event.encode() + b'\n' + data
+            if retry:
+                data = b'retry: ' + str(int(retry * 1000)).encode() + b'\n' + \
+                    data
         self.queue.append(data)
         self.event.set()
 
