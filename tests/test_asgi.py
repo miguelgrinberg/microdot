@@ -170,3 +170,103 @@ class TestASGI(unittest.TestCase):
             self._run(app(scope, receive, send))
 
         kill.assert_called()
+
+    def test_no_lifespan(self):
+        app = Microdot()
+
+        scope = {
+            'type': 'lifespan',
+            'asgi': {'version': '3.0'},
+            'state': {},
+        }
+
+        messages = [
+            {'type': 'lifespan.startup'},
+            {'type': 'lifespan.shutdown'},
+        ]
+        message_iter = iter(messages)
+        sends = []
+
+        async def receive():
+            return next(message_iter)
+
+        async def send(packet):
+            sends.append(packet)
+
+        self._run(app(scope, receive, send))
+        self.assertEqual(sends, [
+            {'type': 'lifespan.startup.complete'},
+            {'type': 'lifespan.shutdown.complete'},
+        ])
+
+    def test_lifespan(self):
+        async def startup(scope):
+            scope['state']['foo'] = 'bar'
+
+        async def shutdown(scope):
+            self.assertEqual(scope['state']['foo'], 'bar')
+            scope['state']['foo'] = 'baz'
+
+        app = Microdot(lifespan_startup=startup, lifespan_shutdown=shutdown)
+
+        scope = {
+            'type': 'lifespan',
+            'asgi': {'version': '3.0'},
+            'state': {},
+        }
+
+        messages = [
+            {'type': 'lifespan.startup'},
+            {'type': 'lifespan.shutdown'},
+        ]
+        message_iter = iter(messages)
+        sends = []
+
+        async def receive():
+            return next(message_iter)
+
+        async def send(packet):
+            sends.append(packet)
+
+        self._run(app(scope, receive, send))
+        self.assertEqual(scope['state']['foo'], 'baz')
+        self.assertEqual(sends, [
+            {'type': 'lifespan.startup.complete'},
+            {'type': 'lifespan.shutdown.complete'},
+        ])
+
+    def test_lifespan_errors(self):
+        async def startup(scope):
+            return scope['scope']['foo']  # KeyError
+
+        async def shutdown(scope):
+            return 1 / 0
+
+        app = Microdot(lifespan_startup=startup, lifespan_shutdown=shutdown)
+
+        scope = {
+            'type': 'lifespan',
+            'asgi': {'version': '3.0'},
+            'state': {},
+        }
+
+        messages = [
+            {'type': 'lifespan.startup'},
+            {'type': 'lifespan.shutdown'},
+        ]
+        message_iter = iter(messages)
+        sends = []
+
+        async def receive():
+            return next(message_iter)
+
+        async def send(packet):
+            sends.append(packet)
+
+        self._run(app(scope, receive, send))
+        self.assertEqual(sends, [
+            {'type': 'lifespan.startup.failed',
+             'message': "KeyError('scope')"},
+            {'type': 'lifespan.shutdown.failed',
+             'message': "ZeroDivisionError('division by zero')"},
+        ])

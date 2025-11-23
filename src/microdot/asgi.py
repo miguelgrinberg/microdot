@@ -48,15 +48,47 @@ class Microdot(BaseMicrodot):
     """A subclass of the core :class:`Microdot <microdot.Microdot>` class that
     implements the ASGI protocol.
 
+    :param startup: An optional function to handle the `lifespan.startup` ASGI
+                    signal.
+    :param shutdown: An optional function to handle the `lifespan.shutdown`
+                     ASGI signal.
+
     This class must be used as the application instance when running under an
     ASGI web server.
     """
-    def __init__(self):
+    def __init__(self, lifespan_startup=None, lifespan_shutdown=None):
         super().__init__()
+        self.lifespan_startup = lifespan_startup
+        self.lifespan_shutdown = lifespan_shutdown
         self.embedded_server = False
+
+    async def handle_lifespan(self, scope, receive, send):
+        while True:
+            message = await receive()
+            if message['type'] == 'lifespan.startup':
+                try:
+                    if self.lifespan_startup:
+                        await self.lifespan_startup(scope)
+                except Exception as e:
+                    await send({'type': 'lifespan.startup.failed',
+                                'message': repr(e)})
+                else:
+                    await send({'type': 'lifespan.startup.complete'})
+            elif message['type'] == 'lifespan.shutdown':  # pragma: no branch
+                try:
+                    if self.lifespan_shutdown:
+                        await self.lifespan_shutdown(scope)
+                except Exception as e:
+                    await send({'type': 'lifespan.shutdown.failed',
+                                'message': repr(e)})
+                else:
+                    await send({'type': 'lifespan.shutdown.complete'})
+                break
 
     async def asgi_app(self, scope, receive, send):
         """An ASGI application."""
+        if scope['type'] == 'lifespan':
+            return await self.handle_lifespan(scope, receive, send)
         if scope['type'] not in ['http', 'websocket']:  # pragma: no cover
             return
         path = scope['path']

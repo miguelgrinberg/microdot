@@ -722,6 +722,18 @@ runs the web application using the Uvicorn web server::
 When using the ASGI support, the ``scope`` dictionary provided by the web
 server is available to request handlers as ``request.asgi_scope``.
 
+The application instance can be initialized with ``lifespan_startup`` and
+``lifespan_shutdown`` arguments, which are invoked when the web server sends
+the ASGI lifespan signals with the ASGI scope as only argument::
+
+    async def startup(scope):
+        pass
+
+    async def shutdown(scope):
+        pass
+
+    app = Microdot(lifespan_startup=startup, lifespan_shutdown=shutdown)
+
 Using a WSGI Web Server
 ^^^^^^^^^^^^^^^^^^^^^^^
 
