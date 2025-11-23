@@ -23,7 +23,7 @@ class SessionDict(dict):
 
 
 class Session:
-    """
+    """Session handling
     :param app: The application instance.
     :param secret_key: The secret key, as a string or bytes object.
     :param cookie_options: A dictionary with cookie options to pass as
