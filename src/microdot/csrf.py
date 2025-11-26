@@ -11,7 +11,7 @@ class CSRF:
     """CSRF protection for Microdot routes.
 
     This class adds CSRF protection to all requests that use state changing
-    verbs (all methods except ``GET``, ``HEAD`` and ``OPTIONS``).
+    verbs (all methods except ``GET``, ``QUERY``, ``HEAD`` and ``OPTIONS``).
 
     :param app: The application instance.
     :param secret_key: The secret key for token signing, as a string or bytes
@@ -97,10 +97,11 @@ class CSRF:
 
         @self.app.before_request
         async def csrf_before_request(request):
-            if (self.protect_all
-                    and request.method not in ['GET', 'HEAD', 'OPTIONS']
-                    and request.route not in self.exempt_routes) or \
-                    request.route in self.protected_routes:
+            if (
+                self.protect_all
+                and request.method not in ['GET', 'QUERY', 'HEAD', 'OPTIONS']
+                and request.route not in self.exempt_routes
+            ) or request.route in self.protected_routes:
                 # ensure that a valid CSRF token was provided
                 csrf_token = None
                 if request.method == 'POST' and request.form and \
@@ -115,8 +116,7 @@ class CSRF:
         def csrf_after_request(request, response):
             if 'csrf_token' not in request.cookies:
                 options = self.cookie_options
-                if 'secure' not in options and \
-                        request.url.startswith('https://'):
+                if 'secure' not in options and request.scheme == 'https':
                     options['secure'] = True
                 response.set_cookie('csrf_token', self.generate_csrf_token(),
                                     **options)

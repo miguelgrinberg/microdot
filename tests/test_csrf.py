@@ -155,8 +155,21 @@ class TestMicrodot(unittest.TestCase):
         ))
         self.assertEqual(res.status_code, 403)
 
-# initialize with secret key == null
-# expired token
-# debug mode w/o secure
-# cookie options
-# protect
+    def test_cookie_is_secure(self):
+        app = Microdot()
+        CSRF(app, 'top-secret', time_limit=0.25)
+
+        @app.get('/')
+        def index(request):
+            print(request.url)
+            return 204
+
+        @app.post('/submit')
+        def submit(request):
+            return 204
+
+        client = TestClient(app, scheme='https')
+
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 204)
+        self.assertIn('; Secure', res.headers['Set-Cookie'][0])
