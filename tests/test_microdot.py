@@ -180,6 +180,30 @@ class TestMicrodot(unittest.TestCase):
                              'text/plain; charset=UTF-8')
             self.assertEqual(res.text, method)
 
+    def test_http_host(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            return req.scheme + "://" + req.headers['Host']
+
+        client = TestClient(app, host='foo.com')
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'http://foo.com')
+
+    def test_https_host(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(req):
+            return req.scheme + "://" + req.headers['Host']
+
+        client = TestClient(app, scheme='https', host='foo.com')
+        res = self._run(client.get('/'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'https://foo.com')
+
     def test_headers(self):
         app = Microdot()
 

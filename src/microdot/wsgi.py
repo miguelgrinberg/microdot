@@ -96,7 +96,8 @@ class Microdot(BaseMicrodot):
             headers,
             body=body,
             stream=stream,
-            sock=sock)
+            sock=sock,
+            scheme=environ.get('wsgi.url_scheme'))
         req.environ = environ
 
         res = self.loop.run_until_complete(self.dispatch_request(req))

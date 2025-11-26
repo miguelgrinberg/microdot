@@ -321,14 +321,17 @@ class Request:
 
     def __init__(self, app, client_addr, method, url, http_version, headers,
                  body=None, stream=None, sock=None, url_prefix='',
-                 subapp=None):
+                 subapp=None, scheme=None):
         #: The application instance to which this request belongs.
         self.app = app
         #: The address of the client, as a tuple (host, port).
         self.client_addr = client_addr
         #: The HTTP method of the request.
         self.method = method
-        #: The request URL, including the path and query string.
+        #: The scheme of the request, either `http` or `https`.
+        self.scheme = scheme or 'http'
+        #: The request URL, including the path and query string, but not the
+        #: scheme or the host, which is available in the ``Host`` header.
         self.url = url
         #: The URL prefix, if the endpoint comes from a mounted
         #: sub-application, or else ''.
@@ -379,7 +382,8 @@ class Request:
         self.after_request_handlers = []
 
     @staticmethod
-    async def create(app, client_reader, client_writer, client_addr):
+    async def create(app, client_reader, client_writer, client_addr,
+                     scheme=None):
         """Create a request object.
 
         :param app: The Microdot application instance.
@@ -388,6 +392,7 @@ class Request:
         :param client_writer: An output stream where the response data can be
                               written.
         :param client_addr: The address of the client, as a tuple.
+        :param scheme: The scheme of the request, either 'http' or 'https'.
 
         This method is a coroutine. It returns a newly created ``Request``
         object.
@@ -424,7 +429,7 @@ class Request:
 
         return Request(app, client_addr, method, url, http_version, headers,
                        body=body, stream=stream,
-                       sock=(client_reader, client_writer))
+                       sock=(client_reader, client_writer), scheme=scheme)
 
     def _parse_urlencoded(self, urlencoded):
         data = MultiDict()
@@ -949,6 +954,7 @@ class Microdot:
         self.after_error_request_handlers = []
         self.error_handlers = {}
         self.options_handler = self.default_options_handler
+        self.ssl = False
         self.debug = False
         self.server = None
 
@@ -1242,6 +1248,7 @@ class Microdot:
 
             asyncio.run(main())
         """
+        self.ssl = ssl
         self.debug = debug
 
         async def serve(reader, writer):

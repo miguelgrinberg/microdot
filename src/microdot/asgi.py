@@ -123,7 +123,8 @@ class Microdot(BaseMicrodot):
             headers,
             body=body,
             stream=stream,
-            sock=(receive, send))
+            sock=(receive, send),
+            scheme=scope.get('scheme'))
         req.asgi_scope = scope
 
         res = await self.dispatch_request(req)
