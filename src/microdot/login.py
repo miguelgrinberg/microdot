@@ -72,7 +72,9 @@ class Login:
 
         This call marks the user as logged in by storing their user ID in the
         user session. The application must call this method to log a user in
-        after their credentials have been validated.
+        after their credentials have been validated. It is expected that the
+        user object that is passed has an attribute called ``id`` that returns
+        the user's unique identifier.
 
         The method returns a redirect response, either to the URL the user
         originally intended to visit, or if there is no original URL to the URL
@@ -82,6 +84,9 @@ class Login:
         session['_user_id'] = user.id
         session['_fresh'] = True
         session.save()
+        request.g.current_user = user
+        if '_csrf_token' in request.cookies:
+            del request.cookies['_csrf_token']
 
         if remember:
             days = 30 if remember is True else int(remember)
@@ -104,8 +109,21 @@ class Login:
         session.pop('_user_id', None)
         session.pop('_fresh', None)
         session.save()
+        request.g.current_user = None
+        if '_csrf_token' in request.cookies:
+            del request.cookies['_csrf_token']  # pragma: no cover
         if '_remember' in request.cookies:
             self._update_remember_cookie(request, 0)
+
+    async def get_current_user(self, request):
+        if not hasattr(request.g, 'current_user'):
+            user_id = self._get_user_id_from_session(request)
+            if user_id:
+                request.g.current_user = await invoke_handler(
+                    self.user_loader_callback, user_id)
+            else:
+                request.g.current_user = None
+        return request.g.current_user
 
     def __call__(self, f):
         """Decorator to protect a route with authentication.
@@ -124,12 +142,8 @@ class Login:
 
         """
         async def wrapper(request, *args, **kwargs):
-            user_id = self._get_user_id_from_session(request)
-            if not user_id:
-                return await self._redirect_to_login(request)
-            request.g.current_user = await invoke_handler(
-                self.user_loader_callback, user_id)
-            if not request.g.current_user:
+            user = await self.get_current_user(request)
+            if not user:
                 return await self._redirect_to_login(request)
             return await invoke_handler(f, request, *args, **kwargs)
 

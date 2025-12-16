@@ -102,6 +102,10 @@ class BasicAuth(BaseAuth):
                user = get_user(username)
                if user and user.check_password(password):
                    return get_user(username)
+
+        Note: other extensions such as the one that adds CSRF protection
+        expects user objects to have an ``id`` attribute that contains the
+        user's unique identifier.
         """
         self.auth_callback = f
 
@@ -146,6 +150,10 @@ class TokenAuth(BaseAuth):
            @auth.authenticate
            async def check_credentials(request, token):
                return get_user(token)
+
+        Note: other extensions such as the one that adds CSRF protection
+        expects user objects to have an ``id`` attribute that contains the
+        user's unique identifier.
         """
         self.auth_callback = f
 
