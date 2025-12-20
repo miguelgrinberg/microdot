@@ -32,7 +32,9 @@ class TestLogin(unittest.TestCase):
 
         @app.get('/')
         @login
-        def index(request):
+        async def index(request):
+            assert await login.get_current_user(request) == \
+                request.g.current_user
             return request.g.current_user.name
 
         @app.post('/login')
