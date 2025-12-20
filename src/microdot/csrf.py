@@ -4,8 +4,6 @@ from microdot import abort
 class CSRF:
     """CSRF protection for Microdot routes.
 
-    This class implements CSRF protection for routes.
-
     :param app: The application instance.
     :param cors: The ``CORS`` instance that defines the origins that are
                  trusted by the application. This is used to validate requests
@@ -13,10 +11,10 @@ class CSRF:
                  header.
     :param protect_all: If ``True``, all state changing routes are protected by
                         default, with the exception of routes that are
-                        decorated with the :meth:`exempt` decorator. If
-                        ``False``, only routes decorated with the
-                        :meth:`protect` decorator are protected. The default
-                        is ``True``.
+                        decorated with the :meth:`exempt <exempt>` decorator.
+                        If ``False``, only routes decorated with the
+                        :meth:`protect <protect>` decorator are protected. The
+                        default is ``True``.
     :param allow_subdomains: If ``True``, requests from subdomains of the
                              application domain are trusted. The default is
                              ``False``.

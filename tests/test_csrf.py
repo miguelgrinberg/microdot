@@ -33,6 +33,11 @@ class TestCSRF(unittest.TestCase):
         def submit_exempt(request):
             return 204
 
+        @app.get('/get-protected')
+        @csrf.protect
+        def index(request):
+            return 204
+
         client = TestClient(app)
 
         res = self._run(client.get('/'))
@@ -67,6 +72,12 @@ class TestCSRF(unittest.TestCase):
             '/submit-exempt', headers={'Sec-Fetch-Site': 'cross-site'}
         ))
         self.assertEqual(res.status_code, 204)
+        res = self._run(client.get('/get-protected'))
+        self.assertEqual(res.status_code, 204)
+        res = self._run(client.get(
+            '/get-protected', headers={'Sec-Fetch-Site': 'cross-site'}
+        ))
+        self.assertEqual(res.status_code, 403)
 
     def test_protect_all_false(self):
         app = Microdot()

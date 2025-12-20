@@ -631,8 +631,8 @@ Example::
     cors = CORS(app, allowed_origins=['https://example.com'],
                 allow_credentials=True)
 
-CSRF Protection
-~~~~~~~~~~~~~~~
+Cross-Site Request Forgery (CSRF) Protection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :align: left
@@ -653,8 +653,8 @@ The CSRF extension provides protection against `Cross-Site Request Forgery
 (CSRF) <https://owasp.org/www-community/attacks/csrf>`_ attacks. This
 protection defends against attackers attempting to submit forms or other
 state-changing requests from their own site on behalf of unsuspecting victims,
-while taking advantage of their previously established sessions or cookies to
-impersonate them.
+while taking advantage of the victims previously established sessions or
+cookies to impersonate them.
 
 This extension checks the ``Sec-Fetch-Site`` header sent by all modern web
 browsers to achieve this protection. As a fallback mechanism for older browsers
@@ -678,7 +678,7 @@ This will protect all routes that use a state-changing method (``POST``,
 any requests that fail the CSRF check.
 
 If there are routes that need to be exempted from the CSRF check, they can be
-decorated with the ``@csrf.exempt`` decorator::
+decorated with the :meth:`csrf.exempt <microdot.csrf.CSRF.exempt>` decorator::
 
     @app.post('/webhook')
     @csrf.exempt
@@ -687,7 +687,8 @@ decorated with the ``@csrf.exempt`` decorator::
 
 For some applications it may be more convenient to only apply CSRF protection
 to explicitly selected routes. In this case, pass ``protect_all=False`` when
-you construct the ``CSRF`` instance and use the ``@csrf.protect`` decorator::
+you construct the ``CSRF`` instance and use the
+:meth:`csrf.protect <microdot.csrf.CSRF.protect>` decorator::
 
     csrf = CSRF(app, cors)
 
