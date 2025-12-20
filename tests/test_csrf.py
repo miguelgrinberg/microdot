@@ -281,6 +281,10 @@ class TestCSRF(unittest.TestCase):
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.post(
+            '/submit', headers={'Origin': 'http://bar.com:8888'}
+        ))
+        self.assertEqual(res.status_code, 403)
+        res = self._run(client.post(
             '/submit', headers={'Origin': 'https://x.y.bar.com:8888'}
         ))
         self.assertEqual(res.status_code, 204)

@@ -698,9 +698,14 @@ you construct the ``CSRF`` instance and use the
         # ...
 
 By default, requests coming from different subdomains are considered to be
-cross-site, and thus they will not pass the CSRF check. If you'd like subdomain
-requests to be considered safe, then set the ``allow_subdomains=True`` option
-when you create the ``CSRF`` class.
+cross-site, and as such they will not pass the CSRF check. If you'd like
+subdomain requests to be considered safe, then set the
+``allow_subdomains=True`` option when you create the ``CSRF`` class.
+
+.. note::
+   This extension is designed to block requests issued by web browsers that are
+   unsafe or unauthorized by the application owner. Clients other than web
+   browsers are not affected by this extension and can send requests freely.
 
 Test Client
 ~~~~~~~~~~~
