@@ -75,9 +75,14 @@ class CSRF:
                     elif not self.allow_subdomains:
                         allow = origin in self.cors.allowed_origins
                     else:
+                        origin_scheme, origin_host = origin.split('://', 1)
                         for allowed_origin in self.cors.allowed_origins:
-                            if origin == allowed_origin or \
-                                    origin.endswith('.' + allowed_origin):
+                            allowed_scheme, allowed_host = \
+                                allowed_origin.split('://', 1)
+                            if origin == allowed_origin or (
+                                origin_host.endswith('.' + allowed_host) and
+                                origin_scheme == allowed_scheme
+                            ):
                                 allow = True
                                 break
                 else:

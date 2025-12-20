@@ -631,6 +631,76 @@ Example::
     cors = CORS(app, allowed_origins=['https://example.com'],
                 allow_credentials=True)
 
+CSRF Protection
+~~~~~~~~~~~~~~~
+
+.. list-table::
+   :align: left
+
+   * - Compatibility
+     - | CPython & MicroPython
+
+   * - Required Microdot source files
+     - | `csrf.py <https://github.com/miguelgrinberg/microdot/tree/main/src/microdot/csrf.py>`_
+
+   * - Required external dependencies
+     - | None
+
+   * - Examples
+     - | `app.py <https://github.com/miguelgrinberg/microdot/blob/main/examples/csrf/app.py>`_
+
+The CSRF extension provides protection against `Cross-Site Request Forgery
+(CSRF) <https://owasp.org/www-community/attacks/csrf>`_ attacks. This
+protection defends against attackers attempting to submit forms or other
+state-changing requests from their own site on behalf of unsuspecting victims,
+while taking advantage of their previously established sessions or cookies to
+impersonate them.
+
+This extension checks the ``Sec-Fetch-Site`` header sent by all modern web
+browsers to achieve this protection. As a fallback mechanism for older browsers
+that do not support this header, this extension can be linked to the CORS
+extension to validate the ``Origin`` header.
+
+To enable CSRF protection, create an instance of the
+:class:`CSRF <microdot.csrf.CSRF>` class and configure the desired options.
+Example::
+
+    from microdot import Microdot
+    from microdot.cors import CORS
+    from microdot.csrf import CSRF
+
+    app = Microdot()
+    cors = CORS(app, allowed_origins=['https://example.com'])
+    csrf = CSRF(app, cors)
+
+This will protect all routes that use a state-changing method (``POST``,
+``PUT``, ``PATCH`` or ``DELETE``) and will return a 403 status code response to
+any requests that fail the CSRF check.
+
+If there are routes that need to be exempted from the CSRF check, they can be
+decorated with the ``@csrf.exempt`` decorator::
+
+    @app.post('/webhook')
+    @csrf.exempt
+    async def webhook(request):
+        # ...
+
+For some applications it may be more convenient to only apply CSRF protection
+to explicitly selected routes. In this case, pass ``protect_all=False`` when
+you construct the ``CSRF`` instance and use the ``@csrf.protect`` decorator::
+
+    csrf = CSRF(app, cors)
+
+    @app.post('/submit-form')
+    @csrf.protect
+    async def submit_form(request):
+        # ...
+
+By default, requests coming from different subdomains are considered to be
+cross-site, and thus they will not pass the CSRF check. If you'd like subdomain
+requests to be considered safe, then set the ``allow_subdomains=True`` option
+when you create the ``CSRF`` class.
+
 Test Client
 ~~~~~~~~~~~
 

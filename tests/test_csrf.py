@@ -176,7 +176,7 @@ class TestCSRF(unittest.TestCase):
 
     def test_allowed_origins(self):
         app = Microdot()
-        cors = CORS(allowed_origins=['foo.com', 'bar.com:8888'])
+        cors = CORS(allowed_origins=['http://foo.com', 'https://bar.com:8888'])
         csrf = CSRF()
         csrf.initialize(app, cors)
 
@@ -197,32 +197,40 @@ class TestCSRF(unittest.TestCase):
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.get(
-            '/', headers={'Origin': 'baz.com'}
+            '/', headers={'Origin': 'http://foo.com'}
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.get(
-            '/', headers={'Origin': 'x.baz.com'}
+            '/', headers={'Origin': 'https://baz.com'}
+        ))
+        self.assertEqual(res.status_code, 204)
+        res = self._run(client.get(
+            '/', headers={'Origin': 'http://x.baz.com'}
         ))
         self.assertEqual(res.status_code, 204)
 
         res = self._run(client.post('/submit'))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.post(
-            '/submit', headers={'Origin': 'bar.com:8888'}
+            '/submit', headers={'Origin': 'https://bar.com:8888'}
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.post(
-            '/submit', headers={'Origin': 'x.y.bar.com:8888'}
+            '/submit', headers={'Origin': 'http://bar.com:8888'}
         ))
         self.assertEqual(res.status_code, 403)
         res = self._run(client.post(
-            '/submit', headers={'Origin': 'baz.com'}
+            '/submit', headers={'Origin': 'https://x.y.bar.com:8888'}
+        ))
+        self.assertEqual(res.status_code, 403)
+        res = self._run(client.post(
+            '/submit', headers={'Origin': 'http://baz.com'}
         ))
         self.assertEqual(res.status_code, 403)
 
     def test_allowed_origins_with_subdomains(self):
         app = Microdot()
-        cors = CORS(allowed_origins=['foo.com', 'bar.com:8888'])
+        cors = CORS(allowed_origins=['http://foo.com', 'https://bar.com:8888'])
         csrf = CSRF(allow_subdomains=True)
         csrf.initialize(app, cors)
 
@@ -243,25 +251,33 @@ class TestCSRF(unittest.TestCase):
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.get(
-            '/', headers={'Origin': 'baz.com'}
+            '/', headers={'Origin': 'http://foo.com'}
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.get(
-            '/', headers={'Origin': 'x.baz.com'}
+            '/', headers={'Origin': 'https://baz.com'}
+        ))
+        self.assertEqual(res.status_code, 204)
+        res = self._run(client.get(
+            '/', headers={'Origin': 'http://x.baz.com'}
         ))
         self.assertEqual(res.status_code, 204)
 
         res = self._run(client.post('/submit'))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.post(
-            '/submit', headers={'Origin': 'bar.com:8888'}
+            '/submit', headers={'Origin': 'https://bar.com:8888'}
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.post(
-            '/submit', headers={'Origin': 'x.y.bar.com:8888'}
+            '/submit', headers={'Origin': 'https://x.y.bar.com:8888'}
         ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.post(
-            '/submit', headers={'Origin': 'baz.com'}
+            '/submit', headers={'Origin': 'http://x.y.bar.com:8888'}
+        ))
+        self.assertEqual(res.status_code, 403)
+        res = self._run(client.post(
+            '/submit', headers={'Origin': 'http://baz.com'}
         ))
         self.assertEqual(res.status_code, 403)
