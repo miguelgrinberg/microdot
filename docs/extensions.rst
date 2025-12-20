@@ -659,7 +659,23 @@ cookies to impersonate them.
 This extension checks the ``Sec-Fetch-Site`` header sent by all modern web
 browsers to achieve this protection. As a fallback mechanism for older browsers
 that do not support this header, this extension can be linked to the CORS
-extension to validate the ``Origin`` header.
+extension to validate the ``Origin`` header. If you are interested in the
+details of this protection mechanism, it is described in the
+`OWASP CSRF Prevention Cheat Sheet <https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#fetch-metadata-headers>`_
+page.
+
+.. note::
+   As of December 2025, OWASP considers the use of Fetch Metadata Headers for
+   CSRF protection a
+   `defense in depth <https://en.wikipedia.org/wiki/Defence_in_depth>`_
+   technique that is insufficient on its own.
+
+   There is an interesting
+   `discussion <https://github.com/OWASP/CheatSheetSeries/issues/1803>`_ on
+   this topic in the OWASP GitHub repository where it appears to be agreement
+   that this technique provides complete protection for the vast majority of
+   use cases. If you are unsure if this method works for your use case, please
+   read this discussion to have more context and make the right decision. 
 
 To enable CSRF protection, create an instance of the
 :class:`CSRF <microdot.csrf.CSRF>` class and configure the desired options.
@@ -706,9 +722,9 @@ subdomain requests to be considered safe, then set the
    This extension is designed to block requests issued by web browsers when
    they are found to be unsafe or unauthorized by the application owner. The
    method used to determine if a request should be allowed or not is based on
-   the value of headers that are normally only sent by web browsers. Clients
-   other than web browsers are not affected by this extension and can send
-   requests freely.
+   the value of headers that are only sent by web browsers. Clients other than
+   web browsers are not affected by this extension and can send requests
+   freely.
 
 Test Client
 ~~~~~~~~~~~
