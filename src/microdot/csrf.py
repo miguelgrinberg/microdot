@@ -78,8 +78,8 @@ class CSRF:
                             allowed_scheme, allowed_host = \
                                 allowed_origin.split('://', 1)
                             if origin == allowed_origin or (
-                                origin_host.endswith('.' + allowed_host) and
-                                origin_scheme == allowed_scheme
+                                origin_host.endswith('.' + allowed_host)
+                                and origin_scheme == allowed_scheme
                             ):
                                 allow = True
                                 break

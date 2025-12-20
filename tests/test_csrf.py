@@ -35,7 +35,7 @@ class TestCSRF(unittest.TestCase):
 
         @app.get('/get-protected')
         @csrf.protect
-        def index(request):
+        def get_protected(request):
             return 204
 
         client = TestClient(app)
