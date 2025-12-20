@@ -74,6 +74,12 @@ Cross-Origin Resource Sharing (CORS)
 .. automodule:: microdot.cors
    :members:
 
+Cross-Site Request Forgery (CSRF) Protection
+--------------------------------------------
+
+.. automodule:: microdot.csrf
+   :members:
+
 Test Client
 -----------
 

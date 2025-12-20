@@ -321,7 +321,7 @@ class Request:
 
     def __init__(self, app, client_addr, method, url, http_version, headers,
                  body=None, stream=None, sock=None, url_prefix='',
-                 subapp=None, scheme=None):
+                 subapp=None, scheme=None, route=None):
         #: The application instance to which this request belongs.
         self.app = app
         #: The address of the client, as a tuple (host, port).
@@ -339,6 +339,8 @@ class Request:
         #: The sub-application instance, or `None` if this isn't a mounted
         #: endpoint.
         self.subapp = subapp
+        #: The route function that handles this request.
+        self.route = route
         #: The path portion of the URL.
         self.path = url
         #: The query string portion of the URL.
@@ -1429,6 +1431,8 @@ class Microdot:
                 try:
                     res = None
                     if callable(f):
+                        req.route = f
+
                         # invoke the before request handlers
                         for handler in self.get_request_handlers(
                                 req, 'before_request', False):
