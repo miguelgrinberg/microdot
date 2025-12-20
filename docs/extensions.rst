@@ -685,12 +685,12 @@ decorated with the :meth:`csrf.exempt <microdot.csrf.CSRF.exempt>` decorator::
     async def webhook(request):
         # ...
 
-For some applications it may be more convenient to only apply CSRF protection
-to explicitly selected routes. In this case, pass ``protect_all=False`` when
-you construct the ``CSRF`` instance and use the
+For some applications it may be more convenient to have CSRF checks turned off
+by default, and only apply them to explicitly selected routes. In this case,
+pass ``protect_all=False`` when you construct the ``CSRF`` instance and use the
 :meth:`csrf.protect <microdot.csrf.CSRF.protect>` decorator::
 
-    csrf = CSRF(app, cors)
+    csrf = CSRF(app, cors, protect_all=False)
 
     @app.post('/submit-form')
     @csrf.protect
@@ -703,9 +703,12 @@ subdomain requests to be considered safe, then set the
 ``allow_subdomains=True`` option when you create the ``CSRF`` class.
 
 .. note::
-   This extension is designed to block requests issued by web browsers that are
-   unsafe or unauthorized by the application owner. Clients other than web
-   browsers are not affected by this extension and can send requests freely.
+   This extension is designed to block requests issued by web browsers when
+   they are found to be unsafe or unauthorized by the application owner. The
+   method used to determine if a request should be allowed or not is based on
+   the value of headers that are normally only sent by web browsers. Clients
+   other than web browsers are not affected by this extension and can send
+   requests freely.
 
 Test Client
 ~~~~~~~~~~~
