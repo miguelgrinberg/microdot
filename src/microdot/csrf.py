@@ -56,6 +56,7 @@ class CSRF:
             ) or request.route in self.protected_routes:
                 allow = False
                 sfs = request.headers.get('Sec-Fetch-Site')
+                origin = request.headers.get('Origin')
                 if sfs:
                     # if the Sec-Fetch-Site header was given, ensure it is not
                     # cross-site
@@ -63,14 +64,11 @@ class CSRF:
                         allow = True
                     elif sfs == 'same-site' and self.allow_subdomains:
                         allow = True
-                elif self.cors and self.cors.allowed_origins != '*':
-                    # if there is no Sec-Fetch-Site header but we have a list
-                    # of allowed origins, then we can validate the origin
-                    origin = request.headers.get('Origin')
-                    if origin is None:
-                        # origin wasn't given so this isn't a browser
-                        allow = True
-                    elif not self.allow_subdomains:
+                if not allow and origin and self.cors and \
+                        self.cors.allowed_origins != '*':
+                    # if we have a list of allowed origins, then we can
+                    # validate the origin
+                    if not self.allow_subdomains:
                         allow = origin in self.cors.allowed_origins
                     else:
                         origin_scheme, origin_host = origin.split('://', 1)
@@ -83,7 +81,7 @@ class CSRF:
                             ):
                                 allow = True
                                 break
-                else:
+                if not allow and not sfs and not origin:
                     allow = True  # no headers to check
 
                 if not allow:

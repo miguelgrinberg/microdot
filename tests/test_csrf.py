@@ -204,10 +204,6 @@ class TestCSRF(unittest.TestCase):
         res = self._run(client.get('/'))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.get(
-            '/', headers={'Origin': 'foo.com'}
-        ))
-        self.assertEqual(res.status_code, 204)
-        res = self._run(client.get(
             '/', headers={'Origin': 'http://foo.com'}
         ))
         self.assertEqual(res.status_code, 204)
@@ -228,6 +224,26 @@ class TestCSRF(unittest.TestCase):
         self.assertEqual(res.status_code, 204)
         res = self._run(client.post(
             '/submit', headers={'Origin': 'http://bar.com:8888'}
+        ))
+        self.assertEqual(res.status_code, 403)
+        res = self._run(client.post(
+            '/submit', headers={
+                'Sec-Fetch-Site': 'cross-site',
+                'Origin': 'https://bar.com:8888',
+            },
+        ))
+        self.assertEqual(res.status_code, 204)
+        res = self._run(client.post(
+            '/submit', headers={
+                'Sec-Fetch-Site': 'cross-site',
+                'Origin': 'https://bar.com:8889',
+            },
+        ))
+        self.assertEqual(res.status_code, 403)
+        res = self._run(client.post(
+            '/submit', headers={
+                'Sec-Fetch-Site': 'cross-site',
+            },
         ))
         self.assertEqual(res.status_code, 403)
         res = self._run(client.post(
@@ -256,10 +272,6 @@ class TestCSRF(unittest.TestCase):
         client = TestClient(app)
 
         res = self._run(client.get('/'))
-        self.assertEqual(res.status_code, 204)
-        res = self._run(client.get(
-            '/', headers={'Origin': 'foo.com'}
-        ))
         self.assertEqual(res.status_code, 204)
         res = self._run(client.get(
             '/', headers={'Origin': 'http://foo.com'}
