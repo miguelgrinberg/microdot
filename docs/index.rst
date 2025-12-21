@@ -14,13 +14,14 @@ systems with limited resources such as microcontrollers. Both standard Python
 (CPython) and `MicroPython <https://micropython.org>`_ are supported.
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2 
 
    intro
-   extensions
-   migrating
-   freezing
-   api
+   users-guide/index
+   extensions/index
+   implementation/index
+   api/index
+   contributing
 
 * :ref:`genindex`
 * :ref:`search`

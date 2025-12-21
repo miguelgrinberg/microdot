@@ -46,7 +46,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'furo'
+html_title = 'Microdot'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -58,12 +59,6 @@ html_css_files = [
 ]
 
 html_theme_options = {
-    'github_user': 'miguelgrinberg',
-    'github_repo': 'microdot',
-    'github_banner': True,
-    'github_button': True,
-    'github_type': 'star',
-    'fixed_sidebar': True,
 }
 
 autodoc_default_options = {
