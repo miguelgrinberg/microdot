@@ -1,5 +1,12 @@
 # Microdot change log
 
+**Release 2.5.0** - 2025-12-21
+
+- CSRF protection [#335](https://github.com/miguelgrinberg/microdot/issues/335) ([commit](https://github.com/miguelgrinberg/microdot/commit/0bae4c9477e9fdb231d1979cc6ed26c31e12b1aa))
+- Added support for ASGI lifespan events [#322](https://github.com/miguelgrinberg/microdot/issues/322) ([commit](https://github.com/miguelgrinberg/microdot/commit/f128b3ded45ccd418a00d199769240342a613b5e))
+- Added `scheme` and `route` attributes to the request object ([commit](https://github.com/miguelgrinberg/microdot/commit/1c7020ca1a3e5a6a1549dc52de38a0b7fd0a439a))
+- Added `Login.get_current_user()` helper method ([commit](https://github.com/miguelgrinberg/microdot/commit/053b8a81380fcdf285592a32e6b590ee50b7d048))
+
 **Release 2.4.0** - 2025-11-08
 
 - SSE: Add support for the retry command and keepalive comments ([commit](https://github.com/miguelgrinberg/microdot/commit/d0808efa6b32e00992596f1bb3d4c3a372df2168))
