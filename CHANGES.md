@@ -1,5 +1,9 @@
 # Microdot change log
 
+**Release 2.5.1** - 2025-12-21
+
+- CSRF: accept cross-site request if origin is in the CORS allowed origin list ([commit](https://github.com/miguelgrinberg/microdot/commit/ba6893ca0fb3c3dd18cf934f8eee893cc2a10daa))
+
 **Release 2.5.0** - 2025-12-21
 
 - CSRF protection [#335](https://github.com/miguelgrinberg/microdot/issues/335) ([commit](https://github.com/miguelgrinberg/microdot/commit/0bae4c9477e9fdb231d1979cc6ed26c31e12b1aa))
