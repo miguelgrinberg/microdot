@@ -36,7 +36,7 @@ MicroPython and CPython:
 
 - Authentication support, similar to [Flask-Login](https://github.com/maxcountryman/flask-login) for Flask (**Added in version 2.1**)
 - Support for forms encoded in `multipart/form-data` format (**Added in version 2.2**)
-- CSRF protection extension
+- CSRF protection extension (**Added in version 2.5**)
 - Pub/sub mini-framework for WebSocket and SSE
 - OpenAPI integration, similar to [APIFairy](https://github.com/miguelgrinberg/apifairy) for Flask
 
