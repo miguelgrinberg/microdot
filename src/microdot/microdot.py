@@ -774,7 +774,7 @@ class Response:
 
         :param filename: The filename of the file.
         :param status_code: The 3xx status code to use for the redirect. The
-                            default is 302.
+                            default is 200.
         :param content_type: The ``Content-Type`` header to use in the
                              response. If omitted, it is generated
                              automatically from the file extension of the
