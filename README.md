@@ -25,9 +25,16 @@ app.run()
 - Documentation
     - [Latest](https://microdot.readthedocs.io/en/latest/)
     - [Stable (v2)](https://microdot.readthedocs.io/en/stable/)
-- Legacy (v1)
-    - [Code](https://github.com/miguelgrinberg/microdot/tree/v1)
-    - [Documentation](https://microdot.readthedocs.io/en/v1/)
+
+The following links are for version 1 of Microdot:
+
+- [Code](https://github.com/miguelgrinberg/microdot/tree/v1)
+- [Documentation](https://microdot.readthedocs.io/en/v1/)
+
+Note that version 1 is no longer maintained, so you should consider migrating
+to version 2. See the
+[migration notes](https://microdot.readthedocs.io/en/latest/implementation/migrating.html)
+for help.
 
 ## Roadmap
 

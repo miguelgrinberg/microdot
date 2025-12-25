@@ -1,18 +1,14 @@
 Migrating to Microdot 2.x from Older Releases
 ---------------------------------------------
 
-Version 2 of Microdot incorporates feedback received from users of earlier
-releases, and attempts to improve and correct some design decisions that have
-proven to be problematic.
-
-For this reason most applications built for earlier versions will need to be
-updated to work correctly with Microdot 2. This section describes the backwards
-incompatible changes that were made.
+Version 2 of Microdot introduces backwards incompatible changes, so most
+applications built for earlier versions will need to be updated to work
+correctly with Microdot 2. This section describes the changes that were made.
 
 Code reorganization
 ~~~~~~~~~~~~~~~~~~~
 
-The Microdot source code has been moved into a ``microdot`` package,
+The Microdot source code has been moved into a ``microdot`` package in v2,
 eliminating the need for each extension to be named with a *microdot_* prefix.
 
 As a result of this change, all extensions have been renamed to shorter names.
@@ -33,11 +29,11 @@ In earlier releases of Microdot the core web server was built on synchronous
 Python, and asynchronous support was enabled with the asyncio extension.
 
 Microdot 2 eliminates the synchronous web server, and implements the core
-server logic directly with asyncio, eliminating the need for an asyncio
-extension.
+server logic directly with asyncio. The asyncio extension does not exist
+anymore.
 
-Any applications built using the asyncio extension will need to update their
-imports from this::
+Any applications built using the legacy asyncio extension will need to update
+their imports from this::
 
     from microdot_asyncio import Microdot
 
@@ -46,7 +42,7 @@ to this::
     from microdot import Microdot
 
 Applications that were built using the synchronous web server do not need to
-change their imports, but will now work asynchronously. Review the
+change their imports, but will now use an asynchronous web server. Review the
 :ref:`Concurrency` section to learn about the potential issues when using
 ``def`` function handlers, and the benefits of transitioning to ``async def``
 handlers.
@@ -64,9 +60,9 @@ extensions:
 - *microdot_asgi_websocket.py*: the functionality in this extension is now
   available in the ASGI extension.
 - *microdot_ssl.py*: this extension was only used with the synchronous web
-  server, so it is not needed anymore.
+  server, so it is not needed anymore and has been removed.
 - *microdot_websocket_alt.py*: this extension was only used with the
-  synchronous web server, so it is not needed anymore.
+  synchronous web server, so it is not needed anymore and has been removed.
 
 No more ``render_template()`` function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,14 +83,16 @@ As a result of this change, it is now possible to use asynchronous rendering::
 
     return await Template('index.html').render_async(title='Home')
 
-Also thanks to this redesign, the template can be streamed instead of returned
-as a single string::
+Also thanks to this redesign, the template can be streamed, which saves memory
+for larger templates::
 
     return Template('index.html').generate(title='Home')
 
 Streamed templates also have an asynchronous version::
 
     return Template('index.html').generate_async(title='Home')
+
+Note that templates that are streamed asynchronously do not use an ``await``.
 
 Class-based user sessions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,10 +134,9 @@ Applications using the WSGI extension continue to run under an asynchronous
 loop and should try to use the recommended ``async def`` handlers, but can be
 deployed with standard WSGI servers such as Gunicorn.
 
-WebSocket support when using the WSGI extension is enabled when using a
-compatible web server. At this time only Gunicorn is supported for WebSocket.
-Given that WebSocket support is asynchronous, it would be better to switch to
-the ASGI extension, which has full support for WebSocket as defined in the ASGI
-specification.
-
 As before, the WSGI extension is not available under MicroPython.
+
+Given that Microdot version 2 is asynchronous, the WSGI extension should be
+considered deprecated. Users of this extension are encouraged to migrate to the
+ASGI extension, which works with compatible ASGI web servers such as Uvicorn
+and Gunicorn.
