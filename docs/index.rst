@@ -21,7 +21,6 @@ systems with limited resources such as microcontrollers. Both standard Python
    extensions/index
    implementation/index
    api/index
-   contributing
 
 * :ref:`genindex`
 * :ref:`search`
