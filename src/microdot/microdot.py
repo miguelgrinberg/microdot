@@ -163,10 +163,12 @@ def mro(cls):  # pragma: no cover
     # all but the last occurence. This matches the method resolution order
     # of MicroPython, but not CPython.
     mro_pruned = []
-    for i in range(len(mro_list)):
-        base = mro_list.pop(0)
-        if base not in mro_list:
+    seen = set()
+    for base in reversed(mro_list):
+        if base not in seen:
             mro_pruned.append(base)
+            seen.add(base)
+    mro_pruned.reverse()
     return mro_pruned
 
 
