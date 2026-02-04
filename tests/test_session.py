@@ -4,7 +4,7 @@ from microdot import Microdot
 from microdot.session import Session, with_session
 from microdot.test_client import TestClient
 
-session_ext = Session(secret_key='top-secret!')
+session_ext = Session(secret_key='866ec558b6c14560bb0930e1fd55068d')
 
 
 class TestSession(unittest.TestCase):
@@ -19,7 +19,8 @@ class TestSession(unittest.TestCase):
 
     def test_session_async(self):
         app = Microdot()
-        session_ext.initialize(app, secret_key='some-other-secret')
+        session_ext.initialize(
+            app, secret_key='34fcd06506b843169698c8d25043f03a')
         client = TestClient(app)
 
         @app.get('/')
@@ -85,7 +86,7 @@ class TestSession(unittest.TestCase):
 
     def test_session_default_path(self):
         app = Microdot()
-        Session(app, secret_key='some-other-secret')
+        Session(app, secret_key='34fcd06506b843169698c8d25043f03a')
         client = TestClient(app)
 
         @app.get('/')
@@ -117,9 +118,10 @@ class TestSession(unittest.TestCase):
     def test_session_custom_path(self):
         app = Microdot()
         session_ext = Session()
-        session_ext.initialize(app, secret_key='some-other-secret',
-                               cookie_options={'path': '/child',
-                                               'http_only': False})
+        session_ext.initialize(
+            app, secret_key='34fcd06506b843169698c8d25043f03a',
+            cookie_options={'path': '/child',
+                            'http_only': False})
         client = TestClient(app)
 
         @app.get('/')
