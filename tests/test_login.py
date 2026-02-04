@@ -18,7 +18,7 @@ class TestLogin(unittest.TestCase):
 
     def test_login(self):
         app = Microdot()
-        Session(app, secret_key='secret')
+        Session(app, secret_key='866ec558b6c14560bb0930e1fd55068d')
         login = Login()
 
         class User:
@@ -74,7 +74,7 @@ class TestLogin(unittest.TestCase):
                 self.name = name
 
         app = Microdot()
-        Session(app, secret_key='secret')
+        Session(app, secret_key='866ec558b6c14560bb0930e1fd55068d')
         login = Login()
 
         @login.user_loader
@@ -105,7 +105,7 @@ class TestLogin(unittest.TestCase):
                 self.name = name
 
         app = Microdot()
-        Session(app, secret_key='secret')
+        Session(app, secret_key='866ec558b6c14560bb0930e1fd55068d')
         login = Login()
 
         @login.user_loader
@@ -133,7 +133,7 @@ class TestLogin(unittest.TestCase):
                 self.name = name
 
         app = Microdot()
-        Session(app, secret_key='secret')
+        Session(app, secret_key='866ec558b6c14560bb0930e1fd55068d')
         login = Login()
 
         @login.user_loader
