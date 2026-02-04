@@ -13,8 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - run: python -m pip install --upgrade pip wheel
-      - run: pip install tox tox-gh-actions
+      - run: python -m pip install --upgrade pip wheel tox
       - run: tox -eflake8
       - run: tox -edocs
   tests:
@@ -30,8 +29,7 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m pip install --upgrade pip wheel
-      - run: pip install tox tox-gh-actions
+      - run: python -m pip install --upgrade pip wheel tox
       - run: tox
   tests-micropython:
     name: tests-micropython
@@ -39,8 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - run: python -m pip install --upgrade pip wheel
-      - run: pip install tox tox-gh-actions
+      - run: python -m pip install --upgrade pip wheel tox
       - run: tox -eupy
   tests-circuitpython:
     name: tests-circuitpython
@@ -48,8 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - run: python -m pip install --upgrade pip wheel
-      - run: pip install tox tox-gh-actions
+      - run: python -m pip install --upgrade pip wheel tox
       - run: tox -ecpy
   coverage:
     name: coverage
@@ -57,8 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - run: python -m pip install --upgrade pip wheel
-      - run: pip install tox tox-gh-actions
+      - run: python -m pip install --upgrade pip wheel tox
       - run: tox
       - uses: codecov/codecov-action@v3
         with:
@@ -71,6 +66,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - run: python -m pip install --upgrade pip wheel
-      - run: pip install tox tox-gh-actions
+      - run: python -m pip install --upgrade pip wheel tox
       - run: tox -ebenchmark
