@@ -37,14 +37,14 @@ class TestEnd2End(unittest.TestCase):
             return ''
 
         async def run():
-            server = asyncio.create_task(app.start_server(host='127.0.0.1',
-                                                          port=5678))
+            server_task = asyncio.create_task(
+                app.start_server(host='127.0.0.1', port=5678))
             await asyncio.sleep(0.1)
             response = await self.request('/')
             self.assertEqual(response[0], 'HTTP/1.0 200 OK')
             self.assertEqual(response[-1], 'Hello, World!')
             await self.request('/shutdown')
-            await server
+            await server_task
 
         asyncio.run(run())
 
@@ -92,13 +92,64 @@ class TestEnd2End(unittest.TestCase):
             return ''
 
         async def run():
-            server = asyncio.create_task(app.start_server(port=5678))
+            server_task = asyncio.create_task(app.start_server(port=5678))
             await asyncio.sleep(0.1)
             await asyncio.gather(self.request('/async1'),
                                  self.request('/async2'),
                                  self.request('/sync1'),
                                  self.request('/sync2'))
             await self.request('/shutdown')
-            await server
+            await server_task
 
         asyncio.run(run())
+
+    @unittest.skipIf(sys.implementation.name == 'micropython',
+                     'not supported under MicroPython')
+    def test_start_serving_false(self):
+        app = Microdot()
+
+        @app.route('/')
+        def index(request):
+            return 'Hello, World!'
+
+        @app.route('/shutdown')
+        def shutdown(request):
+            app.shutdown()
+            return ''
+
+        async def start_server():
+            server = await app.start_server(host='127.0.0.1', port=5678,
+                                            start_serving=False)
+            try:
+                await server.serve_forever()
+            except asyncio.CancelledError:
+                pass
+
+        async def run():
+            server_task = asyncio.create_task(start_server())
+            await asyncio.sleep(0.1)
+            response = await self.request('/')
+            self.assertEqual(response[0], 'HTTP/1.0 200 OK')
+            self.assertEqual(response[-1], 'Hello, World!')
+            await self.request('/shutdown')
+            await server_task
+
+        asyncio.run(run())
+
+    @unittest.skipIf(sys.implementation.name != 'micropython',
+                     'only valid for MicroPython')
+    def test_start_serving_false_not_supported(self):
+        app = Microdot()
+
+        async def run():
+            try:
+                server_task = asyncio.create_task(
+                    app.start_server(host='127.0.0.1', port=5678, start_serving=False))
+                await server_task
+            except ValueError:
+                pass
+            else:
+                assert False, 'ValueError not raised'
+
+        asyncio.run(run())
+

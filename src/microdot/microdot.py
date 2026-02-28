@@ -1233,10 +1233,11 @@ class Microdot:
                     not use TLS. The default is ``None``.
         :param start_serving: If ``True``, the server starts accepting
                               connections immediately. When set to ``False``,
-                              it makes this function return a ``Server`` object
-                              and to accept connections the user should await
-                              on the ``Server.serve_forever()`` method. The
-                              default is ``True``. Only available in CPython.
+                              this method returns a ``Server`` object. To
+                              accept connections, the
+                              ``Server.serve_forever()`` method should be
+                              called. The default is ``True``. A value of
+                              ``False`` is only supported in CPython.
 
         This method is a coroutine.
 
@@ -1281,11 +1282,13 @@ class Microdot:
                 host=host, port=port))
 
         try:
-            self.server = await asyncio.start_server(serve, host, port,
-                                          ssl=ssl, start_serving=start_serving)
+            self.server = await asyncio.start_server(
+                serve, host, port, ssl=ssl, start_serving=start_serving)
             if not start_serving:
                 return self.server
         except TypeError:  # pragma: no cover
+            if not start_serving:
+                raise ValueError('start_serving must be True')
             try:
                 self.server = await asyncio.start_server(serve, host, port,
                                                          ssl=ssl)
