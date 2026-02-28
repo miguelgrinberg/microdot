@@ -24,6 +24,9 @@ class TestEnd2End(unittest.TestCase):
         await writer.wait_closed()
         return response.decode().splitlines()
 
+    @unittest.skipIf(
+        sys.implementation.name == 'circuitpython',
+        'not supported under CircuitPython')
     def test_get(self):
         app = Microdot()
 
