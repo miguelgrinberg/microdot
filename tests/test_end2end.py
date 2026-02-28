@@ -136,7 +136,8 @@ class TestEnd2End(unittest.TestCase):
 
         asyncio.run(run())
 
-    @unittest.skipIf(sys.implementation.name != 'micropython',
+    @unittest.skipIf(sys.implementation.name != 'micropython'
+                     and sys.implementation.name != 'micropython',
                      'only valid for MicroPython')
     def test_start_serving_false_not_supported(self):
         app = Microdot()
@@ -144,7 +145,8 @@ class TestEnd2End(unittest.TestCase):
         async def run():
             try:
                 server_task = asyncio.create_task(
-                    app.start_server(host='127.0.0.1', port=5678, start_serving=False))
+                    app.start_server(host='127.0.0.1', port=5678,
+                                     start_serving=False))
                 await server_task
             except ValueError:
                 pass
@@ -152,4 +154,3 @@ class TestEnd2End(unittest.TestCase):
                 assert False, 'ValueError not raised'
 
         asyncio.run(run())
-
