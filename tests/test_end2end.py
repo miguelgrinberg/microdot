@@ -48,8 +48,9 @@ class TestEnd2End(unittest.TestCase):
 
         asyncio.run(run())
 
-    @unittest.skipIf(sys.implementation.name == 'micropython',
-                     'not supported under MicroPython')
+    @unittest.skipIf(
+        sys.implementation.name in ['micropython', 'circuitpython'],
+        'not supported under MicroPython')
     def test_concurrent_requests(self):
         app = Microdot()
         counter = 0
@@ -103,8 +104,9 @@ class TestEnd2End(unittest.TestCase):
 
         asyncio.run(run())
 
-    @unittest.skipIf(sys.implementation.name == 'micropython',
-                     'not supported under MicroPython')
+    @unittest.skipIf(
+        sys.implementation.name in ['micropython', 'circuitpython'],
+        'not supported under MicroPython')
     def test_start_serving_false(self):
         app = Microdot()
 
@@ -136,8 +138,7 @@ class TestEnd2End(unittest.TestCase):
 
         asyncio.run(run())
 
-    @unittest.skipIf(sys.implementation.name != 'micropython'
-                     and sys.implementation.name != 'micropython',
+    @unittest.skipIf(sys.implementation.name != 'micropython',
                      'only valid for MicroPython')
     def test_start_serving_false_not_supported(self):
         app = Microdot()
