@@ -1212,7 +1212,7 @@ class Microdot:
         raise HTTPException(status_code, reason)
 
     async def start_server(self, host='0.0.0.0', port=5000, debug=False,
-                           ssl=None):
+                           ssl=None, start_serving=True):
         """Start the Microdot web server as a coroutine. This coroutine does
         not normally return, as the server enters an endless listening loop.
         The :func:`shutdown` function provides a method for terminating the
@@ -1231,6 +1231,12 @@ class Microdot:
                       default is ``False``.
         :param ssl: An ``SSLContext`` instance or ``None`` if the server should
                     not use TLS. The default is ``None``.
+        :param start_serving: If ``True``, the server starts accepting
+                              connections immediately. When set to ``False``,
+                              it makes this function return a ``Server`` object
+                              and to accept connections the user should await
+                              on the ``Server.serve_forever()`` method. The
+                              default is ``True``. Only available in CPython.
 
         This method is a coroutine.
 
@@ -1276,9 +1282,15 @@ class Microdot:
 
         try:
             self.server = await asyncio.start_server(serve, host, port,
-                                                     ssl=ssl)
+                                          ssl=ssl, start_serving=start_serving)
+            if not start_serving:
+                return self.server
         except TypeError:  # pragma: no cover
-            self.server = await asyncio.start_server(serve, host, port)
+            try:
+                self.server = await asyncio.start_server(serve, host, port,
+                                                         ssl=ssl)
+            except TypeError:  # pragma: no cover
+                self.server = await asyncio.start_server(serve, host, port)
 
         while True:
             try:
