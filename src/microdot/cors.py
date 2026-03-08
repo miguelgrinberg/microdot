@@ -14,7 +14,7 @@ class CORS:
                             making cross-site requests. If not set, all methods
                             are allowed.
     :param expose_headers: A list of headers that the browser is allowed to
-                           exposed.
+                           expose.
     :param allowed_headers: A list of headers that are allowed to be used when
                             making cross-site requests. If not set, all headers
                             are allowed.

@@ -2,7 +2,7 @@ import asyncio
 from microdot.helpers import wraps
 
 try:
-    import orjson as json
+    import orjson as json  # type: ignore[import-not-found]
 except ImportError:
     import json
 

@@ -44,7 +44,7 @@ class _BodyStream:  # pragma: no cover
         return data
 
 
-class Microdot(BaseMicrodot):
+class Microdot(BaseMicrodot):  # type: ignore[no-redef]
     """A subclass of the core :class:`Microdot <microdot.Microdot>` class that
     implements the ASGI protocol.
 

@@ -1,4 +1,4 @@
-from utemplate import recompile
+from utemplate import recompile  # type: ignore[import-untyped]
 
 _loader = None
 

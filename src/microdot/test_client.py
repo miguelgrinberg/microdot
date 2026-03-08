@@ -4,10 +4,10 @@ from microdot.microdot import Request, Response, AsyncBytesIO
 try:
     from microdot.websocket import WebSocket
 except:  # pragma: no cover  # noqa: E722
-    WebSocket = None
+    WebSocket = None  # type: ignore[assignment, misc]
 
 try:
-    import orjson as json
+    import orjson as json  # type: ignore[import-not-found]
 except ImportError:
     import json
 
