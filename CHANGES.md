@@ -1,5 +1,12 @@
 # Microdot change log
 
+**Release 2.6.0** - 2026-03-08
+
+- Added type hints for all pubic interfaces [#355](https://github.com/miguelgrinberg/microdot/issues/355) ([commit](https://github.com/miguelgrinberg/microdot/commit/e3689d7300485e6d0155a152f95fd1afeaf60be4))
+- Support the `start_serving` argument in the `start_server` method [#352](https://github.com/miguelgrinberg/microdot/issues/352) ([commit](https://github.com/miguelgrinberg/microdot/commit/ef1f4c032acd408f0dad42500610bca3084e1c2c)) (thanks **greenshoes33**!)
+- Add free-threading and pypy CI builds [#347](https://github.com/miguelgrinberg/microdot/issues/347) ([commit](https://github.com/miguelgrinberg/microdot/commit/605dcf3b99f0004fb8075d92df55844fe28ff0a6))
+- Documentation improvements ([commit](https://github.com/miguelgrinberg/microdot/commit/25c62748a6e5dd0c982b7e28a3ded7d5380fcb81))
+
 **Release 2.5.1** - 2025-12-21
 
 - CSRF: accept cross-site request if origin is in the CORS allowed origin list ([commit](https://github.com/miguelgrinberg/microdot/commit/ba6893ca0fb3c3dd18cf934f8eee893cc2a10daa))
