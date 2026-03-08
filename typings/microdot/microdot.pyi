@@ -269,7 +269,7 @@ class Microdot:
     def abort(status_code: int, reason: str | None = ...) -> None:
         ...
     
-    async def start_server(self, host: str = ..., port: int = ..., debug: bool = ..., ssl=...) -> None:
+    async def start_server(self, host: str = ..., port: int = ..., debug: bool = ..., ssl=..., start_serving: bool = ...) -> None:
         ...
     
     def run(self, host: str = ..., port: int = ..., debug: bool = ..., ssl: SSLContext | None = ...) -> None:
