@@ -11,7 +11,7 @@ import re
 import time
 
 try:
-    import orjson as json
+    import orjson as json  # type: ignore[import-not-found]
 except ImportError:
     import json
 
@@ -31,7 +31,7 @@ try:
                 None, partial(handler, *args, **kwargs))
         return ret
 except ImportError:  # pragma: no cover
-    def iscoroutine(coro):
+    def iscoroutine(coro):  # type: ignore[misc]
         return hasattr(coro, 'send') and hasattr(coro, 'throw')
 
     async def invoke_handler(handler, *args, **kwargs):
@@ -46,7 +46,7 @@ except ImportError:  # pragma: no cover
         return ret
 
 try:
-    from sys import print_exception
+    from sys import print_exception  # type: ignore[attr-defined]
 except ImportError:  # pragma: no cover
     import traceback
 
@@ -578,7 +578,7 @@ class Response:
     #: written to the client. Used to exit WebSocket connections cleanly.
     already_handled = None
 
-    def __init__(self, body='', status_code=200, headers=None, reason=None):
+    def __init__(self, body=b'', status_code=200, headers=None, reason=None):
         if body is None and status_code == 200:
             body = ''
             status_code = 204
@@ -1559,7 +1559,7 @@ class Microdot:
         return res
 
 
-Response.already_handled = Response()
+Response.already_handled = Response()  # type: ignore[assignment]
 
 abort = Microdot.abort
 redirect = Response.redirect

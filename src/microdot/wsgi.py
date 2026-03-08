@@ -8,7 +8,7 @@ from microdot.websocket import WebSocket, websocket_upgrade, \
     with_websocket  # noqa: F401
 
 
-class Microdot(BaseMicrodot):
+class Microdot(BaseMicrodot):  # type: ignore[no-redef]
     """A subclass of the core :class:`Microdot <microdot.Microdot>` class that
     implements the WSGI protocol.
 
