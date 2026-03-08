@@ -1,18 +1,18 @@
 from typing import Any, Callable, Tuple
-from asyncio import EventLoop
+import asyncio
 from microdot import *  # type: ignore
 from microdot.microdot import Microdot as BaseMicrodot
 
 class Microdot(BaseMicrodot):  # type: ignore[no-redef]
-    loop: EventLoop
+    loop: asyncio.EventLoop
     embedded_server: bool
     def __init__(self) -> None:
         ...
     
-    def wsgi_app(self, environ: dict[str, Any], start_response: Callable[[int, list[Tuple[str, str]]]]):
+    def wsgi_app(self, environ: dict[str, Any], start_response: Callable[[int, list[Tuple[str, str]]], Callable[[str | bytes], None]]):
         ...
     
-    def __call__(self, environ: dict[str, Any], start_response: Callable[[int, list[Tuple[str, str]]]]):
+    def __call__(self, environ: dict[str, Any], start_response: Callable[[int, list[Tuple[str, str]]], Callable[[str | bytes], None]]):
         ...
     
     def shutdown(self) -> None:

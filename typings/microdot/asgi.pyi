@@ -10,13 +10,13 @@ class Microdot(BaseMicrodot):  # type: ignore[no-redef]
     def __init__(self, lifespan_startup: Callable[[dict[str, Any]], Awaitable[None]] = ..., lifespan_shutdown: Callable[[dict[str, Any]], Awaitable[None]] = ...) -> None:
         ...
     
-    async def handle_lifespan(self, scope: dict[str, Any], receive: Callable[[], Awaitable[dict[str, Any]]], send: Callable[[dict[str, Any], Awaitable[None]]]) -> None:
+    async def handle_lifespan(self, scope: dict[str, Any], receive: Callable[[], Awaitable[dict[str, Any]]], send: Callable[[dict[str, Any]], Awaitable[None]]) -> None:
         ...
     
-    async def asgi_app(self, scope: dict[str, Any], receive: Callable[[], Awaitable[dict[str, Any]]], send: Callable[[dict[str, Any], Awaitable[None]]]):
+    async def asgi_app(self, scope: dict[str, Any], receive: Callable[[], Awaitable[dict[str, Any]]], send: Callable[[dict[str, Any]], Awaitable[None]]):
         ...
     
-    async def __call__(self, scope: dict[str, Any], receive: Callable[[], Awaitable[dict[str, Any]]], send: Callable[[dict[str, Any], Awaitable[None]]]):
+    async def __call__(self, scope: dict[str, Any], receive: Callable[[], Awaitable[dict[str, Any]]], send: Callable[[dict[str, Any]], Awaitable[None]]):
         ...
     
     def shutdown(self) -> None:

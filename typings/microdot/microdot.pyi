@@ -118,7 +118,7 @@ class Request:
     body_used: bool
     sock: Tuple[StreamReader, StreamWriter]
     after_request_handlers: list[Callable[[Request, "Response"], "Response" | Awaitable["Response"] | None | Awaitable[None]]]
-    def __init__(self, app, client_addr: Tuple[str, int], method: str, url: str, http_version: str, headers: dict[str, str], body: bytes | None = ..., stream: StreamReader | None = ..., sock: Tuple[StreamReader, StreamWriter] = ..., url_prefix: str = ..., subapp: "Microdot" | None = ..., scheme: str | None = ..., route: Callable[..., Any | Awaitable[Any]] | None = ...) -> None:
+    def __init__(self, app, client_addr: Tuple[str, int], method: str, url: str, http_version: str, headers: dict[str, str], body: bytes | None = ..., stream: StreamReader | None = ..., sock: Tuple[StreamReader, StreamWriter] | None = ..., url_prefix: str = ..., subapp: "Microdot" | None = ..., scheme: str | None = ..., route: Callable[..., Any | Awaitable[Any]] | None = ...) -> None:
         ...
     
     @staticmethod
@@ -162,10 +162,10 @@ class Response:
     body: bytes
     is_head: bool
     i: int
-    def __init__(self, body: str | bytes = ..., status_code: int = ..., headers: dict[str, str] = ..., reason: str = ...) -> None:
+    def __init__(self, body: str | bytes = ..., status_code: int = ..., headers: dict[str, str] | None = ..., reason: str | None = ...) -> None:
         ...
     
-    def set_cookie(self, cookie: str, value: str, path: str | None = ..., domain: str | None = ..., expires: str | datetime = ..., max_age: int | None = ..., secure: bool = ..., http_only: bool = ..., partitioned: bool = ...) -> None:
+    def set_cookie(self, cookie: str, value: str, path: str | None = ..., domain: str | None = ..., expires: str | datetime | None = ..., max_age: int | None = ..., secure: bool = ..., http_only: bool = ..., partitioned: bool = ...) -> None:
         ...
     
     def delete_cookie(self, cookie: str, **kwargs: Any) -> None:
@@ -232,7 +232,7 @@ class Microdot:
     def __init__(self) -> None:
         ...
     
-    def route(self, url_pattern: str, methods: list[str] = ...):
+    def route(self, url_pattern: str, methods: list[str] | None = ...):
         ...
     
     def get(self, url_pattern: str):
@@ -290,7 +290,7 @@ class Microdot:
     def get_request_handlers(self, req: Request, attr: str, local_first: bool = ...) -> list[Callable[..., Any]]:
         ...
     
-    async def error_response(self, req: Request, status_code: int, reason: str = ...):
+    async def error_response(self, req: Request, status_code: int, reason: str | None = ...):
         ...
     
     async def dispatch_request(self, req: Request):
