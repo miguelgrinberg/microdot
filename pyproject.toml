@@ -27,8 +27,6 @@ Homepage = "https://github.com/miguelgrinberg/microdot"
 
 [project.optional-dependencies]
 dev = [
-    "mypy",
-    "pyright",
     "tox",
 ]
 docs = [
