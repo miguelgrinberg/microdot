@@ -671,9 +671,9 @@ class Response:
             # headers
             for header, value in self.headers.items():
                 values = value if isinstance(value, list) else [value]
-                for value in values:
+                for v in values:
                     await stream.awrite('{header}: {value}\r\n'.format(
-                        header=header, value=value).encode())
+                        header=header, value=v).encode())
             await stream.awrite(b'\r\n')
 
             # body
