@@ -194,6 +194,13 @@ class TestResponse(unittest.TestCase):
                        secure=True, http_only=True)
         res.delete_cookie('foo8', http_only=True)
         res.delete_cookie('foo9', path='/s')
+        with self.assertRaises(ValueError):
+            res.set_cookie('foo1', 'bar1\r\nSet-Cookie: foo2=bar2')
+        with self.assertRaises(ValueError):
+            res.set_cookie('foo1', 'bar1',
+                           domain='example.com\r\nSet-Cookie: foo2=bar2')
+        with self.assertRaises(ValueError):
+            res.set_cookie('foo1', 'bar1', path='/\r\nSet-Cookie: foo2=bar2')
         self.assertEqual(res.headers, {'Set-Cookie': [
             'foo1=bar1',
             'foo2=bar2; Path=/; Partitioned',

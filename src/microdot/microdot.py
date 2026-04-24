@@ -630,6 +630,8 @@ class Response:
             http_cookie += '; HttpOnly'
         if partitioned:
             http_cookie += '; Partitioned'
+        if '\r' in http_cookie or '\n' in http_cookie:
+            raise ValueError('invalid cookie')
         if 'Set-Cookie' in self.headers:
             self.headers['Set-Cookie'].append(http_cookie)
         else:
@@ -762,7 +764,7 @@ class Response:
         :param status_code: The 3xx status code to use for the redirect. The
                             default is 302.
         """
-        if '\x0d' in location or '\x0a' in location:
+        if '\r' in location or '\n' in location:
             raise ValueError('invalid redirect URL')
         return cls(status_code=status_code, headers={'Location': location})
 
