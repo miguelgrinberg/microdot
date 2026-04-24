@@ -14,7 +14,7 @@ apps = [
     ),
     (
         'micropython mem.py',
-        {'MICROPYPATH': '../../src:../../libs/micropython'},
+        {'MICROPYPATH': ':.frozen:../../src:../../libs/micropython'},
         'microdot-micropython'
     ),
     (
