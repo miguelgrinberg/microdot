@@ -1,5 +1,10 @@
 # Microdot change log
 
+**Release 2.6.1** - 2026-04-24
+
+- Sanitize cookies ([commit](https://github.com/miguelgrinberg/microdot/commit/99b281b45faef8472410f2d56bfef496dfbd95d5))
+- Minor documentation fixes ([commit](https://github.com/miguelgrinberg/microdot/commit/49f16bb9ed94ff2d3b77a315eaa10bcaefa00bb5))
+
 **Release 2.6.0** - 2026-03-08
 
 - Added type hints for all public interfaces [#355](https://github.com/miguelgrinberg/microdot/issues/355) ([commit](https://github.com/miguelgrinberg/microdot/commit/e3689d7300485e6d0155a152f95fd1afeaf60be4))
