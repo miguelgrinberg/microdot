@@ -78,3 +78,12 @@ jobs:
           python-version: 3.14
       - run: python -m pip install --upgrade pip wheel tox
       - run: tox -ebenchmark
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e # v0.5.3
