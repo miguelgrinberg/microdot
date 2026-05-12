@@ -172,6 +172,20 @@ class TestMultipart(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.text, 'None')
 
+    def test_no_content_type(self):
+        app = Microdot()
+
+        @app.route('/upload', methods=['GET', 'POST'])
+        @with_form_data
+        async def async_route(req):
+            return str(req.form)
+
+        client = TestClient(app)
+
+        res = self._run(client.get('/upload'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.text, 'None')
+
     def test_upload_iterator(self):
         app = Microdot()
 

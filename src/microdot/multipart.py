@@ -42,7 +42,7 @@ class FormDataIter:
         self.buffer = None
         try:
             mimetype, boundary = request.content_type.rsplit('; boundary=', 1)
-        except ValueError:
+        except (AttributeError, ValueError):
             return  # not a multipart request
         if mimetype.split(';', 1)[0] == \
                 'multipart/form-data':  # pragma: no branch
