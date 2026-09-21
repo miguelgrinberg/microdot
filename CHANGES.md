@@ -2,9 +2,9 @@
 
 **Release 2.7.0** - 2026-09-18
 
-- Add the new `QUERY` method [#10003](https://code.miguelgrinberg.com///git@code.miguelgrinberg.com:30022/miguelgrinberg/microdot.git/issues/10003) ([commit](https://code.miguelgrinberg.com///git@code.miguelgrinberg.com:30022/miguelgrinberg/microdot.git/commit/b33f9cfc36f9c18028f2d85c80228ca839028c37))
-- Return the `Vary` header when the session cookie or CSRF are used [#10002](https://code.miguelgrinberg.com///git@code.miguelgrinberg.com:30022/miguelgrinberg/microdot.git/issues/10002) ([commit](https://code.miguelgrinberg.com///git@code.miguelgrinberg.com:30022/miguelgrinberg/microdot.git/commit/60b4231193bc43e8f140c86471d54697724ed809))
-- Modernize source code to Python 3.10 ([commit](https://code.miguelgrinberg.com///git@code.miguelgrinberg.com:30022/miguelgrinberg/microdot.git/commit/0bba5239161e53839402be232e0a6051bb84a248))
+- Add the new `QUERY` method [#10003](https://code.miguelgrinberg.com/miguelgrinberg/microdot/issues/10003) ([commit](https://code.miguelgrinberg.com/miguelgrinberg/microdot/commit/b33f9cfc36f9c18028f2d85c80228ca839028c37))
+- Return the `Vary` header when the session cookie or CSRF are used [#10002](https://code.miguelgrinberg.com/miguelgrinberg/microdot/issues/10002) ([commit](https://code.miguelgrinberg.com/miguelgrinberg/microdot/commit/60b4231193bc43e8f140c86471d54697724ed809))
+- Modernize source code to Python 3.10 ([commit](https://code.miguelgrinberg.com/miguelgrinberg/microdot/commit/0bba5239161e53839402be232e0a6051bb84a248))
 
 **Release 2.6.2** - 2026-05-12
 
