@@ -495,8 +495,9 @@ class Request:
 
     @property
     def files(self):
-        """The files uploaded in the request as a dictionary, or ``None`` if
-        the request does not have any files.
+        """The files uploaded in the request as a
+        :class:`MultiDict <microdot.MultiDict>` object, or ``None`` if the
+        request does not have any files.
 
         The :func:`with_form_data <microdot.multipart.with_form_data>`
         decorator must be added to the route that receives file uploads for

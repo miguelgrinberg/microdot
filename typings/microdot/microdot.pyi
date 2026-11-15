@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, BinaryIO, Callable, Iterable, Tuple
+from typing import Any, Awaitable, BinaryIO, Callable, Iterable, Tuple, TypeVar
 from asyncio import StreamReader, StreamWriter, Server
 from datetime import datetime
 from io import BytesIO
@@ -44,20 +44,23 @@ class NoCaseDict(dict):
 def mro(cls):
     ...
 
-class MultiDict(dict):
-    def __init__(self, initial_dict: dict[str, Any] | None = ...) -> None:
+_T = TypeVar('_T')
+
+
+class MultiDict[_T](dict[str, _T]):
+    def __init__(self, initial_dict: dict[str, _T] | None = ...) -> None:
         ...
 
-    def __setitem__(self, key: str, value: Any) -> None:
+    def __setitem__(self, key: str, value: _T) -> None:
         ...
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> _T:
         ...
 
-    def get(self, key: str, default: Any | None = ..., type: type | None = ...):
+    def get(self, key: str, default: _T | None = ..., type: type | None = ...) -> _T | None:  # type: ignore[override]
         ...
 
-    def getlist(self, key: str, type: type | None = ...) -> list[Any]:
+    def getlist(self, key: str, type: type | None = ...) -> list[_T]:
         ...
 
 
@@ -138,11 +141,11 @@ class Request:
         ...
 
     @property
-    def form(self) -> dict[str, str] | None:
+    def form(self) -> MultiDict[str] | None:
         ...
 
     @property
-    def files(self) -> dict[str, FileUpload]:
+    def files(self) -> MultiDict[FileUpload] | None:
         ...
 
     def after_request(self, f: Callable[[Request, "Response"], "Response" | Awaitable["Response"] | None | Awaitable[None]]):

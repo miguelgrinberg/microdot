@@ -2,6 +2,7 @@ import os
 from random import choice
 from microdot import abort, iscoroutine, AsyncBytesIO
 from microdot.helpers import wraps
+from microdot.microdot import MultiDict
 
 
 class FormDataIter:
@@ -277,8 +278,8 @@ def with_form_data(f):
     """
     @wraps(f)
     async def wrapper(request, *args, **kwargs):
-        form = {}
-        files = {}
+        form = MultiDict()
+        files = MultiDict()
         async for name, value in FormDataIter(request):
             if isinstance(value, FileUpload):
                 files[name] = await value.copy()
@@ -293,7 +294,8 @@ def with_form_data(f):
                 ret = await ret
         finally:
             if request.files:
-                for file in request.files.values():
-                    await file.close()
+                for files in request.files.values():
+                    for file in files:
+                        await file.close()
         return ret
     return wrapper

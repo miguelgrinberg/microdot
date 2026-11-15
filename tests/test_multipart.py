@@ -22,12 +22,18 @@ class TestMultipart(unittest.TestCase):
         @app.post('/sync')
         @with_form_data
         def sync_route(req):
-            return dict(req.form)
+            d = {}
+            for key, value in req.form.items():
+                d[key] = value
+            return d
 
         @app.post('/async')
         @with_form_data
         async def async_route(req):
-            return dict(req.form)
+            d = {}
+            for key, value in req.form.items():
+                d[key] = value
+            return d
 
         client = TestClient(app)
 
@@ -43,7 +49,7 @@ class TestMultipart(unittest.TestCase):
                 b'--boundary--\r\n')
         ))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json, {'foo': 'bar', 'baz': 'baz'})
+        self.assertEqual(res.json, {'foo': ['bar'], 'baz': ['baz']})
 
         res = self._run(client.post(
             '/async', headers={
@@ -57,7 +63,7 @@ class TestMultipart(unittest.TestCase):
                 b'--boundary--\r\n')
         ))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json, {'foo': 'bar', 'baz': 'baz'})
+        self.assertEqual(res.json, {'foo': ['bar'], 'baz': ['baz']})
 
     def test_form_with_files(self):
         saved_max_memory_size = FileUpload.max_memory_size
@@ -68,10 +74,13 @@ class TestMultipart(unittest.TestCase):
         @app.post('/async')
         @with_form_data
         async def async_route(req):
-            d = dict(req.form)
-            for name, file in req.files.items():
-                d[name] = '{}|{}|{}'.format(file.filename, file.content_type,
-                                            (await file.read()).decode())
+            d = {}
+            for key, value in req.form.items():
+                d[key] = value
+            for name, files in req.files.items():
+                d[name] = '{}|{}|{}'.format(files[0].filename,
+                                            files[0].content_type,
+                                            (await files[0].read()).decode())
             return d
 
         client = TestClient(app)
@@ -94,7 +103,7 @@ class TestMultipart(unittest.TestCase):
                 b'--boundary--\r\n')
         ))
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json, {'foo': 'bar', 'x': 'y',
+        self.assertEqual(res.json, {'foo': ['bar'], 'x': ['y'],
                                     'f': 'f|text/plain|baz',
                                     'g': 'g|text/html|<p>hello</p>'})
         FileUpload.max_memory_size = saved_max_memory_size
@@ -136,8 +145,9 @@ class TestMultipart(unittest.TestCase):
         @app.post('/async')
         @with_form_data
         async def async_route(req):
-            for _, file in req.files.items():
-                await file.save('_x.txt')
+            for _, files in req.files.items():
+                for file in files:
+                    await file.save('_x.txt')
 
         client = TestClient(app)
 
@@ -235,3 +245,51 @@ class TestMultipart(unittest.TestCase):
             'h': 'hh|text/plain|yyzz',
             'i': 'i.1|text/plain|1234',
         })
+
+    def test_form_with_duplicates(self):
+        app = Microdot()
+
+        @app.post('/submit')
+        @with_form_data
+        async def submit(req):
+            d = {}
+            for key, value in req.form.items():
+                d[key] = value
+            for name, files in req.files.items():
+                if name not in d:
+                    d[name] = []
+                for file in files:
+                    d[name].append('{}|{}|{}'.format(
+                        file.filename, file.content_type,
+                        (await file.read()).decode()))
+            return d
+
+        client = TestClient(app)
+
+        res = self._run(client.post(
+            '/submit', headers={
+                'Content-Type': 'multipart/form-data; boundary=boundary',
+            },
+            body=(
+                b'--boundary\r\n'
+                b'Content-Disposition: form-data; name="foo"\r\n\r\nbar\r\n'
+                b'--boundary\r\n'
+                b'Content-Disposition: form-data; name="foo"\r\n\r\nbaz\r\n'
+                b'--boundary\r\n'
+                b'Content-Disposition: form-data; name="f"; filename="f1"\r\n'
+                b'Content-Type: text/plain\r\n\r\nfile1\r\n'
+                b'--boundary\r\n'
+                b'Content-Disposition: form-data; name="f"; filename="f2"\r\n'
+                b'Content-Type: text/plain\r\n\r\nfile2\r\n'
+                b'--boundary\r\n'
+                b'Content-Disposition: form-data; name="g"; filename="g"\r\n'
+                b'Content-Type: text/html\r\n\r\n<p>hello</p>\r\n'
+                b'--boundary\r\n'
+                b'Content-Disposition: form-data; name="x"\r\n\r\ny\r\n'
+                b'--boundary--\r\n')
+        ))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json, {'foo': ['bar', 'baz'], 'x': ['y'],
+                                    'f': ['f1|text/plain|file1',
+                                          'f2|text/plain|file2'],
+                                    'g': ['g|text/html|<p>hello</p>']})
