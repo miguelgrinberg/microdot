@@ -1,5 +1,11 @@
 # Microdot change log
 
+**Release 2.8.0** - 2026-11-15
+
+- Use `MultiDict` for multipart form and files, also improved `Request.form` and `Request.files` type hints [#10005](https://code.miguelgrinberg.com/miguelgrinberg/microdot.git/issues/10005) ([commit](https://code.miguelgrinberg.com/miguelgrinberg/microdot.git/commit/d14a38ac683e4f0687a10e2dfca8246725f03372))
+- Add Python 3.15 and PyPy 3.12 to CI ([commit](https://code.miguelgrinberg.com/miguelgrinberg/microdot.git/commit/c281de63c17c71f468d53fc94f93a7841607bb01))
+- Add SPDX license to project definition ([commit](https://code.miguelgrinberg.com/miguelgrinberg/microdot.git/commit/f49fe2ddecd175e3cba91e6a0d939558a0ab571a))
+
 **Release 2.7.0** - 2026-09-18
 
 - Add the new `QUERY` method [#10003](https://code.miguelgrinberg.com/miguelgrinberg/microdot/issues/10003) ([commit](https://code.miguelgrinberg.com/miguelgrinberg/microdot/commit/b33f9cfc36f9c18028f2d85c80228ca839028c37))
